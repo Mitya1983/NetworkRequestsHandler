@@ -10,7 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(
     inc/
     asio/
-endif()
+    )
+    
 file (GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/inc/*.hpp
     ${PROJECT_SOURCE_DIR}/src/*.cpp
