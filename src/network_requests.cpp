@@ -1,7 +1,5 @@
 #include "network_requests.hpp"
 
-//#include <linux/inc/log.hpp>
-
 #include <asio/io_context.hpp>
 #include <asio/connect.hpp>
 #include <asio/ip/tcp.hpp>
@@ -11,12 +9,12 @@
 
 namespace {
 
-std::string httpResponseCode(const std::string & httpResponse);
-std::string httpResponseDescription(const std::string & httpResponse);
+std::string httpResponseCode(const std::string &httpResponse);
+std::string httpResponseDescription(const std::string &httpResponse);
 
 } // namespace name
 
-void zestad::network::process_ssl_network_request(std::shared_ptr<zestad::network::Request> request)
+void network::process_ssl_network_request(std::shared_ptr<network::Request> request)
 {
     request->m_status = Request::Status::PROCESSED;
     asio::io_context context;
@@ -88,7 +86,6 @@ void zestad::network::process_ssl_network_request(std::shared_ptr<zestad::networ
     }
     request->m_reply_body = data.substr(baseEnd, numberOfBytes);
     request->m_status = Request::Status::DONE;
-//    Log::write(request->description() + " was succesfuly processed");
 }
 
 

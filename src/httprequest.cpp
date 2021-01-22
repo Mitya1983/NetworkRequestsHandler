@@ -1,8 +1,6 @@
 #include "httprequest.hpp"
 
-
-
-zestad::network::Request::Request(const std::string &url, const std::string &descritpion) :
+network::Request::Request(const std::string &url, const std::string &descritpion) :
     m_description(descritpion),
     m_host(_get_host_from_url(url)),
     m_requestUrl(_get_request_from_url(url))
@@ -12,7 +10,7 @@ zestad::network::Request::Request(const std::string &url, const std::string &des
     m_headers.emplace("cache-control", "no-cache");
 }
 
-std::string zestad::network::Request::_get_host_from_url(const std::string &url)
+std::string network::Request::_get_host_from_url(const std::string &url)
 {
     auto start = url.find("://");
     start += 3;
@@ -21,30 +19,30 @@ std::string zestad::network::Request::_get_host_from_url(const std::string &url)
     return url.substr(start, end - start);
 }
 
-std::string zestad::network::Request::_get_request_from_url(const std::string &url)
+std::string network::Request::_get_request_from_url(const std::string &url)
 {
     auto end = url.find_first_of('/', 8);
 
     return url.substr(end);
 }
 
-void zestad::network::Request::add_header(const std::string &header, const std::string &value)
+void network::Request::add_header(const std::string &header, const std::string &value)
 {
     m_headers.emplace(header, value);
 }
 
-void zestad::network::Request::add_param(std::string paramName, const std::string &paramValue)
+void network::Request::add_param(std::string paramName, const std::string &paramValue)
 {
     m_params.emplace(paramName, paramValue);
 }
 
-zestad::network::GetRequest::GetRequest(const std::string &url, const std::string &descritpion) :
+network::GetRequest::GetRequest(const std::string &url, const std::string &descritpion) :
     Request(url, descritpion)
 {
 
 }
 
-std::string zestad::network::GetRequest::request() const
+std::string network::GetRequest::request() const
 {
     std::string l_request = "GET ";
     l_request += m_requestUrl;
@@ -75,7 +73,7 @@ std::string zestad::network::GetRequest::request() const
     return l_request;
 }
 
-std::string zestad::network::PostRequest::request() const
+std::string network::PostRequest::request() const
 {
     std::string l_request = "POST /";
     l_request += m_requestUrl;

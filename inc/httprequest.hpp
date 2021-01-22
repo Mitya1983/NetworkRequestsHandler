@@ -7,7 +7,7 @@
 #include <memory>
 
 
-namespace zestad::network {
+namespace network {
 
 class Request
 {
@@ -107,6 +107,6 @@ public:
     std::string request() const override;
 };
 
-} // namespace zestad::network
+} // namespace network
 
 #endif // HTTPREQUEST_H

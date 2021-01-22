@@ -4,7 +4,7 @@
 #include "httprequest.hpp"
 
 #include <memory>
-namespace zestad::network {
+namespace network {
 
 void process_ssl_network_request(std::shared_ptr<Request> request);
 
