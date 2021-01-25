@@ -1,10 +1,13 @@
 #ifndef HTTPREQUEST_H
 #define HTTPREQUEST_H
 
+#include "status_codes.hpp"
+
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <memory>
+
 
 
 namespace network {
@@ -40,6 +43,7 @@ protected:
     std::vector<std::pair<std::string, std::string>> m_headers;
 
     Status m_status;
+    HttpStatus m_httpStatus;
 
     //API
     std::string _get_host_from_url(const std::string &url);
@@ -59,7 +63,7 @@ public:
     const std::string &description() const noexcept {return m_description;}
     const std::string &error() const noexcept {return m_error;}
     Status status() const noexcept {return m_status;}
-
+    HttpStatus httpStatus() const noexcept {return m_httpStatus;}
     virtual std::string request() const = 0;
 
 };
