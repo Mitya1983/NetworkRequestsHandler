@@ -27,6 +27,8 @@ protected:
     //DESTRUCTOR
     ~Request() = default;
 
+    std::unordered_map<std::string, std::string> m_params;
+
     std::string m_description;
     std::string m_host;
     std::string m_requestUrl;
@@ -34,8 +36,9 @@ protected:
 
     std::string m_reply_base;
     std::string m_reply_body;
-    std::unordered_map<std::string, std::string> m_params;
-    std::unordered_map<std::string, std::string> m_headers;
+
+    std::vector<std::pair<std::string, std::string>> m_headers;
+
     Status m_status;
 
     //API
@@ -49,8 +52,8 @@ protected:
 public:
     void add_header(const std::string &header, const std::string &value);
     void add_param(std::string paramName, const std::string &paramValue = "");
-    [[nodiscard]] const std::string &base() const noexcept {return m_reply_base;}
-    [[nodiscard]] const std::string &body() const noexcept {return m_reply_body;}
+    const std::string &base() const noexcept {return m_reply_base;}
+    const std::string &body() const noexcept {return m_reply_body;}
 
     const std::string &host() const noexcept {return m_host;}
     const std::string &description() const noexcept {return m_description;}

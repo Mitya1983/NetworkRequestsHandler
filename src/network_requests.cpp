@@ -77,12 +77,15 @@ void network::process_ssl_network_request(std::shared_ptr<network::Request> requ
         auto bodyEnd = data.find("\0\r\n");
         numberOfBytes = bodyEnd - bodyStart;
     }
-    else if (auto contentLength = request->m_reply_base.find("Content-Length") != std::string::npos){
-        contentLength += 16;
-        auto contentLengthEnd = request->m_reply_base
-.find("\r\n", contentLength);
-        std::string length = request->m_reply_base.substr(contentLength, contentLengthEnd - contentLength);
-        numberOfBytes = std::stol(length);
+    else{
+        size_t contentLength = request->m_reply_base.find("Content-Length");
+        if (contentLength != std::string::npos){
+            contentLength += 16;
+            auto contentLengthEnd = request->m_reply_base
+                    .find("\r\n", contentLength);
+            std::string length = request->m_reply_base.substr(contentLength, contentLengthEnd - contentLength);
+            numberOfBytes = std::stol(length);
+        }
     }
     request->m_reply_body = data.substr(baseEnd, numberOfBytes);
     request->m_status = Request::Status::DONE;

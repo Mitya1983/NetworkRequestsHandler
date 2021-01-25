@@ -5,9 +5,8 @@ network::Request::Request(const std::string &url, const std::string &descritpion
     m_host(_get_host_from_url(url)),
     m_requestUrl(_get_request_from_url(url))
 {
-    m_headers.emplace("Host", m_host);
-    m_headers.emplace("Connection", "close");
-    m_headers.emplace("cache-control", "no-cache");
+    m_headers.emplace_back("Host", m_host);
+    m_headers.emplace_back("Connection", "close");
 }
 
 std::string network::Request::_get_host_from_url(const std::string &url)
@@ -28,7 +27,7 @@ std::string network::Request::_get_request_from_url(const std::string &url)
 
 void network::Request::add_header(const std::string &header, const std::string &value)
 {
-    m_headers.emplace(header, value);
+    m_headers.emplace_back(header, value);
 }
 
 void network::Request::add_param(std::string paramName, const std::string &paramValue)
@@ -86,6 +85,7 @@ std::string network::PostRequest::request() const
             l_request += "\r\n";
         }
     }
+    l_request += "\r\n";
     if (!m_params.empty()){
         int paramCount = 0;
         for (const auto &param : m_params){
