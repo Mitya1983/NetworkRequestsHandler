@@ -4,7 +4,7 @@
 
 namespace {
 
-inline const std::unordered_map<uint16_t, std::string, std::string> statusCodesDescription =
+inline const std::unordered_map<uint16_t, std::string> statusCodesDescription =
 {
     {100, "100: Continue"},
     {101, "101: Switching Protocol"},
@@ -67,7 +67,7 @@ inline const std::unordered_map<uint16_t, std::string, std::string> statusCodesD
     {507, "507: Insufficient Storage"},
     {508, "508: Loop Detected"},
     {510, "510: Not Extended"},
-    {511, "511: Network Authentication Required"},
+    {511, "511: Network Authentication Required"}
 };
 
 } // namespace

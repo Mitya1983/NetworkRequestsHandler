@@ -65,7 +65,10 @@ void network::process_ssl_network_request(std::shared_ptr<network::Request> requ
     socket.lowest_layer().close();
     auto baseEnd = data.find("\r\n\r\n");
     request->m_reply_base = data.substr(0, data.find("\r\n\r\n"));
-    if (httpResponseCode(request->m_reply_base) != "200"){
+
+    request->m_httpStatus = static_cast<HttpStatus>(std::stoi(httpResponseCode(request->m_reply_base)));
+
+    if (request->m_httpStatus > HttpStatus::IM_Used){
         request->m_status = Request::Status::ERROR;
         request->m_error = httpResponseDescription(data);
         return;
