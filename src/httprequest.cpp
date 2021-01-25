@@ -27,7 +27,7 @@ std::string network::Request::_get_request_from_url(const std::string &url)
 
 void network::Request::add_header(const std::string &header, const std::string &value)
 {
-    m_headers.emplace_back(header, value);
+    m_headers.emplace(header, value);
 }
 
 void network::Request::add_param(std::string paramName, const std::string &paramValue)

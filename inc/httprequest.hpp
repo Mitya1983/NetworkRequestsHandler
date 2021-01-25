@@ -4,7 +4,6 @@
 #include "status_codes.hpp"
 
 #include <string>
-#include <vector>
 #include <unordered_map>
 #include <memory>
 
@@ -31,6 +30,7 @@ protected:
     ~Request() = default;
 
     std::unordered_map<std::string, std::string> m_params;
+    std::unordered_map<std::string, std::string> m_headers;
 
     std::string m_description;
     std::string m_host;
@@ -40,7 +40,6 @@ protected:
     std::string m_reply_base;
     std::string m_reply_body;
 
-    std::vector<std::pair<std::string, std::string>> m_headers;
 
     Status m_status;
     HttpStatus m_httpStatus;
