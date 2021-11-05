@@ -34,3 +34,10 @@
 # Build folder
 build/
 /cmake-build-debug/
+/.idea/modules.xml
+/.idea/.gitignore
+/.idea/codeStyles/codeStyleConfig.xml
+/.idea/misc.xml
+/.idea/NetworkRequestsHandler.iml
+/.idea/vcs.xml
+/.idea/inspectionProfiles/Project_Default.xml
