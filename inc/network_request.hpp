@@ -18,12 +18,9 @@ namespace tristan::network{
      */
     enum class Status : uint8_t{
         /// Request is created but not being processed yet
-        WAITING,
-        /// Request is being processed by request handler
-        PROCESSED,
-        /// Request had been processed
-        DONE,
-        /// System error occurred
+        WAITING, /// Request is being processed by request handler
+        PROCESSED, /// Request had been processed
+        DONE, /// System error occurred
         ERROR
     };
     /**
@@ -140,6 +137,33 @@ namespace tristan::network{
         }
 
         /**
+         * \brief Registers callback functions which will be invoked when network request status had been changed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object> object
+         * \param functor void (Object::*functor)(std::pair<std::string, tristan::network::Status>) where std::string if for requests' UUID
+         */
+        template<class Object> void notifyWhenStatusChanged(std::weak_ptr<Object> object, void (Object::*functor)(std::pair<std::string, tristan::network::Status>)){
+            m_notify_when_status_changed_functors.emplace_back([object, functor](std::pair<std::string, tristan::network::Status> status) -> void{
+                if (auto l_object = object.lock()){
+                    std::invoke(functor, l_object, status);
+                }
+            });
+        }
+
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request status had been changed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)(std::pair<std::string, tristan::network::Status>) where std::string if for requests' UUID
+         */
+        template<class Object> void notifyWhenStatusChanged(Object* object, void (Object::*functor)(std::pair<std::string, tristan::network::Status>)){
+            m_notify_when_status_changed_functors.emplace_back([object, functor](std::pair<std::string, tristan::network::Status> status) -> void{
+                std::invoke(functor, object, status);
+            });
+        }
+
+        /**
          * \brief Registers callback functions which will be invoked when network request is paused.
          * \param functor std::function<void()> functor
          */
@@ -161,6 +185,7 @@ namespace tristan::network{
                 }
             });
         }
+
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when network request is paused.
@@ -171,6 +196,7 @@ namespace tristan::network{
         template<class Object> void notifyWhenPaused(Object* object, void (Object::*functor)()){
             m_notify_when_paused_void_functors.emplace_back([object, functor]() -> void{ std::invoke(functor, object); });
         }
+
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when network request is paused.
@@ -185,6 +211,7 @@ namespace tristan::network{
                 }
             });
         }
+
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when network request is paused.
@@ -197,6 +224,7 @@ namespace tristan::network{
                 std::invoke(functor, object, request);
             });
         }
+
         /**
          * \brief Registers callback functions which will be invoked when network request is resumed.
          * \param functor std::function<void()> functor
@@ -204,6 +232,7 @@ namespace tristan::network{
         void notifyWhenResumed(std::function<void()> functor){
             m_notify_when_resumed_void_functors.emplace_back(functor);
         }
+
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when network request is resumed.
@@ -218,6 +247,7 @@ namespace tristan::network{
                 }
             });
         }
+
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when network request is resumed.
@@ -228,6 +258,7 @@ namespace tristan::network{
         template<class Object> void notifyWhenResumed(Object* object, void (Object::*functor)()){
             m_notify_when_resumed_void_functors.emplace_back([object, functor]() -> void{ std::invoke(functor, object); });
         }
+
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when network request is resumed.
@@ -243,6 +274,7 @@ namespace tristan::network{
                 }
             });
         }
+
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when network request is resumed.
@@ -255,6 +287,7 @@ namespace tristan::network{
                 std::invoke(functor, object, request);
             });
         }
+
         /**
          * \brief Registers callback functions which will be invoked when error occurred.
          * \note Registered callbacks will be invoked when there sre any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
@@ -263,6 +296,7 @@ namespace tristan::network{
         void notifyWhenError(std::function<void(std::pair<std::string, std::error_code>)> functor){
             m_notify_when_error_functors.emplace_back(functor);
         }
+
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when error occurred.
@@ -278,6 +312,7 @@ namespace tristan::network{
                 }
             });
         }
+
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when error occurred.
@@ -291,47 +326,57 @@ namespace tristan::network{
                 std::invoke(functor, object, error);
             });
         }
+
         /**
          * \brief Sets priority of the request
          * \param priority Priority
          */
         void setPriority(Priority priority){ m_priority = priority; }
+
         /**
          * \brief Cancels the request execution.
          */
         void cancel(){ m_cancelled.store(true); }
+
         /**
          * \brief Pauses request processing
          */
         void pauseProcessing(){ m_paused.store(true); }
+
         /**
          * \brief Resumes request processing
          */
         void continueProcessing(){ m_paused.store(false); }
+
         /**
          * \brief Base function for request processing. Should be overloaded in each derived class.
          */
         virtual void doRequest(){}
+
         /**
          * \brief UUID getter.
          * \return const std::string&
          */
         [[nodiscard]] auto uuid() const noexcept -> const std::string&{ return m_uuid; }
+
         /**
          * \brief Error getter.
          * \return const std::string&
          */
         [[nodiscard]] auto error() const noexcept -> const std::error_code&{ return m_error; }
+
         /**
          * \brief Status getter.
          * \return const std::string&
          */
         [[nodiscard]] auto status() const noexcept -> Status{ return m_status; }
+
         /**
          * \brief Paused state getter.
          * \return const std::string&
          */
         [[nodiscard]] auto paused() const noexcept -> bool{ return m_paused.load(); }
+
         /**
          * \brief Returns response got while request was processed.
          * \note If request was not processed - doRequest function will be invoked.
@@ -343,11 +388,13 @@ namespace tristan::network{
             }
             return m_response;
         }
+
         /**
          * \brief Priority getter.
          * \return const std::string&
          */
         [[nodiscard]] auto priority() -> Priority{ return m_priority; }
+
         /**
          * \brief Prepares dat which should be sent to the remote. Should be overloaded in each derived class.
          * \return std::string
@@ -369,6 +416,7 @@ namespace tristan::network{
                 m_output_to_file(false),
                 m_paused(false),
                 m_cancelled(false){}
+
         /**
          * \overload
          * \brief Constructor
@@ -394,6 +442,7 @@ namespace tristan::network{
         std::string m_uuid;
         std::vector<std::function<void(uint64_t)>> m_notify_read_bytes_changed_functors;
         std::vector<std::function<void(std::shared_ptr<Response>)>> m_notify_when_finished_functors;
+        std::vector<std::function<void(std::pair<std::string, tristan::network::Status>)>> m_notify_when_status_changed_functors;
         std::vector<std::function<void(std::shared_ptr<Response>)>> m_notify_when_paused_functors;
         std::vector<std::function<void(void)>> m_notify_when_paused_void_functors;
         std::vector<std::function<void(std::shared_ptr<Response>)>> m_notify_when_resumed_functors;
@@ -433,6 +482,17 @@ namespace tristan::network{
             }
             for (const auto& functor: m_notify_when_finished_void_functors){
                 functor();
+            }
+        }
+
+        void _notifyWhenStatusChanged(){
+            if (m_notify_when_status_changed_functors.empty()){
+                return;
+            }
+            for (const auto& functor: m_notify_when_status_changed_functors){
+                functor({ m_uuid,
+                          m_status
+                        });
             }
         }
 
