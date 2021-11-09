@@ -19,15 +19,46 @@
 
 namespace tristan::network{
 
+    /**
+     * \class HttpRequest
+     * \extends NetworkRequest<HttpResponse>
+     * \brief Base class for http requests
+     */
     class HttpRequest : public NetworkRequest<HttpResponse>{
       public:
+        /**
+         * \brief Adds header and corresponding value.
+         * \param header const std::string&. Common headers are listen in \file http_header_names.hpp
+         * \param value const std::string&
+         */
         void addHeader(const std::string& header, const std::string& value);
+        /**
+         * \brief Adds param and corresponding value.
+         * \param paramName const std::string&
+         * \param paramValue const std::string&
+         */
         void addParam(const std::string& paramName, const std::string& paramValue = "");
+        /**
+         * \brief Sets output directory. Applicable if outputToFile() is invoked.
+         * \param directory const std::filesystem::path&
+         */
         void outputToDirectory(const std::filesystem::path& directory);
+        /**
+         * \brief Directs output to specified file. If filename is not provided the filename from url is used.
+         * \param filename const std::string&.
+         */
         void outputToFile(const std::string& filename = "");
+        /**
+         * \implements NetworkRequest::doRequest()
+         * \brief Implements request processing.
+         */
         void doRequest() override;
 
       protected:
+        /**
+         * \brief Constructor
+         * \param uri Uri
+         */
         explicit HttpRequest(Uri uri);
         ~HttpRequest() override = default;
         std::unordered_map<std::string, std::string> m_headers;
@@ -37,21 +68,49 @@ namespace tristan::network{
         void _doHttpsRequest();
     };
 
+    /**
+     * \class GetRequest
+     * \extends HttpRequest
+     * \brief Handles GET http requests
+     */
     class GetRequest : public HttpRequest{
       public:
+        /**
+         * \brief Constructor
+         * \param uri Uri
+         */
         explicit GetRequest(Uri uri);
         ~GetRequest() override = default;
 
       protected:
+        /**
+         * \brief Prepares string representation of the request.
+         * \implements NetworkRequest::prepareRequest()
+         * \return std::string
+         */
         auto prepareRequest() const -> std::string override;
     };
 
+    /**
+    * \class PostRequest
+    * \extends HttpRequest
+    * \brief Handles POST http requests
+    */
     class PostRequest : public HttpRequest{
       public:
+        /**
+         * \brief Constructor
+         * \param uri Uri
+         */
         explicit PostRequest(Uri uri);
         ~PostRequest() override = default;
 
       protected:
+        /**
+        * \brief Prepares string representation of the request.
+        * \implements NetworkRequest::prepareRequest()
+        * \return std::string
+        */
         auto prepareRequest() const -> std::string override;
     };
 

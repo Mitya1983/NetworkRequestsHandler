@@ -89,9 +89,3 @@ void tristan::network::HttpRequestsHandler::_addRequest(std::shared_ptr<HttpRequ
     }
 }
 
-auto tristan::network::HttpRequestsHandler::_activeRequests() -> std::list<std::shared_ptr<HttpRequest>>{
-    std::lock_guard<std::mutex> lock(m_lock);
-    auto list = m_active_requests;
-    return list;
-}
-

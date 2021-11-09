@@ -13,7 +13,16 @@
 #include <atomic>
 
 namespace tristan::network{
+    /**
+     * \class HttpRequestsHandler
+     * \brief Implements http network request queue.
+     * \Threadsafe Yes
+     */
     class HttpRequestsHandler{
+        /**
+         * \brief Constructor. Sets active limit to 5.
+         *
+         */
         HttpRequestsHandler();
         static auto instance() -> HttpRequestsHandler&;
       public:
@@ -24,22 +33,67 @@ namespace tristan::network{
         HttpRequestsHandler& operator=(HttpRequestsHandler&& other) = delete;
 
         ~HttpRequestsHandler() = default;
-
+        /**
+         * \brief Sets simultaneous requests limit which by default is 5.
+         * \param limit uint8_t.
+         */
         inline static void setActiveRequestsLimit(uint8_t limit){ HttpRequestsHandler::instance()._setActiveRequestsLimit(limit); }
-
+        /**
+         * \brief Starts the handler loop.
+         * \note This function if blocking and should be ran in a separate thread.
+         */
         inline static void run(){ HttpRequestsHandler::instance()._run(); }
-
+        /**
+         * \brief Stops the processing of all network requests.
+         * \note This function does not clear any data.
+         */
         inline static void stop(){ HttpRequestsHandler::instance()._stop(); }
-
+        /**
+         * \brief Registers callback functions which will be invoked when reqeust processing is stopped.
+         * \param functor std::function<void()> functor
+         */
+        inline static void notifyWhenExit(std::function<void()> functor){ HttpRequestsHandler::instance()._notifyWhenExit(functor); }
+        /**
+         * \brief Registers callback functions which will be invoked when reqeust processing is stopped.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object>
+         * \param functor void (Object::*functor)()
+         */
         template<class Object> inline static void notifyWhenExit(std::weak_ptr<Object> object, void (Object::*functor)()){ HttpRequestsHandler::instance()._notifyWhenExit(object, functor); }
 
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when reqeust processing is stopped.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)()
+         */
         template<class Object> inline static void notifyWhenExit(Object* object, void (Object::*functor)()){ HttpRequestsHandler::instance()._notifyWhenExit(object, functor); }
-
-        inline static void notifyWhenExit(std::function<void()> functor){ HttpRequestsHandler::instance()._notifyWhenExit(functor); }
-
+        /**
+         * \brief Adds request to the queue
+         * \param request std::shared_ptr<HttpRequest>
+         */
         inline static void addRequest(std::shared_ptr<HttpRequest> request){ HttpRequestsHandler::instance()._addRequest(std::move(request)); }
-
-        inline static auto activeRequests() -> std::list<std::shared_ptr<HttpRequest>>{ return HttpRequestsHandler::instance()._activeRequests(); }
+        /**
+         * \brief Returns list of currently active requests.
+         * \return std::list<std::shared_ptr<HttpRequest>>
+         */
+        inline static auto activeRequests() -> std::list<std::shared_ptr<HttpRequest>>&{ return HttpRequestsHandler::instance().m_active_requests; }
+        /**
+         * \brief Returns list of high priority requests which are in the queue and which are not being processed yet.
+         * \return const std::queue<std::shared_ptr<HttpRequest>>&
+         */
+        inline static auto highPriorityRequests() -> const std::queue<std::shared_ptr<HttpRequest>>& {return HttpRequestsHandler::instance().m_high_priority_requests;}
+        /**
+         * \brief Returns list of normal priority requests which are in the queue and which are not being processed yet.
+         * \return const std::queue<std::shared_ptr<HttpRequest>>&
+         */
+        inline static auto normalPriorityRequests() -> const std::queue<std::shared_ptr<HttpRequest>>& {return HttpRequestsHandler::instance().m_normal_priority_requests;}
+        /**
+         * \brief Returns list of low priority requests which are in the queue and which are not being processed yet.
+         * \return const std::queue<std::shared_ptr<HttpRequest>>&
+         */
+        inline static auto lowPriorityRequests() -> const std::queue<std::shared_ptr<HttpRequest>>& {return HttpRequestsHandler::instance().m_low_priority_requests;}
 
       protected:
 
@@ -62,8 +116,6 @@ namespace tristan::network{
         void _stop();
 
         void _addRequest(std::shared_ptr<HttpRequest> request);
-
-        auto _activeRequests() -> std::list<std::shared_ptr<HttpRequest>>;
 
         template<class Object> void _notifyWhenExit(std::weak_ptr<Object> object, void (Object::*functor)()){
             m_notify_when_exit_functors.emplace_back([object, functor]() -> void{

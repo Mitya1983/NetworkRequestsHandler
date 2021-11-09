@@ -12,13 +12,33 @@
 #include <vector>
 
 namespace tristan::network{
+    /**
+     * \enum Status
+     * \brief List of possible request statuses
+     */
     enum class Status : uint8_t{
-        WAITING, PROCESSED, DONE, REDIRECT, ERROR
+        /// Request is created but not being processed yet
+        WAITING,
+        /// Request is being processed by request handler
+        PROCESSED,
+        /// Request had been processed
+        DONE,
+        /// System error occurred
+        ERROR
     };
+    /**
+     * \enum Priority
+     * \brief List of possible priority values
+     */
     enum class Priority : uint8_t{
         LOW, NORMAL, HIGH
     };
 
+    /**
+     * \class template<class Response> class NetworkRequest
+     * \brief Used as a base class for network request classes. E.g. HttpRequest.
+     * \tparam Response Type of the network response which will be returned after request is processed.
+     */
     template<class Response> class NetworkRequest{
       public:
 
@@ -30,8 +50,13 @@ namespace tristan::network{
 
         virtual ~NetworkRequest() = default;
 
-        template<class Object> void notifyWhenBytesReadChanged(std::weak_ptr<Object> object, void (Object::*functor)(uint64_t)
-        ){
+        /**
+         * \brief Registers callback functions which will be invoked each time read bytes value is increased.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object> object.
+         * \param functor void (Object::*functor)(uint64_t)
+         */
+        template<class Object> void notifyWhenBytesReadChanged(std::weak_ptr<Object> object, void (Object::*functor)(uint64_t)){
             m_notify_read_bytes_changed_functors.emplace_back([object, functor](uint64_t value) -> void{
                 if (auto l_object = object.lock()){
                     std::invoke(functor, l_object, value);
@@ -39,15 +64,26 @@ namespace tristan::network{
             });
         }
 
-        template<class Object> void notifyWhenBytesReadChanged(Object* object, void (Object::*functor)(uint64_t)
-        ){
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked each time read bytes value is increased.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)(uint64_t)
+         */
+        template<class Object> void notifyWhenBytesReadChanged(Object* object, void (Object::*functor)(uint64_t)){
             m_notify_read_bytes_changed_functors.emplace_back([object, functor](uint64_t value) -> void{
                 std::invoke(functor, object, value);
             });
         }
 
-        template<class Object> void notifyWhenFinished(std::weak_ptr<Object> object, void (Object::*functor)(std::shared_ptr<Response>)
-        ){
+        /**
+         * \brief Registers callback functions which will be invoked when network request was processed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object> object
+         * \param functor void (Object::*functor)(std::shared_ptr<Response>)
+         */
+        template<class Object> void notifyWhenFinished(std::weak_ptr<Object> object, void (Object::*functor)(std::shared_ptr<Response>)){
             m_notify_when_finished_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
                 if (auto l_object = object.lock()){
                     std::invoke(functor, l_object, request);
@@ -55,15 +91,27 @@ namespace tristan::network{
             });
         }
 
-        template<class Object> void notifyWhenFinished(Object* object, void (Object::*functor)(std::shared_ptr<Response>)
-        ){
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request was processed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)(std::shared_ptr<Response>)
+         */
+        template<class Object> void notifyWhenFinished(Object* object, void (Object::*functor)(std::shared_ptr<Response>)){
             m_notify_when_finished_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
                 std::invoke(functor, object, request);
             });
         }
 
-        template<class Object> void notifyWhenFinished(std::weak_ptr<Object> object, void (Object::*functor)()
-        ){
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request was processed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object> object
+         * \param functor void (Object::*functor)()
+         */
+        template<class Object> void notifyWhenFinished(std::weak_ptr<Object> object, void (Object::*functor)()){
             m_notify_when_finished_void_functors.emplace_back([object, functor]() -> void{
                 if (auto l_object = object.lock()){
                     std::invoke(functor, l_object);
@@ -71,47 +119,122 @@ namespace tristan::network{
             });
         }
 
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request was processed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)()
+         */
         template<class Object> void notifyWhenFinished(Object* object, void (Object::*functor)()){
             m_notify_when_finished_void_functors.emplace_back([object, functor]() -> void{ std::invoke(functor, object); });
         }
 
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request was processed.
+         * \param functor const std::function<void(std::shared_ptr<Response>)>&
+         */
         void notifyWhenFinished(const std::function<void(std::shared_ptr<Response>)>& functor){
             m_notify_when_finished_functors.emplace_back(functor);
         }
 
-        template<class Object> void notifyWhenPaused(std::weak_ptr<Object> object, void (Object::*functor)(std::shared_ptr<Response>)
-        ){
-            m_notify_when_paused_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
-                if (auto l_object = object.lock()){
-                    std::invoke(functor, l_object, request);
-                }
-            });
+        /**
+         * \brief Registers callback functions which will be invoked when network request is paused.
+         * \param functor std::function<void()> functor
+         */
+        void notifyWhenPaused(std::function<void()> functor){
+            m_notify_when_paused_void_functors.emplace_back(functor);
         }
 
-        template<class Object> void notifyWhenPaused(Object* object, void (Object::*functor)(std::shared_ptr<Response>)
-        ){
-            m_notify_when_paused_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
-                std::invoke(functor, object, request);
-            });
-        }
-
-        template<class Object> void notifyWhenPaused(std::weak_ptr<Object> object, void (Object::*functor)()
-        ){
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request is paused.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object>
+         * \param functor void (Object::*functor)()
+         */
+        template<class Object> void notifyWhenPaused(std::weak_ptr<Object> object, void (Object::*functor)()){
             m_notify_when_paused_void_functors.emplace_back([object, functor]() -> void{
                 if (auto l_object = object.lock()){
                     std::invoke(functor, l_object);
                 }
             });
         }
-
-        void notifyWhenPaused(std::function<void()> functor){
-            m_notify_when_paused_void_functors.emplace_back(functor);
-        }
-
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request is paused.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)()
+         */
         template<class Object> void notifyWhenPaused(Object* object, void (Object::*functor)()){
             m_notify_when_paused_void_functors.emplace_back([object, functor]() -> void{ std::invoke(functor, object); });
         }
-
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request is paused.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object> object
+         * \param functor void (Object::*functor)(std::shared_ptr<Response>)
+         */
+        template<class Object> void notifyWhenPaused(std::weak_ptr<Object> object, void (Object::*functor)(std::shared_ptr<Response>)){
+            m_notify_when_paused_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
+                if (auto l_object = object.lock()){
+                    std::invoke(functor, l_object, request);
+                }
+            });
+        }
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request is paused.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)(std::shared_ptr<Response>)
+         */
+        template<class Object> void notifyWhenPaused(Object* object, void (Object::*functor)(std::shared_ptr<Response>)){
+            m_notify_when_paused_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
+                std::invoke(functor, object, request);
+            });
+        }
+        /**
+         * \brief Registers callback functions which will be invoked when network request is resumed.
+         * \param functor std::function<void()> functor
+         */
+        void notifyWhenResumed(std::function<void()> functor){
+            m_notify_when_resumed_void_functors.emplace_back(functor);
+        }
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request is resumed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object>
+         * \param functor void (Object::*functor)()
+         */
+        template<class Object> void notifyWhenResumed(std::weak_ptr<Object> object, void (Object::*functor)()){
+            m_notify_when_resumed_void_functors.emplace_back([object, functor]() -> void{
+                if (auto l_object = object.lock()){
+                    std::invoke(functor, l_object);
+                }
+            });
+        }
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request is resumed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)()
+         */
+        template<class Object> void notifyWhenResumed(Object* object, void (Object::*functor)()){
+            m_notify_when_resumed_void_functors.emplace_back([object, functor]() -> void{ std::invoke(functor, object); });
+        }
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request is resumed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object>
+         * \param functor void (Object::*functor)(std::shared_ptr<Response>
+         */
         template<class Object> void notifyWhenResumed(std::weak_ptr<Object> object, void (Object::*functor)(std::shared_ptr<Response>)
         ){
             m_notify_when_resumed_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
@@ -120,31 +243,34 @@ namespace tristan::network{
                 }
             });
         }
-
-        template<class Object> void notifyWhenResumed(Object* object, void (Object::*functor)(std::shared_ptr<Response>)
-        ){
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when network request is resumed.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)(std::shared_ptr<Response>
+         */
+        template<class Object> void notifyWhenResumed(Object* object, void (Object::*functor)(std::shared_ptr<Response>)){
             m_notify_when_resumed_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
                 std::invoke(functor, object, request);
             });
         }
-
-        template<class Object> void notifyWhenResumed(std::weak_ptr<Object> object, void (Object::*functor)()
-        ){
-            m_notify_when_resumed_void_functors.emplace_back([object, functor]() -> void{
-                if (auto l_object = object.lock()){
-                    std::invoke(functor, l_object);
-                }
-            });
+        /**
+         * \brief Registers callback functions which will be invoked when error occurred.
+         * \note Registered callbacks will be invoked when there sre any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
+         * \param functor std::function<void(std::pair<std::string, std::error_code>)> where std::string stores UUID of the request.
+         */
+        void notifyWhenError(std::function<void(std::pair<std::string, std::error_code>)> functor){
+            m_notify_when_error_functors.emplace_back(functor);
         }
-
-        template<class Object> void notifyWhenResumed(Object* object, void (Object::*functor)()){
-            m_notify_when_resumed_void_functors.emplace_back([object, functor]() -> void{ std::invoke(functor, object); });
-        }
-
-        void notifyWhenResumed(std::function<void()> functor){
-            m_notify_when_resumed_void_functors.emplace_back(functor);
-        }
-
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when error occurred.
+         * \note Registered callbacks will be invoked when there sre any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object std::weak_ptr<Object>
+         * \param functor void (Object::*functor)(const std::pair<std::string, std::error_code>&) where std::string stores UUID of the request.
+         */
         template<class Object> void notifyWhenError(std::weak_ptr<Object> object, void (Object::*functor)(const std::pair<std::string, std::error_code>&)){
             m_notify_when_error_functors.emplace_back([object, functor](const std::error_code& error) -> void{
                 if (auto l_object = object.lock()){
@@ -152,47 +278,87 @@ namespace tristan::network{
                 }
             });
         }
-
+        /**
+         * \overload
+         * \brief Registers callback functions which will be invoked when error occurred.
+         * \note Registered callbacks will be invoked when there sre any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
+         * \tparam Object Type which holds the function member to invoke.
+         * \param object Object*
+         * \param functor void (Object::*functor)(const std::pair<std::string, std::error_code>&) where std::string stores UUID of the request.
+         */
         template<class Object> void notifyWhenError(Object* object, void (Object::*functor)(const std::pair<std::string, std::error_code>&)){
             m_notify_when_error_functors.emplace_back([object, functor](const std::error_code& error) -> void{
                 std::invoke(functor, object, error);
             });
         }
-
-        void notifyWhenError(std::function<void(std::pair<std::string, std::error_code>)> functor){
-            m_notify_when_error_functors.emplace_back(functor);
-        }
-
+        /**
+         * \brief Sets priority of the request
+         * \param priority Priority
+         */
         void setPriority(Priority priority){ m_priority = priority; }
-
+        /**
+         * \brief Cancels the request execution.
+         */
         void cancel(){ m_cancelled.store(true); }
-
+        /**
+         * \brief Pauses request processing
+         */
         void pauseProcessing(){ m_paused.store(true); }
-
+        /**
+         * \brief Resumes request processing
+         */
         void continueProcessing(){ m_paused.store(false); }
-
+        /**
+         * \brief Base function for request processing. Should be overloaded in each derived class.
+         */
         virtual void doRequest(){}
-
+        /**
+         * \brief UUID getter.
+         * \return const std::string&
+         */
         [[nodiscard]] auto uuid() const noexcept -> const std::string&{ return m_uuid; }
-
+        /**
+         * \brief Error getter.
+         * \return const std::string&
+         */
         [[nodiscard]] auto error() const noexcept -> const std::error_code&{ return m_error; }
-
+        /**
+         * \brief Status getter.
+         * \return const std::string&
+         */
         [[nodiscard]] auto status() const noexcept -> Status{ return m_status; }
-
+        /**
+         * \brief Paused state getter.
+         * \return const std::string&
+         */
         [[nodiscard]] auto paused() const noexcept -> bool{ return m_paused.load(); }
-
+        /**
+         * \brief Returns response got while request was processed.
+         * \note If request was not processed - doRequest function will be invoked.
+         * \return
+         */
         [[nodiscard]] auto response() -> std::shared_ptr<Response>{
             if (m_status != tristan::network::Status::DONE){
                 this->doRequest();
             }
             return m_response;
         }
-
+        /**
+         * \brief Priority getter.
+         * \return const std::string&
+         */
         [[nodiscard]] auto priority() -> Priority{ return m_priority; }
-
+        /**
+         * \brief Prepares dat which should be sent to the remote. Should be overloaded in each derived class.
+         * \return std::string
+         */
         [[nodiscard]] virtual auto prepareRequest() const -> std::string{ return { }; }
 
       protected:
+        /**
+         * \brief Constructor
+         * \param uri Uri
+         */
         explicit NetworkRequest(Uri uri) :
                 m_uri(std::move(uri)),
                 m_uuid(utility::getUUID()),
@@ -203,7 +369,12 @@ namespace tristan::network{
                 m_output_to_file(false),
                 m_paused(false),
                 m_cancelled(false){}
-
+        /**
+         * \overload
+         * \brief Constructor
+         * \param ip const std::string&
+         * \param port uint16_t
+         */
         NetworkRequest(const std::string& ip, uint16_t port) :
                 m_uuid(utility::getUUID()),
                 m_bytes_to_read(0),

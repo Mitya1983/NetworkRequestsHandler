@@ -5,7 +5,10 @@
 #include <utility>
 
 namespace tristan::network{
-
+    /**
+     * \class NetworkResponse.
+     * \brief Used a a base class for network responses.
+     */
     class NetworkResponse{
       public:
         [[nodiscard]] auto uuid() const noexcept -> const std::string&{ return m_uuid; }

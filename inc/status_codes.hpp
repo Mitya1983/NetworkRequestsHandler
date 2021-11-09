@@ -5,7 +5,10 @@
 #include <string>
 
 namespace tristan::network{
-
+    /**
+     * \enum HttpStatus
+     * \brief Stores values for http error codes.
+     */
     enum class HttpStatus : uint16_t{
         ///The server has received the request headers and the client should proceed to send the request body.
         Continue = 100,
