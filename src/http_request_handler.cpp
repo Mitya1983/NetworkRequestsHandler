@@ -3,7 +3,8 @@
 tristan::network::HttpRequestsHandler::HttpRequestsHandler() :
         m_active_requests_limit(5),
         m_active_requests(0),
-        m_working(false){
+        m_working(false),
+        m_paused(false){
 
 }
 
@@ -18,7 +19,7 @@ void tristan::network::HttpRequestsHandler::_run(){
     }
     m_working.store(true);
     while (m_working.load()){
-        if ((m_low_priority_requests.empty() && m_normal_priority_requests.empty() && m_high_priority_requests.empty()) || m_active_requests.size() >= m_active_requests_limit){
+        if ((m_low_priority_requests.empty() && m_normal_priority_requests.empty() && m_high_priority_requests.empty()) || m_active_requests.size() >= m_active_requests_limit || m_paused){
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
         else{
