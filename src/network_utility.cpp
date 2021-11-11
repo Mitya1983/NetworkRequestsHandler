@@ -45,7 +45,7 @@ auto tristan::network::utility::getUUID() -> std::string{
     std::uniform_int_distribution<uint8_t> distribution_one(48, 57);
     std::uniform_int_distribution<uint8_t> distribution_two(97, 102);
     std::uniform_int_distribution<uint8_t> distribution_choice(1, 2);
-    for (int i = 0; i < 16; ++i){
+    for (int i = 0; i < 36; ++i){
         std::mt19937_64 generator(std::chrono::system_clock::now().time_since_epoch().count());
         uint8_t which_distribution = distribution_choice(generator);
         uint8_t uuid_value;
@@ -63,7 +63,7 @@ auto tristan::network::utility::getUUID() -> std::string{
             }
         }
         uuid += static_cast<char>(uuid_value);
-        if (uuid.size() == 8 || uuid.size() == 13 || uuid.size() == 18 || uuid.size() == 22){
+        if (uuid.size() == 8 || uuid.size() == 13 || uuid.size() == 18 || uuid.size() == 23){
             uuid += '-';
         }
         if (uuid.size() == 14){
