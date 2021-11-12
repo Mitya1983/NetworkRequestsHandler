@@ -14,6 +14,12 @@ namespace tristan::network::utility{
      * \return UUID as a std::string.
      */
     [[nodiscard]] auto getUUID() -> std::string;
+    /**
+     * \brief Encodes provided string to URL percentage encoding.
+     * \param string_to_encode const std::string&
+     * \return URL encoded std::string
+     */
+    [[nodiscard]] auto encodeUrl(const std::string& string_to_encode) -> std::string;
 } //End of tristan::network::utility namespace
 
 #endif //NETWORK_UTILITY_HPP

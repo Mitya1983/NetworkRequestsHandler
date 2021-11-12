@@ -2,6 +2,33 @@
 
 #include <cmath>
 #include <random>
+#include <unordered_map>
+
+namespace{
+
+    std::unordered_map<char, std::string> percentage_encoding = { { ' ',  "%20" },
+                                                                  { '!',  "%21" },
+                                                                  { '@',  "%40" },
+                                                                  { '#',  "%23" },
+                                                                  { '$',  "%24" },
+                                                                  { '%',  "%25" },
+                                                                  { '&',  "%26" },
+                                                                  { '*',  "%2A" },
+                                                                  { '(',  "%28" },
+                                                                  { ')',  "%29" },
+                                                                  { '+',  "%2B" },
+                                                                  { '=',  "%3D" },
+                                                                  { '[',  "%5B" },
+                                                                  { ']',  "%5D" },
+                                                                  { ':',  "%3A" },
+                                                                  { ';',  "%3B" },
+                                                                  { '\'', "%27" },
+                                                                  { ',',  "%2C" },
+                                                                  { '/',  "%2F" },
+                                                                  { '?',  "%3F" },
+    };
+
+} //End of unnamed namespace
 
 void tristan::network::utility::checkFileName(std::filesystem::path& path){
 
@@ -75,4 +102,18 @@ auto tristan::network::utility::getUUID() -> std::string{
     }
 
     return uuid;
+}
+
+auto tristan::network::utility::encodeUrl(const std::string& string_to_encode) -> std::string{
+    std::string string(string_to_encode);
+    size_t char_to_encode = 0;
+    while (true){
+        char_to_encode = string.find_first_of(" !@#$%&*()+=[]:;\',/?", char_to_encode);
+        if (char_to_encode == std::string::npos){
+            break;
+        }
+        string.replace(char_to_encode, 1, percentage_encoding.at(string.at(char_to_encode)));
+        ++char_to_encode;
+    }
+    return string;
 }

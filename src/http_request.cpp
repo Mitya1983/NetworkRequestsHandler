@@ -1,5 +1,6 @@
 #include "http_request.hpp"
 #include "http_header_names.hpp"
+#include "network_utility.hpp"
 
 #include "asio/io_context.hpp"
 #include "asio/connect.hpp"
@@ -269,8 +270,10 @@ void tristan::network::HttpRequest::_doHttpRequest(){
         }
     }
     tristan::network::HttpResponse response(response_header, m_uuid);
-    if (response.m_status >= tristan::network::HttpStatus::IM_Used){
+    auto content_length = response.headerValue(tristan::network::http::header_names::content_length);
+    if (response.m_status >= tristan::network::HttpStatus::IM_Used && (content_length == std::nullopt || content_length->empty() || content_length == "0")){
         m_response = std::make_shared<tristan::network::HttpResponse>(std::move(response));
+        m_status = tristan::network::Status::DONE;
         _notifyWhenFinished();
         return;
     }
@@ -343,8 +346,10 @@ void tristan::network::HttpRequest::_doHttpsRequest(){
         }
     }
     tristan::network::HttpResponse response(response_header, m_uuid);
-    if (response.m_status >= tristan::network::HttpStatus::IM_Used){
+    auto content_length = response.headerValue(tristan::network::http::header_names::content_length);
+    if (response.m_status >= tristan::network::HttpStatus::IM_Used && (content_length == std::nullopt || content_length->empty() || content_length == "0")){
         m_response = std::make_shared<tristan::network::HttpResponse>(std::move(response));
+        m_status = tristan::network::Status::DONE;
         _notifyWhenFinished();
         return;
     }
@@ -365,12 +370,18 @@ tristan::network::GetRequest::GetRequest(Uri url) :
 
 std::string tristan::network::GetRequest::prepareRequest() const{
     std::string l_request = "GET ";
+    if (m_uri.path().empty()){
+        l_request += '/';
+    }
+    else if (m_uri.path().at(0) != '/'){
+        l_request += '/';
+    }
     l_request += m_uri.path();
     if (!m_params.empty()){
         l_request += '?';
-        int paramCount = 0;
+        int param_count = 0;
         for (const auto& param: m_params){
-            if (paramCount > 0){
+            if (param_count > 0){
                 l_request += '&';
             }
             l_request += param.first;
@@ -378,7 +389,7 @@ std::string tristan::network::GetRequest::prepareRequest() const{
                 l_request += '=';
                 l_request += param.second;
             }
-            ++paramCount;
+            ++param_count;
         }
     }
     if (!m_uri.query().empty()){
@@ -413,12 +424,23 @@ std::string tristan::network::PostRequest::prepareRequest() const{
             }
             body += param.first;
             body += '=';
-            body += param.second;
+            auto content_type = m_headers.find(tristan::network::http::header_names::content_type);
+            if (content_type != m_headers.end() && content_type->second == "application/x-www-form-urlencoded"){
+                body += tristan::network::utility::encodeUrl(param.second);
+            }
+            else{
+                body += param.second;
+            }
             ++param_count;
         }
     }
-
-    std::string l_request = "POST /";
+    std::string l_request = "POST ";
+    if (m_uri.path().empty()){
+        l_request += '/';
+    }
+    else if (m_uri.path().at(0) != '/'){
+        l_request += '/';
+    }
     l_request += m_uri.path();
     l_request += " HTTP/1.1\r\n";
     if (!m_headers.empty()){
@@ -432,7 +454,7 @@ std::string tristan::network::PostRequest::prepareRequest() const{
     l_request += tristan::network::http::header_names::content_length;
     l_request += ":";
     l_request += std::to_string(body.length());
-    l_request += "\r\n";
+    l_request += "\r\n\r\n";
 
     l_request += body;
 

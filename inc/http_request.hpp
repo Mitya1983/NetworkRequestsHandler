@@ -82,7 +82,6 @@ namespace tristan::network{
         explicit GetRequest(Uri uri);
         ~GetRequest() override = default;
 
-      protected:
         /**
          * \brief Prepares string representation of the request.
          * \implements NetworkRequest::prepareRequest()
@@ -105,7 +104,6 @@ namespace tristan::network{
         explicit PostRequest(Uri uri);
         ~PostRequest() override = default;
 
-      protected:
         /**
         * \brief Prepares string representation of the request.
         * \implements NetworkRequest::prepareRequest()

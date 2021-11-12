@@ -396,7 +396,7 @@ namespace tristan::network{
         [[nodiscard]] auto priority() -> Priority{ return m_priority; }
 
         /**
-         * \brief Prepares dat which should be sent to the remote. Should be overloaded in each derived class.
+         * \brief Prepares data which should be sent to the remote. Should be overloaded in each derived class.
          * \return std::string
          */
         [[nodiscard]] virtual auto prepareRequest() const -> std::string{ return { }; }
