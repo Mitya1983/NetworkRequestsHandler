@@ -1,4 +1,5 @@
 #include "http_request.hpp"
+#include "http_header_names.hpp"
 
 #include "asio/io_context.hpp"
 #include "asio/connect.hpp"
@@ -30,7 +31,7 @@ tristan::network::HttpRequest::HttpRequest(Uri uri) :
             m_uri.setPort(80);
         }
         else{
-            m_uri.setPort(433);
+            m_uri.setPort(443);
         }
     }
 }
@@ -42,11 +43,11 @@ void tristan::network::HttpRequest::addHeader(const std::string& header, const s
     m_headers.emplace(header, value);
 }
 
-void tristan::network::HttpRequest::addParam(const std::string& paramName, const std::string& paramValue){
-    if (paramName.empty()){
+void tristan::network::HttpRequest::addParam(const std::string& param_name, const std::string& param_value){
+    if (param_name.empty()){
         return;
     }
-    m_params.emplace(paramName, paramValue);
+    m_params.emplace(param_name, param_value);
 }
 
 void tristan::network::HttpRequest::outputToDirectory(const std::filesystem::path& directory){
@@ -403,6 +404,20 @@ tristan::network::PostRequest::PostRequest(Uri url) :
 }
 
 std::string tristan::network::PostRequest::prepareRequest() const{
+    std::string body;
+    if (!m_params.empty()){
+        int param_count = 0;
+        for (const auto& param: m_params){
+            if (param_count > 0){
+                body += '&';
+            }
+            body += param.first;
+            body += '=';
+            body += param.second;
+            ++param_count;
+        }
+    }
+
     std::string l_request = "POST /";
     l_request += m_uri.path();
     l_request += " HTTP/1.1\r\n";
@@ -414,19 +429,13 @@ std::string tristan::network::PostRequest::prepareRequest() const{
             l_request += "\r\n";
         }
     }
+    l_request += tristan::network::http::header_names::content_length;
+    l_request += ":";
+    l_request += std::to_string(body.length());
     l_request += "\r\n";
-    if (!m_params.empty()){
-        int paramCount = 0;
-        for (const auto& param: m_params){
-            if (paramCount > 0){
-                l_request += '&';
-            }
-            l_request += param.first;
-            l_request += '=';
-            l_request += param.second;
-            ++paramCount;
-        }
-    }
+
+    l_request += body;
+
     l_request += "\r\n\r\n";
 
     return l_request;

@@ -34,10 +34,10 @@ namespace tristan::network{
         void addHeader(const std::string& header, const std::string& value);
         /**
          * \brief Adds param and corresponding value.
-         * \param paramName const std::string&
-         * \param paramValue const std::string&
+         * \param param_name const std::string&
+         * \param param_value const std::string&
          */
-        void addParam(const std::string& paramName, const std::string& paramValue = "");
+        void addParam(const std::string& param_name, const std::string& param_value = "");
         /**
          * \brief Sets output directory. Applicable if outputToFile() is invoked.
          * \param directory const std::filesystem::path&
