@@ -181,7 +181,7 @@ void tristan::network::Uri::setFragment(const std::string& fragment){
     }
 }
 
-auto tristan::network::Uri::composeURI() const -> std::string{
+auto tristan::network::Uri::composeUri() const -> std::string{
     auto uri = m_scheme;
     uri += ':';
     if (!m_host.empty()){

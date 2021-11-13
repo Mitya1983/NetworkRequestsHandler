@@ -112,7 +112,7 @@ namespace tristan::network{
          * \brief Composes a string representation of URI.
          * \return Composed URI.
          */
-        [[nodiscard]] auto composeURI() const -> std::string;
+        [[nodiscard]] auto composeUri() const -> std::string;
         /**
          * \brief Check if URI is valid. Should be used in cale of overloaded constructor.
          * \return True is valid and false otherwise.
