@@ -159,7 +159,7 @@ void tristan::network::Uri::setQuery(const std::string& query){
     m_query = query;
     size_t char_to_encode = 0;
     while (true){
-        char_to_encode = m_query.find(" !@#$%*()+[]:\',/?");
+        char_to_encode = m_query.find_first_of(" !@#$%*()+[]:\',/?");
         if (char_to_encode == std::string::npos){
             break;
         }
@@ -172,7 +172,7 @@ void tristan::network::Uri::setFragment(const std::string& fragment){
     m_fragment = fragment;
     size_t char_to_encode = 0;
     while (true){
-        char_to_encode = m_fragment.find(" !@#$%&*()+=[];:\',/?");
+        char_to_encode = m_fragment.find_first_of(" !@#$%&*()+=[];:\',/?");
         if (char_to_encode == std::string::npos){
             break;
         }
