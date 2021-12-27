@@ -13,7 +13,7 @@ namespace tristan::network::utility{
      * \brief Generates UUID Version 4.
      * \return UUID as a std::string.
      */
-    [[nodiscard]] auto getUUID() -> std::string;
+    [[nodiscard]] auto getUuid() -> std::string;
     /**
      * \brief Encodes provided string to URL percentage encoding.
      * \param string_to_encode const std::string&

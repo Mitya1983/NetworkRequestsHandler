@@ -1,5 +1,7 @@
 #include "http_request_handler.hpp"
 
+
+//TODO: Add logic to pause lower priority requests if for higher priority request no place to add due request limit
 tristan::network::HttpRequestsHandler::HttpRequestsHandler() :
         m_active_requests_limit(5),
         m_active_requests(0),
@@ -39,11 +41,14 @@ void tristan::network::HttpRequestsHandler::_run(){
                 m_low_priority_requests.pop();
             }
             request->notifyWhenFinished([this](std::shared_ptr<HttpResponse> response) -> void{
+                //TODO: Add lock here
                 m_active_requests.remove_if([response](std::shared_ptr<tristan::network::HttpRequest> stored_request){
                     return stored_request->uuid() == response->uuid();
                 });
             });
             request->notifyWhenError([this](const std::pair<std::string, std::error_code>& error){
+                //TODO: Add lock here
+                //TODO: Move request to error queue
                 m_active_requests.remove_if([error](std::shared_ptr<tristan::network::HttpRequest> stored_request){
                     return stored_request->uuid() == error.first;
                 });

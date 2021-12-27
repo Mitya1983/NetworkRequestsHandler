@@ -15,7 +15,7 @@ namespace tristan::network{
          * \brief Constructor
          * Sets \param m_valid to true
          */
-        Uri();
+        Uri() noexcept;
         /**
          * \brief Overloaded constructor.
          * Parses passed uri string representation into values. If parsing was successful \param m_valid is set to true. URI representation must conform to the following format:
@@ -24,10 +24,10 @@ namespace tristan::network{
          */
         explicit Uri(const std::string& url);
         Uri(const Uri& other) = default;
-        Uri(Uri&& other) = default;
+        Uri(Uri&& other) noexcept = default;
 
         Uri& operator=(const Uri& other) = default;
-        Uri& operator=(Uri&& other) = default;
+        Uri& operator=(Uri&& other) noexcept = default;
 
         ~Uri() = default;
         /**

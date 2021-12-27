@@ -66,7 +66,7 @@ void tristan::network::utility::checkFileName(std::filesystem::path& path){
 
 }
 
-auto tristan::network::utility::getUUID() -> std::string{
+auto tristan::network::utility::getUuid() -> std::string{
     std::string uuid;
 
     std::uniform_int_distribution<uint8_t> distribution_one(48, 57);

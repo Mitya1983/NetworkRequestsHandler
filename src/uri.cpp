@@ -28,7 +28,7 @@ namespace{
 
 } //End of unnamed namespace
 
-tristan::network::Uri::Uri() :
+tristan::network::Uri::Uri() noexcept:
         m_valid(true){
 
 }

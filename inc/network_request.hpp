@@ -3,6 +3,7 @@
 
 #include "uri.hpp"
 #include "network_utility.hpp"
+#include "network_response.hpp"
 
 #include <atomic>
 #include <filesystem>
@@ -10,6 +11,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <concepts>
 
 namespace tristan::network{
     /**
@@ -36,7 +38,7 @@ namespace tristan::network{
      * \brief Used as a base class for network request classes. E.g. HttpRequest.
      * \tparam Response Type of the network response which will be returned after request is processed.
      */
-    template<class Response> class NetworkRequest{
+    template<class Response> requires IsDerivedFromNetworkResponse<Response> class NetworkRequest{
       public:
 
         NetworkRequest(const NetworkRequest& other) = delete;
@@ -204,8 +206,8 @@ namespace tristan::network{
          * \param object std::weak_ptr<Object> object
          * \param functor void (Object::*functor)(std::shared_ptr<Response>)
          */
-        template<class Object> void notifyWhenPaused(std::weak_ptr<Object> object, void (Object::*functor)(std::shared_ptr<Response>)){
-            m_notify_when_paused_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
+        template<class Object> void notifyWhenPaused(std::weak_ptr<Object> object, void (Object::*functor)(std::shared_ptr<NetworkRequest>)){
+            m_notify_when_paused_functors.emplace_back([object, functor](std::shared_ptr<NetworkRequest> request) -> void{
                 if (auto l_object = object.lock()){
                     std::invoke(functor, l_object, request);
                 }
@@ -219,8 +221,8 @@ namespace tristan::network{
          * \param object Object*
          * \param functor void (Object::*functor)(std::shared_ptr<Response>)
          */
-        template<class Object> void notifyWhenPaused(Object* object, void (Object::*functor)(std::shared_ptr<Response>)){
-            m_notify_when_paused_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
+        template<class Object> void notifyWhenPaused(Object* object, void (Object::*functor)(std::shared_ptr<NetworkRequest>)){
+            m_notify_when_paused_functors.emplace_back([object, functor](std::shared_ptr<NetworkRequest> request) -> void{
                 std::invoke(functor, object, request);
             });
         }
@@ -266,9 +268,9 @@ namespace tristan::network{
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(std::shared_ptr<Response>
          */
-        template<class Object> void notifyWhenResumed(std::weak_ptr<Object> object, void (Object::*functor)(std::shared_ptr<Response>)
+        template<class Object> void notifyWhenResumed(std::weak_ptr<Object> object, void (Object::*functor)(std::shared_ptr<NetworkRequest>)
         ){
-            m_notify_when_resumed_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
+            m_notify_when_resumed_functors.emplace_back([object, functor](std::shared_ptr<NetworkRequest> request) -> void{
                 if (auto l_object = object.lock()){
                     std::invoke(functor, l_object, request);
                 }
@@ -282,15 +284,15 @@ namespace tristan::network{
          * \param object Object*
          * \param functor void (Object::*functor)(std::shared_ptr<Response>
          */
-        template<class Object> void notifyWhenResumed(Object* object, void (Object::*functor)(std::shared_ptr<Response>)){
-            m_notify_when_resumed_functors.emplace_back([object, functor](std::shared_ptr<Response> request) -> void{
+        template<class Object> void notifyWhenResumed(Object* object, void (Object::*functor)(std::shared_ptr<NetworkRequest>)){
+            m_notify_when_resumed_functors.emplace_back([object, functor](std::shared_ptr<NetworkRequest> request) -> void{
                 std::invoke(functor, object, request);
             });
         }
 
         /**
          * \brief Registers callback functions which will be invoked when error occurred.
-         * \note Registered callbacks will be invoked when there sre any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
+         * \note Registered callbacks will be invoked when there are any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
          * \param functor std::function<void(std::pair<std::string, std::error_code>)> where std::string stores UUID of the request.
          */
         void notifyWhenError(std::function<void(std::pair<std::string, std::error_code>)> functor){
@@ -300,13 +302,13 @@ namespace tristan::network{
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when error occurred.
-         * \note Registered callbacks will be invoked when there sre any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
+         * \note Registered callbacks will be invoked when there are any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
          * \tparam Object Type which holds the function member to invoke.
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::pair<std::string, std::error_code>&) where std::string stores UUID of the request.
          */
         template<class Object> void notifyWhenError(std::weak_ptr<Object> object, void (Object::*functor)(const std::pair<std::string, std::error_code>&)){
-            m_notify_when_error_functors.emplace_back([object, functor](const std::error_code& error) -> void{
+            m_notify_when_error_functors.emplace_back([object, functor](const std::pair<std::string, std::error_code>& error) -> void{
                 if (auto l_object = object.lock()){
                     std::invoke(functor, l_object, error);
                 }
@@ -316,21 +318,21 @@ namespace tristan::network{
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when error occurred.
-         * \note Registered callbacks will be invoked when there sre any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
+         * \note Registered callbacks will be invoked when there are any errors related to network connection e.g. resolver wasn't able to resolve the host. That is, e.g. http errors, are not considered here as an error.
          * \tparam Object Type which holds the function member to invoke.
          * \param object Object*
          * \param functor void (Object::*functor)(const std::pair<std::string, std::error_code>&) where std::string stores UUID of the request.
          */
         template<class Object> void notifyWhenError(Object* object, void (Object::*functor)(const std::pair<std::string, std::error_code>&)){
-            m_notify_when_error_functors.emplace_back([object, functor](const std::error_code& error) -> void{
+            m_notify_when_error_functors.emplace_back([object, functor](const std::pair<std::string, std::error_code>& error) -> void{
                 std::invoke(functor, object, error);
             });
         }
 
         /**
-         * \brief Sets priority of the request
-         * \param priority Priority
-         */
+        * \brief Sets priority of the request
+        * \param priority Priority
+        */
         void setPriority(Priority priority){ m_priority = priority; }
 
         /**
@@ -408,7 +410,7 @@ namespace tristan::network{
          */
         explicit NetworkRequest(Uri uri) :
                 m_uri(std::move(uri)),
-                m_uuid(utility::getUUID()),
+                m_uuid(utility::getUuid()),
                 m_bytes_to_read(0),
                 m_bytes_read(0),
                 m_status(Status::WAITING),
@@ -424,7 +426,7 @@ namespace tristan::network{
          * \param port uint16_t
          */
         NetworkRequest(const std::string& ip, uint16_t port) :
-                m_uuid(utility::getUUID()),
+                m_uuid(utility::getUuid()),
                 m_bytes_to_read(0),
                 m_bytes_read(0),
                 m_status(Status::WAITING),
@@ -448,7 +450,7 @@ namespace tristan::network{
         std::vector<std::function<void(std::shared_ptr<Response>)>> m_notify_when_resumed_functors;
         std::vector<std::function<void(void)>> m_notify_when_resumed_void_functors;
         std::vector<std::function<void(void)>> m_notify_when_finished_void_functors;
-        std::vector<std::function<void(std::pair<std::string, std::error_code>)>> m_notify_when_error_functors;
+        std::vector<std::function<void(const std::pair<std::string, std::error_code>&)>> m_notify_when_error_functors;
 
         std::ofstream m_output_file;
 

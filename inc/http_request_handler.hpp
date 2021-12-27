@@ -97,22 +97,28 @@ namespace tristan::network{
         inline static auto activeRequests() -> std::list<std::shared_ptr<HttpRequest>>&{ return HttpRequestsHandler::instance().m_active_requests; }
 
         /**
-         * \brief Returns list of high priority requests which are in the queue and which are not being processed yet.
+         * \brief Returns queue of high priority requests which are in the queue and which are not being processed yet.
          * \return const std::queue<std::shared_ptr<HttpRequest>>&
          */
         inline static auto highPriorityRequests() -> const std::queue<std::shared_ptr<HttpRequest>>&{ return HttpRequestsHandler::instance().m_high_priority_requests; }
 
         /**
-         * \brief Returns list of normal priority requests which are in the queue and which are not being processed yet.
+         * \brief Returns queue of normal priority requests which are in the queue and which are not being processed yet.
          * \return const std::queue<std::shared_ptr<HttpRequest>>&
          */
         inline static auto normalPriorityRequests() -> const std::queue<std::shared_ptr<HttpRequest>>&{ return HttpRequestsHandler::instance().m_normal_priority_requests; }
 
         /**
-         * \brief Returns list of low priority requests which are in the queue and which are not being processed yet.
+         * \brief Returns queue of low priority requests which are in the queue and which are not being processed yet.
          * \return const std::queue<std::shared_ptr<HttpRequest>>&
          */
         inline static auto lowPriorityRequests() -> const std::queue<std::shared_ptr<HttpRequest>>&{ return HttpRequestsHandler::instance().m_low_priority_requests; }
+
+        /**
+         * \brief Returns queue of requests which encountered error.
+         * \return const std::queue<std::shared_ptr<HttpRequest>>&
+         */
+        inline static auto errorRequests() -> const std::queue<std::shared_ptr<HttpRequest>>&{ return HttpRequestsHandler::instance().m_error_requests; }
 
       protected:
 
@@ -122,6 +128,7 @@ namespace tristan::network{
         std::queue<std::shared_ptr<HttpRequest>> m_high_priority_requests;
         std::queue<std::shared_ptr<HttpRequest>> m_normal_priority_requests;
         std::queue<std::shared_ptr<HttpRequest>> m_low_priority_requests;
+        std::queue<std::shared_ptr<HttpRequest>> m_error_requests;
         std::list<std::shared_ptr<HttpRequest>> m_active_requests;
 
         std::vector<std::function<void()>> m_notify_when_exit_functors;
