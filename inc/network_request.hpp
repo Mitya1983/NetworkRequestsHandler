@@ -39,7 +39,15 @@ namespace tristan::network{
      * \tparam Response Type of the network response which will be returned after request is processed.
      */
     template<class Response> requires IsDerivedFromNetworkResponse<Response> class NetworkRequest{
+
       public:
+
+        friend bool operator<(const NetworkRequest& left, const NetworkRequest& right){
+            return left.m_priority < right.m_priority;
+        }
+        friend bool operator>(const NetworkRequest& left, const NetworkRequest& right){
+            return !(left < right);
+        }
 
         NetworkRequest(const NetworkRequest& other) = delete;
         NetworkRequest(NetworkRequest&& other) noexcept = delete;
