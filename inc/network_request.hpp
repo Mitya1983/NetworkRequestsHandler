@@ -46,7 +46,7 @@ namespace tristan::network{
             return left.m_priority < right.m_priority;
         }
         friend bool operator>(const NetworkRequest& left, const NetworkRequest& right){
-            return !(left < right);
+            return left >= right;
         }
 
         NetworkRequest(const NetworkRequest& other) = delete;
