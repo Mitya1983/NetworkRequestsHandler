@@ -1,39 +1,39 @@
-#include "uri.hpp"
+#include "url.hpp"
 
 #include <unordered_map>
 
 namespace{
 
-    std::unordered_map<char, std::string> percentage_encoding = { { ' ',  "%20" },
-                                                                  { '!',  "%21" },
-                                                                  { '@',  "%40" },
-                                                                  { '#',  "%23" },
-                                                                  { '$',  "%24" },
-                                                                  { '%',  "%25" },
-                                                                  { '&',  "%26" },
-                                                                  { '*',  "%2A" },
-                                                                  { '(',  "%28" },
-                                                                  { ')',  "%29" },
-                                                                  { '+',  "%2B" },
-                                                                  { '=',  "%3D" },
-                                                                  { '[',  "%5B" },
-                                                                  { ']',  "%5D" },
-                                                                  { ':',  "%3A" },
-                                                                  { ';',  "%3B" },
-                                                                  { '\'', "%27" },
-                                                                  { ',',  "%2C" },
-                                                                  { '/',  "%2F" },
-                                                                  { '?',  "%3F" },
+    inline const std::unordered_map<char, std::string> percentage_encoding = { { ' ',  "%20" },
+                                                                               { '!',  "%21" },
+                                                                               { '@',  "%40" },
+                                                                               { '#',  "%23" },
+                                                                               { '$',  "%24" },
+                                                                               { '%',  "%25" },
+                                                                               { '&',  "%26" },
+                                                                               { '*',  "%2A" },
+                                                                               { '(',  "%28" },
+                                                                               { ')',  "%29" },
+                                                                               { '+',  "%2B" },
+                                                                               { '=',  "%3D" },
+                                                                               { '[',  "%5B" },
+                                                                               { ']',  "%5D" },
+                                                                               { ':',  "%3A" },
+                                                                               { ';',  "%3B" },
+                                                                               { '\'', "%27" },
+                                                                               { ',',  "%2C" },
+                                                                               { '/',  "%2F" },
+                                                                               { '?',  "%3F" },
     };
 
 } //End of unnamed namespace
 
-tristan::network::Uri::Uri() noexcept:
+tristan::network::Url::Url() noexcept:
         m_valid(true){
 
 }
 
-tristan::network::Uri::Uri(const std::string& url) :
+tristan::network::Url::Url(const std::string& url) :
         m_valid(false){
     auto l_url = url;
     auto scheme_end = l_url.find(':');
@@ -87,7 +87,7 @@ tristan::network::Uri::Uri(const std::string& url) :
     m_valid = true;
 }
 
-void tristan::network::Uri::setScheme(const std::string& scheme){
+void tristan::network::Url::setScheme(const std::string& scheme){
     if ((scheme.at(0) < 'A' || scheme.at(0) > 'z') || (scheme.at(0) > 'Z' && scheme.at(0) < 'a')){
         m_valid = false;
         return;
@@ -101,7 +101,7 @@ void tristan::network::Uri::setScheme(const std::string& scheme){
     m_scheme = scheme;
 }
 
-void tristan::network::Uri::setAuthority(const std::string& host, const std::string& user_name, const std::string& user_password){
+void tristan::network::Url::setAuthority(const std::string& host, const std::string& user_name, const std::string& user_password){
     if (host.size() > 253){
         m_valid = true;
         return;
@@ -138,11 +138,15 @@ void tristan::network::Uri::setAuthority(const std::string& host, const std::str
     }
 }
 
-void tristan::network::Uri::setPort(uint16_t port){
+void tristan::network::Url::setPort(uint16_t port){
     m_port = std::to_string(port);
 }
 
-void tristan::network::Uri::setPath(const std::string& path){
+void tristan::network::Url::setPort(const std::string& port){
+    m_port = port;
+}
+
+void tristan::network::Url::setPath(const std::string& path){
     m_path = path;
     size_t char_to_encode = 0;
     while (true){
@@ -155,7 +159,7 @@ void tristan::network::Uri::setPath(const std::string& path){
     }
 }
 
-void tristan::network::Uri::setQuery(const std::string& query){
+void tristan::network::Url::setQuery(const std::string& query){
     m_query = query;
     size_t char_to_encode = 0;
     while (true){
@@ -168,7 +172,7 @@ void tristan::network::Uri::setQuery(const std::string& query){
     }
 }
 
-void tristan::network::Uri::setFragment(const std::string& fragment){
+void tristan::network::Url::setFragment(const std::string& fragment){
     m_fragment = fragment;
     size_t char_to_encode = 0;
     while (true){
@@ -181,7 +185,7 @@ void tristan::network::Uri::setFragment(const std::string& fragment){
     }
 }
 
-auto tristan::network::Uri::composeUri() const -> std::string{
+auto tristan::network::Url::composeUrl(bool ip_address) const -> std::string{
     auto uri = m_scheme;
     uri += ':';
     if (!m_host.empty()){
