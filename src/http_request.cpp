@@ -18,7 +18,7 @@ namespace{
     const uint16_t read_frame = std::numeric_limits<uint16_t>::max();
 } //End of unknown namespace
 
-tristan::network::HttpRequest::HttpRequest(Uri uri) :
+tristan::network::HttpRequest::HttpRequest(Url uri) :
         NetworkRequest(std::move(uri)){
     if (!m_uri.isValid() || (m_uri.scheme() != "http" && m_uri.scheme() != "https")){
         m_status = tristan::network::Status::ERROR;
@@ -363,7 +363,7 @@ void tristan::network::HttpRequest::_doHttpsRequest(){
     _notifyWhenFinished();
 }
 
-tristan::network::GetRequest::GetRequest(Uri url) :
+tristan::network::GetRequest::GetRequest(Url url) :
         HttpRequest(std::move(url)){
 
 }
@@ -409,7 +409,7 @@ std::string tristan::network::GetRequest::prepareRequest() const{
     return l_request;
 }
 
-tristan::network::PostRequest::PostRequest(Uri url) :
+tristan::network::PostRequest::PostRequest(Url url) :
         HttpRequest(std::move(url)){
 
 }

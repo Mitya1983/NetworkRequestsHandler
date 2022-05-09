@@ -1,7 +1,7 @@
 #ifndef NETWORK_REQUEST_HPP
 #define NETWORK_REQUEST_HPP
 
-#include "uri.hpp"
+#include "url.hpp"
 #include "network_utility.hpp"
 #include "network_response.hpp"
 
@@ -416,7 +416,7 @@ namespace tristan::network{
          * \brief Constructor
          * \param uri Uri
          */
-        explicit NetworkRequest(Uri uri) :
+        explicit NetworkRequest(Url uri) :
                 m_uri(std::move(uri)),
                 m_uuid(utility::getUuid()),
                 m_bytes_to_read(0),
@@ -446,7 +446,7 @@ namespace tristan::network{
             m_uri.setPort(port);
         }
 
-        Uri m_uri;
+        Url m_uri;
         std::error_code m_error;
         std::filesystem::path m_output_path;
         std::string m_uuid;

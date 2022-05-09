@@ -3,7 +3,7 @@
 
 #include "network_request.hpp"
 #include "status_codes.hpp"
-#include "uri.hpp"
+#include "url.hpp"
 #include "http_response.hpp"
 #include "network_utility.hpp"
 #include "http_header_names.hpp"
@@ -59,7 +59,7 @@ namespace tristan::network{
          * \brief Constructor
          * \param uri Uri
          */
-        explicit HttpRequest(Uri uri);
+        explicit HttpRequest(Url uri);
         ~HttpRequest() override = default;
         std::unordered_map<std::string, std::string> m_headers;
         std::unordered_map<std::string, std::string> m_params;
@@ -79,7 +79,7 @@ namespace tristan::network{
          * \brief Constructor
          * \param uri Uri
          */
-        explicit GetRequest(Uri uri);
+        explicit GetRequest(Url uri);
         ~GetRequest() override = default;
 
         /**
@@ -101,7 +101,7 @@ namespace tristan::network{
          * \brief Constructor
          * \param uri Uri
          */
-        explicit PostRequest(Uri uri);
+        explicit PostRequest(Url uri);
         ~PostRequest() override = default;
 
         /**
