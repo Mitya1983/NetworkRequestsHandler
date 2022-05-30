@@ -11,7 +11,8 @@ namespace tristan::network{
         OFFLINE,
         INVALID_URL,
         HOST_NOT_FOUND,
-        FILE_PATH_EMPTY
+        FILE_PATH_EMPTY,
+        DESTINATION_DIR_DOES_NOT_EXISTS
     };
 
     /**
