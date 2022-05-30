@@ -4,6 +4,7 @@
 #include "url.hpp"
 #include "network_utility.hpp"
 #include "network_response.hpp"
+#include "network_error.hpp"
 
 #include <atomic>
 #include <filesystem>
