@@ -16,8 +16,8 @@ tristan::network::NetworkRequest::NetworkRequest(tristan::network::Url&& url) :
     }
 }
 
-tristan::network::NetworkRequest::NetworkRequest(tristan::network::Url url) :
-        m_url(std::move(url)),
+tristan::network::NetworkRequest::NetworkRequest(const tristan::network::Url& url) :
+        m_url(url),
         m_uuid(utility::getUuid()),
         m_bytes_to_read(0),
         m_bytes_read(0),
@@ -287,7 +287,7 @@ void tristan::network::NetworkRequest::pNotifyWhenFailed(){
     }
 }
 
-void tristan::network::NetworkRequest::PrivateMembersForRequestHandler::pAddResponseData(const std::shared_ptr<NetworkRequest>& network_request, std::vector<uint8_t>&& data){
+void tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(const std::shared_ptr<NetworkRequest>& network_request, std::vector<uint8_t>&& data){
     if (!network_request->m_output_to_file){
         if (!network_request->m_response_data){
             network_request->m_response_data = std::make_shared<std::vector<uint8_t>>(std::move(data));
@@ -318,7 +318,38 @@ void tristan::network::NetworkRequest::PrivateMembersForRequestHandler::pAddResp
     network_request->m_bytes_read = network_request->m_response_data->size();
 }
 
-void tristan::network::NetworkRequest::PrivateMembersForRequestHandler::pSetStatus(const std::shared_ptr<NetworkRequest>& network_request, Status status){
+void tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(NetworkRequest& network_request, std::vector<uint8_t>&& data){
+    if (!network_request.m_output_to_file){
+        if (!network_request.m_response_data){
+            network_request.m_response_data = std::make_shared<std::vector<uint8_t>>(std::move(data));
+        }
+        else{
+            network_request.m_response_data->insert(network_request.m_response_data->end(), data.begin(), data.end());
+        }
+    }
+    else{
+        if (network_request.m_output_path.empty()){
+            pSetError(network_request, tristan::network::makeError(tristan::network::ErrorCode::FILE_PATH_EMPTY));
+            return;
+        }
+        if (!std::filesystem::exists(network_request.m_output_path)){
+            if (!std::filesystem::exists(network_request.m_output_path.parent_path())){
+                pSetError(network_request, tristan::network::makeError(tristan::network::ErrorCode::DESTINATION_DIR_DOES_NOT_EXISTS));
+                return;
+            }
+        }
+        if (!network_request.m_output_file.is_open()){
+            network_request.m_output_file.open(network_request.m_output_path, std::ios::ate | std::ios::binary | std::ios::app);
+            if (!network_request.m_output_file.is_open()){
+                pSetError(network_request, std::error_code(errno, std::system_category()));
+            }
+        }
+        network_request.m_output_file.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
+    }
+    network_request.m_bytes_read = network_request.m_response_data->size();
+}
+
+void tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(const std::shared_ptr<NetworkRequest>& network_request, Status status){
     network_request->pNotifyWhenStatusChanged();
 
     switch (status){
@@ -360,7 +391,54 @@ void tristan::network::NetworkRequest::PrivateMembersForRequestHandler::pSetStat
     }
 }
 
-void tristan::network::NetworkRequest::PrivateMembersForRequestHandler::pSetError(const std::shared_ptr<NetworkRequest>& network_request, std::error_code error_code){
+void tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(NetworkRequest& network_request, Status status){
+    network_request.pNotifyWhenStatusChanged();
+
+    switch (status){
+        case Status::WAITING:[[fallthrough]];
+        case tristan::network::Status::PROCESSED:break;
+        case tristan::network::Status::PAUSED:{
+            network_request.pNotifyWhenPaused();
+            if (network_request.m_output_file.is_open()){
+                network_request.m_output_file.close();
+            }
+            break;
+        }
+        case tristan::network::Status::RESUMED:{
+            network_request.pNotifyWhenResumed();
+            break;
+        }
+        case tristan::network::Status::ERROR:{
+            network_request.pNotifyWhenFailed();
+            if (network_request.m_output_file.is_open()){
+                network_request.m_output_file.close();
+            }
+            //TODO: Decide if file should be deleted here or if download may be continued later.
+        }
+        case tristan::network::Status::CANCELED:{
+            network_request.pNotifyWhenCanceled();
+            if (network_request.m_output_file.is_open()){
+                network_request.m_output_file.close();
+            }
+            if (std::filesystem::exists(network_request.m_output_path)){
+                std::filesystem::remove(network_request.m_output_path);
+            }
+        }
+        case tristan::network::Status::DONE:{
+            network_request.pNotifyWhenFinished();
+            if (network_request.m_output_file.is_open()){
+                network_request.m_output_file.close();
+            }
+        }
+    }
+}
+
+void tristan::network::NetworkRequest::ProtectedMembers::pSetError(const std::shared_ptr<NetworkRequest>& network_request, std::error_code error_code){
     network_request->m_error = error_code;
+    pSetStatus(network_request, tristan::network::Status::ERROR);
+}
+
+void tristan::network::NetworkRequest::ProtectedMembers::pSetError(NetworkRequest& network_request, std::error_code error_code){
+    network_request.m_error = error_code;
     pSetStatus(network_request, tristan::network::Status::ERROR);
 }

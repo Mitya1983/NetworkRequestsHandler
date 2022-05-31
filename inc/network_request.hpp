@@ -104,7 +104,7 @@ namespace tristan::network{
          * \brief Constructor
          * \param uri const Url&
          */
-        explicit NetworkRequest(Url url);
+        explicit NetworkRequest(const Url& url);
 
         NetworkRequest() = delete;
         NetworkRequest(const NetworkRequest& other) = delete;
@@ -806,9 +806,62 @@ namespace tristan::network{
       protected:
 
         std::vector<uint8_t> m_request_data;
+        Url m_url;
+
+        /**
+         * \brief Stores protected modifying API for RequestHandler class and derived classes
+         */
+        class ProtectedMembers{
+
+            friend class NetworkRequestsHandler;
+
+            /**
+             * \brief Adds data to response data
+             * \param network_request const std::shared_ptr<NetworkRequest>&
+             * \param data std::vector<uint8_t>&&
+             */
+            static void pAddResponseData(const std::shared_ptr<NetworkRequest>& network_request, std::vector<uint8_t>&& data);
+
+            /**
+             * \overload
+             * \brief Adds data to response data
+             * \param network_request NetworkRequest&
+             * \param data std::vector<uint8_t>&&
+             */
+            static void pAddResponseData(NetworkRequest& network_request, std::vector<uint8_t>&& data);
+
+            /**
+             * \brief Sets current request status
+             * \param network_request const std::shared_ptr<NetworkRequest>&
+             * \param status Status
+             */
+            static void pSetStatus(const std::shared_ptr<NetworkRequest>& network_request, Status status);
+
+            /**
+             * \overload
+             * \brief Sets current request status
+             * \param network_request NetworkRequest&
+             * \param status Status
+             */
+            static void pSetStatus(NetworkRequest& network_request, Status status);
+
+            /**
+             * \brief Sets error
+             * \param network_request const std::shared_ptr<NetworkRequest>&
+             * \param error_code std::error_code
+             */
+            static void pSetError(const std::shared_ptr<NetworkRequest>& network_request, std::error_code error_code);
+
+            /**
+             * \overload
+             * \brief Sets error
+             * \param network_request NetworkRequest&
+             * \param error_code std::error_code
+             */
+            static void pSetError(NetworkRequest& network_request, std::error_code error_code);
+        };
 
       private:
-        Url m_url;
         std::string m_uuid;
         std::error_code m_error;
         std::filesystem::path m_output_path;
@@ -839,8 +892,6 @@ namespace tristan::network{
         uint64_t m_bytes_to_read;
         uint64_t m_bytes_read;
 
-        const uint16_t m_read_frame = std::numeric_limits<uint16_t>::max();
-
         Status m_status;
         Priority m_priority;
         std::atomic<bool> m_paused;
@@ -860,32 +911,6 @@ namespace tristan::network{
         void pNotifyWhenFinished();
 
         void pNotifyWhenFailed();
-
-        /**
-         * \brief Stores private modifying API for RequestHandler class
-         */
-        class PrivateMembersForRequestHandler{
-
-            friend class NetworkRequestsHandler;
-
-            /**
-             * \brief Adds data to response data
-             * \param data std::vector<uint8_t>&&
-             */
-            static void pAddResponseData(const std::shared_ptr<NetworkRequest>& network_request, std::vector<uint8_t>&& data);
-
-            /**
-             * \brief Sets current request status
-             * \param status Status
-             */
-            static void pSetStatus(const std::shared_ptr<NetworkRequest>& network_request, Status status);
-
-            /**
-             * \brief Sets error
-             * \param error_code std::error_code
-             */
-            static void pSetError(const std::shared_ptr<NetworkRequest>& network_request, std::error_code error_code);
-        };
     };
 
 } // namespace tristan::network
