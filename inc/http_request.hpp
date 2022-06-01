@@ -21,10 +21,10 @@ namespace tristan::network{
 
     /**
      * \class HttpRequest
-     * \extends NetworkRequest<HttpResponse>
+     * \extends NetworkRequest
      * \brief Base class for http requests
      */
-    class HttpRequest : public NetworkRequest<HttpResponse>{
+    class HttpRequest : public NetworkRequest{
       public:
         /**
          * \brief Adds header and corresponding value.
@@ -38,34 +38,17 @@ namespace tristan::network{
          * \param param_value const std::string&
          */
         void addParam(const std::string& param_name, const std::string& param_value = "");
-        /**
-         * \brief Sets output directory. Applicable if outputToFile() is invoked.
-         * \param directory const std::filesystem::path&
-         */
-        void outputToDirectory(const std::filesystem::path& directory);
-        /**
-         * \brief Directs output to specified file. If filename is not provided the filename from url is used.
-         * \param filename const std::string&.
-         */
-        void outputToFile(const std::string& filename = "");
-        /**
-         * \implements NetworkRequest::doRequest()
-         * \brief Implements request processing.
-         */
-        void doRequest() override;
 
       protected:
         /**
          * \brief Constructor
-         * \param uri Uri
+         * \param url url
          */
-        explicit HttpRequest(Url uri);
+        explicit HttpRequest(Url&& url);
+        explicit HttpRequest(const Url& url);
         ~HttpRequest() override = default;
         std::unordered_map<std::string, std::string> m_headers;
         std::unordered_map<std::string, std::string> m_params;
-        template<class Socket> void _read(Socket& socket, HttpResponse& response, std::error_code& error);
-        void _doHttpRequest();
-        void _doHttpsRequest();
     };
 
     /**
@@ -77,17 +60,18 @@ namespace tristan::network{
       public:
         /**
          * \brief Constructor
-         * \param uri Uri
+         * \param url url
          */
-        explicit GetRequest(Url uri);
+        explicit GetRequest(Url&& url);
+        explicit GetRequest(const Url& url);
         ~GetRequest() override = default;
 
         /**
-         * \brief Prepares string representation of the request.
-         * \implements NetworkRequest::prepareRequest()
-         * \return std::string
+         * \brief Prepares std::vector<uint8_t> representation of the request.
+         * \implements NetworkRequest::requestData()
+         * \return const std::vector<uint8_t>&
          */
-        auto prepareRequest() const -> std::string override;
+        auto requestData() -> const std::vector<uint8_t>& override;
     };
 
     /**
@@ -99,17 +83,18 @@ namespace tristan::network{
       public:
         /**
          * \brief Constructor
-         * \param uri Uri
+         * \param url url
          */
-        explicit PostRequest(Url uri);
+        explicit PostRequest(Url&& url);
+        explicit PostRequest(const Url& url);
         ~PostRequest() override = default;
 
         /**
-        * \brief Prepares string representation of the request.
-        * \implements NetworkRequest::prepareRequest()
-        * \return std::string
+        * \brief Prepares std::vector<uint8_t> representation of the request.
+        * \implements NetworkRequest::requestData()
+        * \return const std::vector<uint8_t>&
         */
-        auto prepareRequest() const -> std::string override;
+        auto requestData() -> const std::vector<uint8_t>& override;
     };
 
 } // namespace network

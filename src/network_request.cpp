@@ -17,20 +17,21 @@ tristan::network::NetworkRequest::NetworkRequest(tristan::network::Url&& url) :
 }
 
 tristan::network::NetworkRequest::NetworkRequest(const tristan::network::Url& url) :
-        m_url(url),
-        m_uuid(utility::getUuid()),
-        m_bytes_to_read(0),
-        m_bytes_read(0),
-        m_status(Status::WAITING),
-        m_priority(Priority::NORMAL),
-        m_paused(false),
-        m_canceled(false),
-        m_output_to_file(false){
-    if (!m_url.isValid()){
-        m_status = tristan::network::Status::ERROR;
-        m_error = tristan::network::makeError(tristan::network::ErrorCode::INVALID_URL);
-    }
-}
+        NetworkRequest(Url(url)){}
+//        m_url(url),
+//        m_uuid(utility::getUuid()),
+//        m_bytes_to_read(0),
+//        m_bytes_read(0),
+//        m_status(Status::WAITING),
+//        m_priority(Priority::NORMAL),
+//        m_paused(false),
+//        m_canceled(false),
+//        m_output_to_file(false){
+//    if (!m_url.isValid()){
+//        m_status = tristan::network::Status::ERROR;
+//        m_error = tristan::network::makeError(tristan::network::ErrorCode::INVALID_URL);
+//    }
+//}
 
 void tristan::network::NetworkRequest::setPriority(tristan::network::Priority priority){
     m_priority = priority;
@@ -86,7 +87,7 @@ auto tristan::network::NetworkRequest::priority() const noexcept -> tristan::net
     return m_priority;
 }
 
-auto tristan::network::NetworkRequest::requestData() const -> const std::vector<uint8_t>&{
+auto tristan::network::NetworkRequest::requestData() -> const std::vector<uint8_t>&{
     return m_request_data;
 }
 

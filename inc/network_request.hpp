@@ -83,6 +83,8 @@ namespace tristan::network{
      */
     class NetworkRequest{
 
+        friend class NetworkRequestsHandler;
+
       public:
 
         friend bool operator<(const NetworkRequest& left, const NetworkRequest& right){
@@ -208,7 +210,7 @@ namespace tristan::network{
          * \note The protected member m_request data is provided to prepare request.
          * \return const std::vector<uint8_t>&
          */
-        [[nodiscard]] virtual auto requestData() const -> const std::vector<uint8_t>&;
+        [[nodiscard]] virtual auto requestData() -> const std::vector<uint8_t>&;
 
         /**
          * \brief Returns response which was returned by the remote.
@@ -813,8 +815,7 @@ namespace tristan::network{
          */
         class ProtectedMembers{
 
-            friend class NetworkRequestsHandler;
-
+          public:
             /**
              * \brief Adds data to response data
              * \param network_request const std::shared_ptr<NetworkRequest>&
