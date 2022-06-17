@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-tristan::network::HttpResponse::HttpResponse(const std::string& response_base, std::string uuid) :
+tristan::network::HttpResponse::HttpResponse(const std::shared_ptr<std::vector<uint8_t>>& response_base, std::string uuid) :
         NetworkResponse(std::move(uuid)){
 
     auto status_start = std::find(response_base->begin(), response_base->end(), ' ') + 1;

@@ -16,14 +16,13 @@ namespace tristan::network{
      * \brief Handles HTTP response. This class is created in \class HttpRequest
      * \extends  NetworkResponse
      */
-    class HttpResponse : public NetworkResponse<std::string>{
-        friend class HttpRequest;
+    class HttpResponse : public NetworkResponse{
         /**
          * \brief Constructor
          * \param response_base const std::string&. Base received from remote
          * \param uuid std::string. UUID is passed from \class NetworkRequest
          */
-        explicit HttpResponse(const std::string& response_base, std::string uuid);
+        HttpResponse(const std::shared_ptr<std::vector<uint8_t>>& response_base, std::string uuid);
       public:
         HttpResponse(const HttpResponse& other) = default;
         HttpResponse(HttpResponse&& other) noexcept = default;
