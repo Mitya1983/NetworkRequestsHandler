@@ -1,12 +1,14 @@
 #include "http_response.hpp"
 
+#include <algorithm>
+
 tristan::network::HttpResponse::HttpResponse(const std::string& response_base, std::string uuid) :
         NetworkResponse(std::move(uuid)){
 
-    auto status_start = response_base.find(' ') + 1;
-    auto status_end = response_base.find(' ', status_start);
+    auto status_start = std::find(response_base->begin(), response_base->end(), ' ') + 1;
+    auto status_end = std::find(status_start, response_base->end(), ' ');
 
-    m_status = static_cast<tristan::network::HttpStatus>(static_cast<uint16_t>(std::stoi(response_base.substr(status_start, status_end - status_start))));
+    m_status = static_cast<tristan::network::HttpStatus>(static_cast<uint16_t>(std::stoi(std::string(status_start, status_end))));
 
     auto new_line_start = response_base.find("\r\n", status_end) + 2;
     while (true){
