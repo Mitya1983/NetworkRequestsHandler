@@ -18,7 +18,7 @@ namespace /*anonymous*/
 
     inline const NetworkCategory g_network_error_category;
 
-    inline const uint8_t g_max_error_code = 6;
+    inline const uint8_t g_max_error_code = 7;
 
     inline const std::array<const char*, g_max_error_code> g_error_code_descriptions{
         "Success",
@@ -26,7 +26,8 @@ namespace /*anonymous*/
         "Invalid Url",
         "Remote host not found",
         "Output file path is empty",
-        "Destination directory does not exists"
+        "Destination directory does not exists",
+        "Downloader run() function invoked twice",
     };
 
 } //End of /*anonymous*/ namespace

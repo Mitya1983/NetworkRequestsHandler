@@ -4,15 +4,17 @@
 #include <system_error>
 #include <cstdint>
 
-namespace tristan::network{
 
-    enum class ErrorCode : uint8_t{
+namespace tristan::network {
+
+    enum class ErrorCode : uint8_t {
         SUCCESS,
         OFFLINE,
         INVALID_URL,
         HOST_NOT_FOUND,
         FILE_PATH_EMPTY,
-        DESTINATION_DIR_DOES_NOT_EXISTS
+        DESTINATION_DIR_DOES_NOT_EXISTS,
+        DOWNLOADER_LUNCHED_TWICE,
     };
 
     /**
@@ -22,17 +24,17 @@ namespace tristan::network{
      */
     auto makeError(ErrorCode error_code) -> std::error_code;
 
-} //End of tristan::network namespace
+}  // namespace tristan::network
 
-namespace std{
+namespace std {
 
     /**
-   * \brief //This is needed to specialise the standard type trait.
-   */
-    template<>
-    struct is_error_code_enum<tristan::network::ErrorCode> : true_type{
+     * \brief //This is needed to specialise the standard type trait.
+     */
+    template <>
+    struct is_error_code_enum< tristan::network::ErrorCode > : true_type {
     };
 
-} //End of std namespace
+}  // namespace std
 
-#endif //NETWORK_ERROR_HPP
+#endif  // NETWORK_ERROR_HPP

@@ -4,7 +4,8 @@
 #include "network_request.hpp"
 #include "status_codes.hpp"
 #include "url.hpp"
-#include "http_response.hpp"
+#include "http_header.hpp"
+#include "http_param.hpp"
 #include "network_utility.hpp"
 #include "http_header_names.hpp"
 
@@ -31,13 +32,13 @@ namespace tristan::network{
          * \param header const std::string&. Common headers are listen in \file http_header_names.hpp
          * \param value const std::string&
          */
-        void addHeader(const std::string& header, const std::string& value);
+        void addHeader(Header&& header);
         /**
          * \brief Adds param and corresponding value.
          * \param param_name const std::string&
          * \param param_value const std::string&
          */
-        void addParam(const std::string& param_name, const std::string& param_value = "");
+        void addParam(Parameter&& parameter);
 
       protected:
         /**
@@ -47,8 +48,8 @@ namespace tristan::network{
         explicit HttpRequest(Url&& url);
         explicit HttpRequest(const Url& url);
         ~HttpRequest() override = default;
-        std::unordered_map<std::string, std::string> m_headers;
-        std::unordered_map<std::string, std::string> m_params;
+        HttpHeaders m_headers;
+        HttpParams m_params;
     };
 
     /**

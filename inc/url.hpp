@@ -3,14 +3,14 @@
 
 #include <string>
 
-namespace tristan::network{
+namespace tristan::network {
     /**
      * \class Url
      * \brief Implements Uniform Resource Identifier
      */
-    class Url{
+    class Url {
 
-      public:
+    public:
         /**
          * \brief Constructor
          * Sets \param m_valid to true
@@ -42,7 +42,15 @@ namespace tristan::network{
          * \param user_name const std::string&. Default value is an empty string.
          * \param user_password const std::string&. Default value is an empty string.
          */
-        void setAuthority(const std::string& host, const std::string& user_name = "", const std::string& user_password = "");
+        void setAuthority(const std::string& host,
+                          const std::string& user_name = "",
+                          const std::string& user_password = "");
+
+        /**
+         * \brief Sets host IP
+         * \param ip const std::string& ip
+         */
+        void setHostIP(const std::string& ip);
 
         /**
          * \brief Sets port.
@@ -78,55 +86,63 @@ namespace tristan::network{
          * \brief Scheme getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto scheme() const -> const std::string&{ return m_scheme; }
+        [[nodiscard]] auto scheme() const -> const std::string& { return m_scheme; }
 
         /**
          * \brief User name getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto userName() const -> const std::string&{ return m_user_name; }
+        [[nodiscard]] auto userName() const -> const std::string& { return m_user_name; }
 
         /**
          * \brief User password getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto userPassword() const -> const std::string&{ return m_user_password; }
+        [[nodiscard]] auto userPassword() const -> const std::string& { return m_user_password; }
 
         /**
          * \brief Host getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto host() const -> const std::string&{ return m_host; }
+        [[nodiscard]] auto host() const -> const std::string& { return m_host; }
 
         /**
          * \brief Returns host in form of ip address
          * \return const std::string&
          */
-        [[nodiscard]] auto hostIP() const -> const std::string&{ return m_host_ip; }
+        [[nodiscard]] auto hostIP() const -> const std::string& { return m_host_ip; }
 
         /**
          * \brief Port getter.
          * \return Port or empty string.
          */
-        [[nodiscard]] auto port() const -> const std::string&{ return m_port; }
+        [[nodiscard]] auto port() const -> const std::string& { return m_port; }
+
+        /**
+         * \brief Port getter
+         * \return uint16_t
+         */
+        [[nodiscard]] auto portUint16_t() const -> uint16_t {
+            return static_cast< uint16_t >(std::stoi(m_port));
+        }
 
         /**
         * \brief Path getter.
         * \return const std::string&
         */
-        [[nodiscard]] auto path() const -> const std::string&{ return m_path; }
+        [[nodiscard]] auto path() const -> const std::string& { return m_path; }
 
         /**
          * \brief Query getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto query() const -> const std::string&{ return m_query; }
+        [[nodiscard]] auto query() const -> const std::string& { return m_query; }
 
         /**
          * \brief Fragment getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto fragment() const -> const std::string&{ return m_fragment; }
+        [[nodiscard]] auto fragment() const -> const std::string& { return m_fragment; }
 
         /**
          * \brief Composes a string representation of URI.
@@ -139,12 +155,10 @@ namespace tristan::network{
          * \brief Check if URI is valid. Should be used in case of overloaded constructor.
          * \return True is valid and false otherwise.
          */
-        [[nodiscard]] auto isValid() const -> bool{ return m_valid; }
+        [[nodiscard]] auto isValid() const -> bool { return m_valid; }
 
-      protected:
-
-      private:
-
+    protected:
+    private:
         std::string m_scheme;
         std::string m_user_name;
         std::string m_user_password;
@@ -158,5 +172,5 @@ namespace tristan::network{
         bool m_valid;
     };
 
-} //End of tristan::network namespace
-#endif //URL_HPP
+}  // namespace tristan::network
+#endif  //URL_HPP

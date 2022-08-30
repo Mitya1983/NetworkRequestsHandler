@@ -138,6 +138,10 @@ void tristan::network::Url::setAuthority(const std::string& host, const std::str
     }
 }
 
+void tristan::network::Url::setHostIP(const std::string& ip) {
+    m_host_ip = ip;
+}
+
 void tristan::network::Url::setPort(uint16_t port){
     m_port = std::to_string(port);
 }
@@ -216,5 +220,3 @@ auto tristan::network::Url::composeUrl(bool ip_address) const -> std::string{
 
     return uri;
 }
-
-
