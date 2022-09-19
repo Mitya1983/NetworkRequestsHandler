@@ -1,6 +1,6 @@
 #include "resumable_coroutine.hpp"
 
-tristan::network::ResumableCoroutine::ResumableCoroutine(tristan::network::coroutine_handle handle) :
+tristan::network::ResumableCoroutine::ResumableCoroutine(coroutine_handle handle) :
         m_handle(handle) {
 
 }
