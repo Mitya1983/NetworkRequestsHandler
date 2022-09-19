@@ -80,26 +80,34 @@ namespace tristan::network {
          * \brief Returns iterator begin
          * \return std::vector< Header >::iterator
          */
-        [[nodiscard]] constexpr auto begin() noexcept -> std::vector< Header >::iterator;
+        [[nodiscard]] constexpr auto begin() noexcept -> std::vector< Header >::iterator{
+            return m_headers.begin();
+        }
 
         /**
          * \brief Returns const_iterator begin
          * \return std::vector< Header >::const_iterator
          */
-        [[nodiscard]] constexpr auto constBegin() const noexcept -> std::vector< Header >::const_iterator;
+        [[nodiscard]] constexpr auto cbegin() const noexcept -> std::vector< Header >::const_iterator{
+            return m_headers.cbegin();
+        }
 
         /**
          * \brief Returns iterator end
          * \return std::vector< Header >::const_iterator
          */
-        [[nodiscard]] constexpr auto end() noexcept -> std::vector< Header >::iterator;
+        [[nodiscard]] constexpr auto end() noexcept -> std::vector< Header >::iterator{
+            return m_headers.end();
+        }
 
 
         /**
          * \brief Returns const_iterator end
          * \return std::vector< Header >::const_iterator
          */
-        [[nodiscard]] constexpr auto constEnd() const noexcept -> std::vector< Header >::const_iterator;
+        [[nodiscard]] constexpr auto cend() const noexcept -> std::vector< Header >::const_iterator{
+            return m_headers.cend();
+        }
 
     private:
         std::vector< Header > m_headers;
