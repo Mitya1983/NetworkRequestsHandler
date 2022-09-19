@@ -28,11 +28,7 @@ namespace tristan::network {
          */
         NetworkRequestsHandler();
 
-        static auto instance() -> NetworkRequestsHandler& {
-            static NetworkRequestsHandler network_requests_handler;
-
-            return network_requests_handler;
-        }
+        static auto instance() -> NetworkRequestsHandler&;
 
     public:
         NetworkRequestsHandler(const NetworkRequestsHandler& other) = delete;
@@ -190,6 +186,8 @@ namespace tristan::network {
         void _notifyWhenExit(std::function< void() >&& functor) {
             m_notify_when_exit_functors.emplace_back(functor);
         }
+
+        void processTcpRequest(std::shared_ptr< tristan::network::NetworkRequest > network_request);
     };
 }  // namespace tristan::network
 

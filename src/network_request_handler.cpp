@@ -9,7 +9,16 @@
 #include "asio/ssl/stream.hpp"
 
 namespace {
-    void processTCPRequest(std::shared_ptr< tristan::network::NetworkRequest > request);
+
+    constexpr uint16_t g_max_frame = std::numeric_limits< uint16_t >::max();
+    /**
+     * In thread we read up to 4Mb. Everything else goes to downloader.
+     */
+    constexpr uint32_t g_thread_download_limit = g_max_frame * 40;
+    template < class Socket >
+    void read_data(Socket& socket,
+                   std::shared_ptr< tristan::network::NetworkRequest > network_request,
+                   std::error_code& error_code);
 }  // End of anonymous namespace
 
 // void tristan::network::NetworkRequestsHandler::_run(){
@@ -118,6 +127,12 @@ namespace {
 tristan::network::NetworkRequestsHandler::NetworkRequestsHandler() :
     m_downloader(tristan::network::Downloader::create()) { }
 
+auto tristan::network::NetworkRequestsHandler::instance() -> tristan::network::NetworkRequestsHandler& {
+    static NetworkRequestsHandler network_requests_handler;
+
+    return network_requests_handler;
+}
+
 void tristan::network::NetworkRequestsHandler::_run() {
     if (m_working.load(std::memory_order_relaxed)) {
         return;
@@ -166,61 +181,148 @@ void tristan::network::NetworkRequestsHandler::_run() {
     }
 }
 
-namespace {
-    void processTCPRequest(std::shared_ptr< tristan::network::NetworkRequest > request) {
-        netTrace("Start");
-        netDebug("Processing TCP request " + request->uuid());
-        asio::io_context context;
-        if (request->url().hostIP().empty()) {
-            netInfo("Request IP is empty. Resolving from host name");
-            if (request->url().host().empty()) {
-                netError("Request host is empty");
-                tristan::network::NetworkRequest::ProtectedMembers::pSetError(
-                    request, tristan::network::makeError(tristan::network::ErrorCode::INVALID_URL));
-                netTrace("End");
-                return;
-            }
-            asio::ip::tcp::resolver resolver(context);
-            asio::ip::basic_resolver_results< asio::ip::tcp > resolver_results;
-            try {
-                resolver_results = resolver.resolve(request->url().host(), request->url().port());
-                const_cast< tristan::network::Url& >(request->url())
-                    .setHostIP(resolver_results->endpoint().address().to_string());
-                netInfo("Address was resolved to " + request->url().hostIP());
-            } catch (const asio::system_error& error) {
-                netError("Resolver: " + error.code().message());
-                tristan::network::NetworkRequest::ProtectedMembers::pSetError(request, error.code());
-                netTrace("End");
-                return;
-            }
-        }
-        asio::error_code error;
-        if (!request->isSSL()) {
-            asio::ssl::context ssl_context(asio::ssl::context::sslv23_client);
-            asio::ip::tcp::socket socket(context);
+void tristan::network::NetworkRequestsHandler::processTcpRequest(
+    std::shared_ptr< tristan::network::NetworkRequest > network_request) {
 
-            socket.connect(asio::ip::tcp::endpoint(asio::ip::address::from_string(request->url().hostIP()),
-                                                   request->url().portUint16_t()),
-                           error);
-            if (error) {
-                netError("Asio connect: " + error.message());
-                tristan::network::NetworkRequest::ProtectedMembers::pSetError(request, error);
-                netTrace("End");
-                return;
+    netTrace("Start");
+    netDebug("Processing TCP request " + network_request->uuid());
+    asio::io_context context;
+    if (network_request->url().hostIP().empty()) {
+        netInfo("Request IP is empty. Resolving from host name");
+        if (network_request->url().host().empty()) {
+            netError("Request host is empty");
+            tristan::network::NetworkRequest::ProtectedMembers::pSetError(
+                network_request, tristan::network::makeError(tristan::network::ErrorCode::INVALID_URL));
+            netTrace("End");
+            return;
+        }
+        asio::ip::tcp::resolver resolver(context);
+        asio::ip::basic_resolver_results< asio::ip::tcp > resolver_results;
+        try {
+            resolver_results = resolver.resolve(network_request->url().host(), network_request->url().port());
+            const_cast< tristan::network::Url& >(network_request->url())
+                .setHostIP(resolver_results->endpoint().address().to_string());
+            netInfo("Address was resolved to " + network_request->url().hostIP());
+        } catch (const asio::system_error& error) {
+            netError("Resolver: " + error.code().message());
+            tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, error.code());
+            netTrace("End");
+            return;
+        }
+    }
+    asio::error_code error_code;
+    if (!network_request->isSSL()) {
+        asio::ip::tcp::socket socket(context);
+        netDebug("Connecting to address " + network_request->url().hostIP() + " "
+                 + network_request->url().port());
+        socket.lowest_layer().connect(
+            asio::ip::tcp::endpoint(asio::ip::address::from_string(network_request->url().hostIP()),
+                                    network_request->url().portUint16_t()),
+            error_code);
+        if (error_code) {
+            netError("Asio connect: " + error_code.message());
+            tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, error_code);
+            netTrace("End");
+            return;
+        }
+        socket.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
+        netDebug("Writing to address " + network_request->url().hostIP() + " a message "
+                 + std::string(network_request->requestData().begin(), network_request->requestData().end()));
+        asio::write(socket, asio::buffer(network_request->requestData()), error_code);
+        if (error_code) {
+            netError("Asio write: " + error_code.message());
+            tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, error_code);
+            netTrace("End");
+            return;
+        }
+        socket.lowest_layer().wait(socket.lowest_layer().wait_read);
+        if (network_request->bytesToRead() != 0 && network_request->bytesToRead() > g_thread_download_limit) {
+            netInfo("Request size exceeds 4Mb. Sending to downloader");
+            m_downloader->addDownload(socket, std::move(network_request));
+        } else {
+            read_data(socket, network_request, error_code);
+        }
+    } else {
+        asio::ssl::context ssl_context(asio::ssl::context::sslv23_client);
+        ssl_context.set_default_verify_paths();
+        ssl_context.set_verify_mode(asio::ssl::verify_peer);
+        asio::ssl::stream< asio::ip::tcp::socket > socket(context, ssl_context);
+    }
+
+    netTrace("End");
+}
+
+namespace {
+
+    template < class Socket >
+    void read_data(Socket& socket,
+                   std::shared_ptr< tristan::network::NetworkRequest > network_request,
+                   std::error_code& error_code) {
+
+        if (network_request->bytesToRead() != 0) {
+            netDebug("Reading by size");
+            uint64_t bytes_read = 0;
+            uint64_t bytes_to_read = network_request->bytesToRead();
+            while (bytes_read < bytes_to_read) {
+                std::vector< uint8_t > buf;
+                auto bytes_remain = bytes_to_read - bytes_read;
+                uint16_t current_frame_size = (g_max_frame < bytes_remain ? g_max_frame : bytes_remain);
+                buf.reserve(current_frame_size);
+
+                asio::read(socket,
+                           asio::dynamic_buffer(buf),
+                           asio::transfer_exactly(current_frame_size),
+                           error_code);
+                if (error_code && error_code != asio::error::eof
+                    && error_code != asio::ssl::error::stream_truncated) {
+                    tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request,
+                                                                                  error_code);
+                    break;
+                }
+                bytes_read += current_frame_size;
+                tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(network_request,
+                                                                                     std::move(buf));
+                tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(
+                    network_request, tristan::network::Status::DONE);
             }
-            socket.set_option(asio::ip::tcp::no_delay(true));
-            netDebug("Writing to socket "
-                     + std::string(request->requestData().begin(), request->requestData().end()));
-            asio::write(socket, asio::buffer(request->requestData()), error);
-            if (error) {
-                netError("Asio write: " + error.message());
-                tristan::network::NetworkRequest::ProtectedMembers::pSetError(request, error);
-                netTrace("End");
-                return;
+        } else if (!network_request->responseDelimiter().empty()) {
+            netDebug("Reading by delimiter");
+            const auto& delimiter = network_request->responseDelimiter();
+            const auto delimiter_size = delimiter.size();
+            std::vector< uint8_t > buf;
+            buf.reserve(g_max_frame);
+            while (true) {
+                std::vector< uint8_t > bytes_to_read(delimiter_size);
+                asio::read(socket,
+                           asio::dynamic_buffer(bytes_to_read),
+                           asio::transfer_exactly(delimiter_size),
+                           error_code);
+                if (error_code && error_code != asio::error::eof
+                    && error_code != asio::ssl::error::stream_truncated) {
+                    tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request,
+                                                                                  error_code);
+                    break;
+                }
+                if (bytes_to_read == delimiter) {
+                    netInfo("Delimiter reached");
+                    tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(
+                        network_request, tristan::network::Status::DONE);
+                    break;
+                }
+                buf.insert(buf.end(), bytes_to_read.begin(), bytes_to_read.end());
+                if (buf.size() == g_max_frame) {
+                    tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(network_request,
+                                                                                         std::move(buf));
+                    buf.reserve(g_max_frame);  //NOLINT
+                }
             }
         } else {
+            error_code
+                = tristan::network::makeError(tristan::network::ErrorCode::REQUEST_SIZE_IS_NOT_APPROPRIATE);
+            netError(error_code.message());
+            tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, error_code);
+            netTrace("End");
+            return;
         }
-
-        netTrace("End");
     }
 }  // End of anonymous namespace
