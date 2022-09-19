@@ -15,6 +15,7 @@ namespace tristan::network {
         FILE_PATH_EMPTY,
         DESTINATION_DIR_DOES_NOT_EXISTS,
         DOWNLOADER_LUNCHED_TWICE,
+        REQUEST_SIZE_IS_NOT_APPROPRIATE
     };
 
     /**
