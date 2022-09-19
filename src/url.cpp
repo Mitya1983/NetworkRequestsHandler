@@ -192,28 +192,28 @@ void tristan::network::Url::setFragment(const std::string& fragment){
 auto tristan::network::Url::composeUrl(bool ip_address) const -> std::string{
     auto uri = m_scheme;
     uri += ':';
-    if (!m_host.empty()){
+    if (not m_host.empty()){
         uri += "//";
-        if (!m_user_name.empty()){
+        if (not m_user_name.empty()){
             uri += m_user_name;
-            if (!m_user_password.empty()){
+            if (not m_user_password.empty()){
                 uri += ':';
                 uri += m_user_password;
             }
             uri += '@';
         }
         uri += m_host;
-        if (!m_port.empty()){
+        if (not m_port.empty()){
             uri += ':';
             uri += m_port;
         }
     }
     uri += m_path;
-    if (!m_query.empty()){
+    if (not m_query.empty()){
         uri += '?';
         uri += m_query;
     }
-    if (!m_fragment.empty()){
+    if (not m_fragment.empty()){
         uri += '#';
         uri += m_fragment;
     }

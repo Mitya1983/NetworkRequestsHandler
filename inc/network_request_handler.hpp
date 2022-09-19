@@ -13,9 +13,12 @@
 #include <thread>
 #include <atomic>
 #include <functional>
-#include <coroutine>
+#include <stdexcept>
 
 namespace tristan::network {
+
+    using SuppoertedRequestTypes = std::variant< std::shared_ptr< NetworkRequest > >;
+
     /**
      * \class NetworkRequestsHandler
      * \brief Implements http network request queue.
@@ -111,7 +114,17 @@ namespace tristan::network {
          * \brief Adds request to the queue
          * \param request std::shared_ptr<Request>
          */
-        inline static void addRequest(std::shared_ptr< NetworkRequest > request) {
+        inline static void addRequest(SuppoertedRequestTypes&& request) {
+            auto is_derived_fro_network_request = std::visit(
+                [](const auto& shared_pointer) -> bool {
+                    using T = std::decay_t< decltype(shared_pointer.get()) >;
+                    return std::is_base_of_v< NetworkRequest, T >;
+                },
+                request);
+            if (not is_derived_fro_network_request) {
+                throw std::invalid_argument(
+                    "Object passed to NetworkRequestHander is not derived from NetworkRequest");
+            }
             NetworkRequestsHandler::instance()._addRequest(std::move(request));
         }
 
@@ -119,7 +132,7 @@ namespace tristan::network {
          * \brief Returns list of currently active requests.
          * \return std::list<std::shared_ptr<Request>>
          */
-        inline static auto activeRequests() -> std::list< std::shared_ptr< NetworkRequest > >& {
+        inline static auto activeRequests() -> std::list< SuppoertedRequestTypes >& {
             return NetworkRequestsHandler::instance().m_active_requests;
         }
 
@@ -127,7 +140,7 @@ namespace tristan::network {
          * \brief Returns queue of requests which encountered error.
          * \return const std::queue<std::shared_ptr<Request>>&
          */
-        inline static auto errorRequests() -> const std::list< std::shared_ptr< NetworkRequest > >& {
+        inline static auto errorRequests() -> const std::list< SuppoertedRequestTypes >& {
             return NetworkRequestsHandler::instance().m_error_requests;
         }
 
@@ -138,19 +151,16 @@ namespace tristan::network {
         std::mutex m_active_nr_lock;
 
         struct Compare {
-            bool operator()(const std::shared_ptr< NetworkRequest >& left,
-                            const std::shared_ptr< NetworkRequest >& right) const {
-                return *left < *right;
+            bool operator()(const SuppoertedRequestTypes& left, const SuppoertedRequestTypes& right) const {
+                return left < right;
             }
         };
 
-        std::priority_queue< std::shared_ptr< NetworkRequest >,
-                             std::deque< std::shared_ptr< NetworkRequest > >,
-                             Compare >
+        std::priority_queue< SuppoertedRequestTypes, std::deque< SuppoertedRequestTypes >, Compare >
             m_requests;
 
-        std::list< std::shared_ptr< NetworkRequest > > m_error_requests;
-        std::list< std::shared_ptr< NetworkRequest > > m_active_requests;
+        std::list< SuppoertedRequestTypes > m_error_requests;
+        std::list< SuppoertedRequestTypes > m_active_requests;
 
         std::vector< std::function< void() > > m_notify_when_exit_functors;
 
@@ -163,7 +173,7 @@ namespace tristan::network {
 
         void _stop() { m_working.store(false, std::memory_order_relaxed); }
 
-        void _addRequest(std::shared_ptr< NetworkRequest > request) {
+        void _addRequest(SuppoertedRequestTypes&& request) {
             std::scoped_lock< std::mutex > lock(m_nr_queue_lock);
             m_requests.push(std::move(request));
         }
@@ -187,7 +197,7 @@ namespace tristan::network {
             m_notify_when_exit_functors.emplace_back(functor);
         }
 
-        void processTcpRequest(std::shared_ptr< tristan::network::NetworkRequest > network_request);
+        void _processTcpRequest(std::shared_ptr< tristan::network::NetworkRequest > tcp_request);
     };
 }  // namespace tristan::network
 

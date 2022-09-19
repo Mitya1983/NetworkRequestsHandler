@@ -36,7 +36,7 @@ void tristan::network::utility::checkFileName(std::filesystem::path& path){
     while (true){
         if (std::filesystem::exists(path)){
             auto file_extension = path.extension().string();
-            if (!file_extension.empty()){
+            if (not file_extension.empty()){
                 path.replace_extension("");
             }
             auto file_name = path.filename().string();
@@ -54,7 +54,7 @@ void tristan::network::utility::checkFileName(std::filesystem::path& path){
                 }
             }
             path.replace_filename(file_name);
-            if (!file_extension.empty()){
+            if (not file_extension.empty()){
                 path.replace_extension(file_extension);
             }
             ++file_counter;

@@ -145,35 +145,60 @@ void tristan::network::NetworkRequestsHandler::_run() {
             auto request = m_requests.top();
             m_requests.pop();
             lock.unlock();
-            auto request_uuid = request->uuid();
-            request->addFinishedCallback([this, request_uuid]() -> void {
-                std::scoped_lock< std::mutex > lock(m_active_nr_lock);
-                m_active_requests.remove_if(
-                    [request_uuid](
-                        const std::shared_ptr< tristan::network::NetworkRequest >& stored_request) {
-                        return stored_request->uuid() == request_uuid;
+            std::visit(
+                [this](const auto& value) -> void {
+                    auto request_uuid = value->uuid();
+                    value->addFinishedCallback([this, request_uuid]() -> void {
+                        std::scoped_lock< std::mutex > lock(m_active_nr_lock);
+                        m_active_requests.remove_if(
+                            [request_uuid](const SuppoertedRequestTypes& stored_request) {
+                                auto stored_request_uuid = std::visit(
+                                    [](const auto& value) {
+                                        return value->uuid();
+                                    },
+                                    stored_request);
+                                return stored_request_uuid == request_uuid;
+                            });
                     });
-            });
-            request->addFailedCallback([this](const std::string& uuid, std::error_code error_code) {
-                for (auto&& l_request: m_active_requests) {
-                    if (l_request->uuid() == uuid) {
-                        std::scoped_lock< std::mutex > lock(m_error_nr_lock);
-                        m_error_requests.push_back(l_request);
-                    }
-                }
-                std::scoped_lock< std::mutex > lock(m_active_nr_lock);
-                m_active_requests.remove_if(
-                    [uuid](const std::shared_ptr< tristan::network::NetworkRequest >& stored_request) {
-                        return stored_request->uuid() == uuid;
+                    value->addFailedCallback([this, request_uuid]() -> void {
+                        for (auto l_request: m_active_requests) {
+                            auto failed_network_request_uuid = std::visit(
+                                [](auto active_request) {
+                                    return active_request->uuid();
+                                },
+                                l_request);
+                            if (failed_network_request_uuid == request_uuid) {
+                                std::scoped_lock< std::mutex > lock(m_error_nr_lock);
+                                m_error_requests.emplace_back(l_request);
+                                m_active_requests.remove_if(
+                                    [request_uuid](const SuppoertedRequestTypes& stored_request) {
+                                        auto stored_request_uuid = std::visit(
+                                            [](const auto& value) {
+                                                return value->uuid();
+                                            },
+                                            stored_request);
+                                        return stored_request_uuid == request_uuid;
+                                    });
+                                break;
+                            }
+                        }
                     });
-            });
-            std::thread(&Request::doRequest, request).detach();
+                },
+                request);
             std::scoped_lock< std::mutex > active_lock(m_active_nr_lock);
-            m_active_requests.push_back(request);
+            m_active_requests.emplace_back(request);
+            std::visit(
+                [this](auto value) -> void {
+                    using T = std::decay_t< decltype(value)>;
+                    if constexpr (std::is_same_v<T, std::shared_ptr<NetworkRequest>>) {
+                        std::thread(&NetworkRequestsHandler::_processTcpRequest, this, value);
+                    }
+                },
+                request);
         }
     }
-    if (!m_working.load(std::memory_order_relaxed)) {
-        if (!m_notify_when_exit_functors.empty()) {
+    if (not m_working.load(std::memory_order_relaxed)) {
+        if (not m_notify_when_exit_functors.empty()) {
             for (const auto& functor: m_notify_when_exit_functors) {
                 functor();
             }
@@ -181,66 +206,65 @@ void tristan::network::NetworkRequestsHandler::_run() {
     }
 }
 
-void tristan::network::NetworkRequestsHandler::processTcpRequest(
-    std::shared_ptr< tristan::network::NetworkRequest > network_request) {
+void tristan::network::NetworkRequestsHandler::_processTcpRequest(
+    std::shared_ptr< tristan::network::NetworkRequest > tcp_request) {
 
     netTrace("Start");
-    netDebug("Processing TCP request " + network_request->uuid());
+    netDebug("Processing TCP request " + tcp_request->uuid());
     asio::io_context context;
-    if (network_request->url().hostIP().empty()) {
+    if (tcp_request->url().hostIP().empty()) {
         netInfo("Request IP is empty. Resolving from host name");
-        if (network_request->url().host().empty()) {
+        if (tcp_request->url().host().empty()) {
             netError("Request host is empty");
             tristan::network::NetworkRequest::ProtectedMembers::pSetError(
-                network_request, tristan::network::makeError(tristan::network::ErrorCode::INVALID_URL));
+                tcp_request, tristan::network::makeError(tristan::network::ErrorCode::INVALID_URL));
             netTrace("End");
             return;
         }
         asio::ip::tcp::resolver resolver(context);
         asio::ip::basic_resolver_results< asio::ip::tcp > resolver_results;
         try {
-            resolver_results = resolver.resolve(network_request->url().host(), network_request->url().port());
-            const_cast< tristan::network::Url& >(network_request->url())
+            resolver_results = resolver.resolve(tcp_request->url().host(), tcp_request->url().port());
+            const_cast< tristan::network::Url& >(tcp_request->url())
                 .setHostIP(resolver_results->endpoint().address().to_string());
-            netInfo("Address was resolved to " + network_request->url().hostIP());
+            netInfo("Address was resolved to " + tcp_request->url().hostIP());
         } catch (const asio::system_error& error) {
             netError("Resolver: " + error.code().message());
-            tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, error.code());
+            tristan::network::NetworkRequest::ProtectedMembers::pSetError(tcp_request, error.code());
             netTrace("End");
             return;
         }
     }
     asio::error_code error_code;
-    if (!network_request->isSSL()) {
+    if (not tcp_request->isSSL()) {
         asio::ip::tcp::socket socket(context);
-        netDebug("Connecting to address " + network_request->url().hostIP() + " "
-                 + network_request->url().port());
+        netDebug("Connecting to address " + tcp_request->url().hostIP() + " " + tcp_request->url().port());
         socket.lowest_layer().connect(
-            asio::ip::tcp::endpoint(asio::ip::address::from_string(network_request->url().hostIP()),
-                                    network_request->url().portUint16_t()),
+            asio::ip::tcp::endpoint(asio::ip::address::from_string(tcp_request->url().hostIP()),
+                                    tcp_request->url().portUint16_t()),
             error_code);
         if (error_code) {
             netError("Asio connect: " + error_code.message());
-            tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, error_code);
+            tristan::network::NetworkRequest::ProtectedMembers::pSetError(tcp_request, error_code);
             netTrace("End");
             return;
         }
         socket.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
-        netDebug("Writing to address " + network_request->url().hostIP() + " a message "
-                 + std::string(network_request->requestData().begin(), network_request->requestData().end()));
-        asio::write(socket, asio::buffer(network_request->requestData()), error_code);
+        netDebug("Writing to address " + tcp_request->url().hostIP() + " a message "
+                 + std::string(tcp_request->requestData().begin(), tcp_request->requestData().end()));
+        asio::write(socket, asio::buffer(tcp_request->requestData()), error_code);
         if (error_code) {
             netError("Asio write: " + error_code.message());
-            tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, error_code);
+            tristan::network::NetworkRequest::ProtectedMembers::pSetError(tcp_request, error_code);
             netTrace("End");
             return;
         }
         socket.lowest_layer().wait(socket.lowest_layer().wait_read);
-        if (network_request->bytesToRead() != 0 && network_request->bytesToRead() > g_thread_download_limit) {
+        if (tcp_request->bytesToRead() != 0 && tcp_request->bytesToRead() > g_thread_download_limit) {
             netInfo("Request size exceeds 4Mb. Sending to downloader");
-            m_downloader->addDownload(socket, std::move(network_request));
+            m_downloader->addDownload(socket, std::move(tcp_request));
         } else {
-            read_data(socket, network_request, error_code);
+            read_data(socket, tcp_request, error_code);
         }
     } else {
         asio::ssl::context ssl_context(asio::ssl::context::sslv23_client);
@@ -285,7 +309,7 @@ namespace {
                 tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(
                     network_request, tristan::network::Status::DONE);
             }
-        } else if (!network_request->responseDelimiter().empty()) {
+        } else if (not network_request->responseDelimiter().empty()) {
             netDebug("Reading by delimiter");
             const auto& delimiter = network_request->responseDelimiter();
             const auto delimiter_size = delimiter.size();
