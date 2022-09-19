@@ -83,26 +83,34 @@ namespace tristan::network {
          * \brief Returns iterator begin
          * \return std::vector< Header >::iterator
          */
-        [[nodiscard]] constexpr auto begin() noexcept -> std::vector< Parameter >::iterator;
+        [[nodiscard]] constexpr auto begin() noexcept -> std::vector< Parameter >::iterator {
+            return m_params.begin();
+        }
 
         /**
          * \brief Returns const_iterator begin
          * \return std::vector< Header >::const_iterator
          */
-        [[nodiscard]] constexpr auto constBegin() const noexcept -> std::vector< Parameter >::const_iterator;
+        [[nodiscard]] constexpr auto cbegin() const noexcept -> std::vector< Parameter >::const_iterator{
+            return m_params.cbegin();
+        }
 
         /**
          * \brief Returns iterator end
          * \return std::vector< Header >::const_iterator
          */
-        [[nodiscard]] constexpr auto end() noexcept -> std::vector< Parameter >::iterator;
+        [[nodiscard]] constexpr auto end() noexcept -> std::vector< Parameter >::iterator{
+            return m_params.end();
+        }
 
 
         /**
          * \brief Returns const_iterator end
          * \return std::vector< Header >::const_iterator
          */
-        [[nodiscard]] constexpr auto constEnd() const noexcept -> std::vector< Parameter >::const_iterator;
+        [[nodiscard]] constexpr auto cend() const noexcept -> std::vector< Parameter >::const_iterator{
+            return m_params.cend();
+        }
 
     private:
         std::vector< Parameter > m_params;

@@ -47,15 +47,17 @@ include_directories(PRIVATE
         asio
         "${Log_INCLUDE_DIR}"
         )
-
+link_directories(
+        ${Log_LIBRARY_DIR}
+)
 if (WIN32)
 
 else ()
-    link_libraries(PRIVATE
+    link_libraries(
             -lpthread
             -lssl
             -lcrypto
-            -llog
+            -lLog
             )
 endif ()
 

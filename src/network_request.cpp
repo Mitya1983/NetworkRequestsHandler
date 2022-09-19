@@ -12,7 +12,7 @@ tristan::network::NetworkRequest::NetworkRequest(tristan::network::Url&& url) :
     m_output_to_file(false),
     m_ssl(false),
     m_delimiter() {
-    if (!m_url.isValid()) {
+    if (not m_url.isValid()) {
         m_status = tristan::network::Status::ERROR;
         m_error = tristan::network::makeError(tristan::network::ErrorCode::INVALID_URL);
     }
@@ -194,12 +194,12 @@ void tristan::network::NetworkRequest::addFailedCallback(
 }
 
 void tristan::network::NetworkRequest::pNotifyWhenBytesReadChanged() {
-    if (!m_read_bytes_changed_callback_functors.empty()) {
+    if (not m_read_bytes_changed_callback_functors.empty()) {
         for (const auto& functor: m_read_bytes_changed_callback_functors) {
             functor(m_bytes_read);
         }
     }
-    if (!m_read_bytes_changed_with_id_callback_functors.empty()) {
+    if (not m_read_bytes_changed_with_id_callback_functors.empty()) {
         for (const auto& functor: m_read_bytes_changed_with_id_callback_functors) {
             functor(m_uuid, m_bytes_read);
         }
@@ -207,22 +207,22 @@ void tristan::network::NetworkRequest::pNotifyWhenBytesReadChanged() {
 }
 
 void tristan::network::NetworkRequest::pNotifyWhenStatusChanged() {
-    if (!m_status_changed_void_callback_functors.empty()) {
+    if (not m_status_changed_void_callback_functors.empty()) {
         for (const auto& functor: m_status_changed_void_callback_functors) {
             functor();
         }
     }
-    if (!m_status_changed_with_id_callback_functors.empty()) {
+    if (not m_status_changed_with_id_callback_functors.empty()) {
         for (const auto& functor: m_status_changed_with_id_callback_functors) {
             functor(m_uuid);
         }
     }
-    if (!m_status_changed_with_status_callback_functors.empty()) {
+    if (not m_status_changed_with_status_callback_functors.empty()) {
         for (const auto& functor: m_status_changed_with_status_callback_functors) {
             functor(m_status);
         }
     }
-    if (!m_status_changed_with_id_and_status_callback_functors.empty()) {
+    if (not m_status_changed_with_id_and_status_callback_functors.empty()) {
         for (const auto& functor: m_status_changed_with_id_and_status_callback_functors) {
             functor(m_uuid, m_status);
         }
@@ -230,12 +230,12 @@ void tristan::network::NetworkRequest::pNotifyWhenStatusChanged() {
 }
 
 void tristan::network::NetworkRequest::pNotifyWhenPaused() {
-    if (!m_paused_void_functors.empty()) {
+    if (not m_paused_void_functors.empty()) {
         for (const auto& functor: m_paused_void_functors) {
             functor();
         }
     }
-    if (!m_paused_with_id_functors.empty()) {
+    if (not m_paused_with_id_functors.empty()) {
         for (const auto& functor: m_paused_with_id_functors) {
             functor(m_uuid);
         }
@@ -243,12 +243,12 @@ void tristan::network::NetworkRequest::pNotifyWhenPaused() {
 }
 
 void tristan::network::NetworkRequest::pNotifyWhenResumed() {
-    if (!m_resumed_void_functors.empty()) {
+    if (not m_resumed_void_functors.empty()) {
         for (const auto& functor: m_resumed_void_functors) {
             functor();
         }
     }
-    if (!m_resumed_with_id_functors.empty()) {
+    if (not m_resumed_with_id_functors.empty()) {
         for (const auto& functor: m_resumed_with_id_functors) {
             functor(m_uuid);
         }
@@ -256,12 +256,12 @@ void tristan::network::NetworkRequest::pNotifyWhenResumed() {
 }
 
 void tristan::network::NetworkRequest::pNotifyWhenCanceled() {
-    if (!m_canceled_void_functors.empty()) {
+    if (not m_canceled_void_functors.empty()) {
         for (const auto& functor: m_canceled_void_functors) {
             functor();
         }
     }
-    if (!m_canceled_with_id_functors.empty()) {
+    if (not m_canceled_with_id_functors.empty()) {
         for (const auto& functor: m_canceled_with_id_functors) {
             functor(m_uuid);
         }
@@ -269,22 +269,22 @@ void tristan::network::NetworkRequest::pNotifyWhenCanceled() {
 }
 
 void tristan::network::NetworkRequest::pNotifyWhenFinished() {
-    if (!m_finished_void_callback_functors.empty()) {
+    if (not m_finished_void_callback_functors.empty()) {
         for (const auto& functor: m_finished_void_callback_functors) {
             functor();
         }
     }
-    if (!m_finished_with_id_callback_functors.empty()) {
+    if (not m_finished_with_id_callback_functors.empty()) {
         for (const auto& functor: m_finished_with_id_callback_functors) {
             functor(m_uuid);
         }
     }
-    if (!m_finished_with_response_callback_functors.empty()) {
+    if (not m_finished_with_response_callback_functors.empty()) {
         for (const auto& functor: m_finished_with_response_callback_functors) {
             functor(m_response_data);
         }
     }
-    if (!m_finished_with_id_and_response_callback_functors.empty()) {
+    if (not m_finished_with_id_and_response_callback_functors.empty()) {
         for (const auto& functor: m_finished_with_id_and_response_callback_functors) {
             functor(m_uuid, m_response_data);
         }
@@ -292,22 +292,22 @@ void tristan::network::NetworkRequest::pNotifyWhenFinished() {
 }
 
 void tristan::network::NetworkRequest::pNotifyWhenFailed() {
-    if (!m_failed_void_callback_functors.empty()) {
+    if (not m_failed_void_callback_functors.empty()) {
         for (const auto& functor: m_failed_void_callback_functors) {
             functor();
         }
     }
-    if (!m_failed_with_id_callback_functors.empty()) {
+    if (not m_failed_with_id_callback_functors.empty()) {
         for (const auto& functor: m_failed_with_id_callback_functors) {
             functor(m_uuid);
         }
     }
-    if (!m_failed_with_error_code_callback_functors.empty()) {
+    if (not m_failed_with_error_code_callback_functors.empty()) {
         for (const auto& functor: m_failed_with_error_code_callback_functors) {
             functor(m_error);
         }
     }
-    if (!m_failed_with_id_and_error_code_callback_functors.empty()) {
+    if (not m_failed_with_id_and_error_code_callback_functors.empty()) {
         for (const auto& functor: m_failed_with_id_and_error_code_callback_functors) {
             functor(m_uuid, m_error);
         }
@@ -316,8 +316,8 @@ void tristan::network::NetworkRequest::pNotifyWhenFailed() {
 
 void tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(NetworkRequest& network_request,
                                                                           std::vector< uint8_t >&& data) {
-    if (!network_request.m_output_to_file) {
-        if (!network_request.m_response_data) {
+    if (not network_request.m_output_to_file) {
+        if (not network_request.m_response_data) {
             network_request.m_response_data = std::make_shared< std::vector< uint8_t > >(std::move(data));
         } else {
             network_request.m_response_data->insert(
@@ -329,18 +329,18 @@ void tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(Networ
                       tristan::network::makeError(tristan::network::ErrorCode::FILE_PATH_EMPTY));
             return;
         }
-        if (!std::filesystem::exists(network_request.m_output_path)) {
-            if (!std::filesystem::exists(network_request.m_output_path.parent_path())) {
+        if (not std::filesystem::exists(network_request.m_output_path)) {
+            if (not std::filesystem::exists(network_request.m_output_path.parent_path())) {
                 pSetError(network_request,
                           tristan::network::makeError(
                               tristan::network::ErrorCode::DESTINATION_DIR_DOES_NOT_EXISTS));
                 return;
             }
         }
-        if (!network_request.m_output_file.is_open()) {
+        if (not network_request.m_output_file.is_open()) {
             network_request.m_output_file.open(network_request.m_output_path,
                                                std::ios::ate | std::ios::binary | std::ios::app);
-            if (!network_request.m_output_file.is_open()) {
+            if (not network_request.m_output_file.is_open()) {
                 pSetError(network_request, std::error_code(errno, std::system_category()));
             }
         }
