@@ -29,7 +29,7 @@ void tristan::network::NetworkRequest::setBytesToRead(uint64_t bytes) { m_bytes_
 
 void tristan::network::NetworkRequest::setSSL(bool value) { m_ssl = value; }
 
-void tristan::network::NetworkRequest::setResponseDelimiter(std::string delimiter) {
+void tristan::network::NetworkRequest::setResponseDelimiter(std::vector<uint8_t> delimiter) {
     m_delimiter = std::move(delimiter);
 }
 
@@ -81,7 +81,7 @@ auto tristan::network::NetworkRequest::bytesToRead() const noexcept -> uint64_t 
 
 auto tristan::network::NetworkRequest::isSSL() const noexcept -> bool { return m_ssl; }
 
-auto tristan::network::NetworkRequest::responseDelimiter() const noexcept -> const std::string& {
+auto tristan::network::NetworkRequest::responseDelimiter() const noexcept -> const std::vector<uint8_t>& {
     return m_delimiter;
 }
 

@@ -149,7 +149,7 @@ namespace tristan::network {
          * Sets delimiter which will be used to truncate incoming stream.
          * @param delimiter
          */
-        void setResponseDelimiter(std::string delimiter);
+        void setResponseDelimiter(std::vector<uint8_t> delimiter);
 
         /**
          * \brief Sets file where response fom remote will be stored
@@ -249,7 +249,7 @@ namespace tristan::network {
          * Returns delimiter which will be used to truncate the incoming stream
          * @return char
          */
-        [[nodiscard]] auto responseDelimiter() const noexcept ->const std::string&;
+        [[nodiscard]] auto responseDelimiter() const noexcept ->const std::vector<uint8_t>&;
 
         /**
          * \brief Prepares data which should be sent to the remote.
@@ -1138,7 +1138,7 @@ namespace tristan::network {
         std::filesystem::path m_output_path;
 
         std::string m_uuid;
-        std::string m_delimiter;
+        std::vector<uint8_t> m_delimiter;
 
         std::vector< std::function< void(uint64_t) > > m_read_bytes_changed_callback_functors;
         std::vector< std::function< void(const std::string&, uint64_t) > >
