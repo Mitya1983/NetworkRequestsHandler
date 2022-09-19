@@ -1,6 +1,13 @@
 #include "downloader.hpp"
 #include "network_error.hpp"
 
+#include "asio/io_context.hpp"
+#include "asio/connect.hpp"
+#include "asio/read.hpp"
+#include "asio/ssl/error.hpp"
+#include "asio/ip/tcp.hpp"
+#include "asio/ssl/stream.hpp"
+
 #include <thread>
 #include <limits>
 #include <vector>
@@ -12,7 +19,8 @@ namespace {
 }  // End of anonymous namespace
 
 tristan::network::Downloader::Downloader() :
-    m_max_downloads_count(10) { }
+    m_max_downloads_count(10),
+    m_io_context(std::make_unique< asio::io_context >()) { }
 
 auto tristan::network::Downloader::create() -> std::unique_ptr< Downloader > {
     return std::unique_ptr< Downloader >(new Downloader());
@@ -22,14 +30,6 @@ void tristan::network::Downloader::setMaxDownloadsCount(uint8_t count) { m_max_d
 
 void tristan::network::Downloader::setWorking(bool value) {
     m_working.store(value, std::memory_order_relaxed);
-}
-
-template < class Socket >
-void tristan::network::Downloader::addDownload(const Socket& socket,
-                                               std::shared_ptr< NetworkRequest > network_request) {
-    tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(
-        network_request, tristan::network::Status::PENDING_DOWNLOAD);
-    m_downloads.emplace_back(doDownload(socket, std::move(network_request)));
 }
 
 auto tristan::network::Downloader::run(const std::unique_ptr< Downloader >& downloader) -> std::error_code {

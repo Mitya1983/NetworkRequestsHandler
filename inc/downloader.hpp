@@ -3,19 +3,16 @@
 
 #include "resumable_coroutine.hpp"
 
-#include "asio/io_context.hpp"
-#include "asio/connect.hpp"
-#include "asio/read.hpp"
-#include "asio/ssl/error.hpp"
-#include "asio/ip/tcp.hpp"
-#include "asio/ssl/stream.hpp"
-
 #include <memory>
 #include <list>
 #include <mutex>
 #include <atomic>
 
 // TODO: Implement some sort of hangup check
+
+namespace asio {
+    class io_context;
+}
 
 namespace tristan::network {
 
@@ -35,6 +32,7 @@ namespace tristan::network {
 
         void setMaxDownloadsCount(uint8_t count);
         void setWorking(bool value);
+
         template < class Socket >
         void addDownload(const Socket& socket, std::shared_ptr< NetworkRequest > network_request);
 
@@ -44,7 +42,7 @@ namespace tristan::network {
 
         std::list< ResumableCoroutine > m_downloads;
 
-        asio::io_context m_io_context;
+        std::unique_ptr< asio::io_context > m_io_context;
 
         uint8_t m_max_downloads_count;
         std::atomic< bool > m_working;
