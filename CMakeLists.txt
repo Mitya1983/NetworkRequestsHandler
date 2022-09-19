@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.17)
 
 include(CustomFunctions.cmake)
 
+list(APPEND CMAKE_PREFIX_PATH "/home/dtristan/Personal/tristan_libs/cmake/${CMAKE_BUILD_TYPE}")
+
 project(NetworkRequestHandler LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
