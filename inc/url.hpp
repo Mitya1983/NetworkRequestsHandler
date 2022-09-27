@@ -1,7 +1,15 @@
 #ifndef URL_HPP
 #define URL_HPP
 
+#include "network_error.hpp"
+
 #include <string>
+#include <vector>
+
+struct IP{
+    std::string as_string;
+    uint32_t as_int;
+};
 
 namespace tristan::network {
     /**
@@ -50,7 +58,7 @@ namespace tristan::network {
          * \brief Sets host IP
          * \param ip const std::string& ip
          */
-        void setHostIP(const std::string& ip);
+        void addHostIP(const std::string& ip);
 
         /**
          * \brief Sets port.
@@ -60,7 +68,7 @@ namespace tristan::network {
 
         /**
          * \brief Sets port.
-         * \param port uint16_t
+         * \param port const std::string&
          */
         void setPort(const std::string& port);
 
@@ -86,76 +94,98 @@ namespace tristan::network {
          * \brief Scheme getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto scheme() const -> const std::string& { return m_scheme; }
+        [[nodiscard]] auto scheme() const noexcept -> const std::string& { return m_scheme; }
 
         /**
          * \brief User name getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto userName() const -> const std::string& { return m_user_name; }
+        [[nodiscard]] auto userName() const noexcept -> const std::string& { return m_user_name; }
 
         /**
          * \brief User password getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto userPassword() const -> const std::string& { return m_user_password; }
+        [[nodiscard]] auto userPassword() const noexcept -> const std::string& { return m_user_password; }
 
         /**
          * \brief Host getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto host() const -> const std::string& { return m_host; }
+        [[nodiscard]] auto host() const noexcept -> const std::string& { return m_host; }
 
         /**
          * \brief Returns host in form of ip address
          * \return const std::string&
          */
-        [[nodiscard]] auto hostIP() const -> const std::string& { return m_host_ip; }
+        [[nodiscard]] auto hostIP() const noexcept -> const IP& { return m_host_ip.at(0); }
+
+        /**
+         * \brief Returns list of host ip addresses
+         * \return const std::vector<std::string>&
+         */
+        [[nodiscard]] auto hostIPList() const noexcept -> const std::vector< IP >& {
+            return m_host_ip;
+        }
 
         /**
          * \brief Port getter.
          * \return Port or empty string.
          */
-        [[nodiscard]] auto port() const -> const std::string& { return m_port; }
+        [[nodiscard]] auto port() const noexcept -> const std::string& { return m_port; }
 
         /**
-         * \brief Port getter
+         * \brief Port getter in local byte order
          * \return uint16_t
          */
-        [[nodiscard]] auto portUint16_t() const -> uint16_t {
-            return static_cast< uint16_t >(std::stoi(m_port));
+        [[nodiscard]] auto portUint16_t_local_byte_order() const noexcept -> uint16_t {
+            return static_cast< uint16_t >(m_port_local_byte_order);
+        }
+
+        /**
+         * \brief Port getter in network byte order
+         * \return uint16_t
+         */
+        [[nodiscard]] auto portUint16_t_network_byte_order() const noexcept -> uint16_t {
+            return static_cast< uint16_t >(m_port_network_byte_order);
         }
 
         /**
         * \brief Path getter.
         * \return const std::string&
         */
-        [[nodiscard]] auto path() const -> const std::string& { return m_path; }
+        [[nodiscard]] auto path() const noexcept -> const std::string& { return m_path; }
 
         /**
          * \brief Query getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto query() const -> const std::string& { return m_query; }
+        [[nodiscard]] auto query() const noexcept -> const std::string& { return m_query; }
 
         /**
          * \brief Fragment getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto fragment() const -> const std::string& { return m_fragment; }
+        [[nodiscard]] auto fragment() const noexcept -> const std::string& { return m_fragment; }
 
         /**
          * \brief Composes a string representation of URI.
          * \note IP address representation is considered as preferred.
          * \return std::string
          */
-        [[nodiscard]] auto composeUrl(bool ip_address = true) const -> std::string;
+        [[nodiscard]] auto composeUrl() const -> std::string;
 
         /**
          * \brief Check if URI is valid. Should be used in case of overloaded constructor.
          * \return True is valid and false otherwise.
          */
-        [[nodiscard]] auto isValid() const -> bool { return m_valid; }
+        [[nodiscard]] auto isValid() const noexcept -> bool { return m_valid; }
+
+        /**
+         * Retuns error if Url is in invalid state
+         * @return std::error_code
+         */
+        [[nodiscard]] auto error() const noexcept -> std::error_code { return m_error; }
 
     protected:
     private:
@@ -163,13 +193,21 @@ namespace tristan::network {
         std::string m_user_name;
         std::string m_user_password;
         std::string m_host;
-        std::string m_host_ip;
         std::string m_port;
         std::string m_path;
         std::string m_query;
         std::string m_fragment;
 
+        std::vector< IP > m_host_ip;
+
+        std::error_code m_error;
+
+        uint16_t m_port_local_byte_order;
+        uint16_t m_port_network_byte_order;
+
         bool m_valid;
+
+        void _resolveHost();
     };
 
 }  // namespace tristan::network
