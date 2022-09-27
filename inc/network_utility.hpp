@@ -20,6 +20,11 @@ namespace tristan::network::utility{
      * \return URL encoded std::string
      */
     [[nodiscard]] auto encodeUrl(const std::string& string_to_encode) -> std::string;
+
+    [[nodiscard]] auto uint32_tIpToStringIp(uint32_t ip) -> std::string;
+
+    [[nodiscard]] auto stringIpToUint32_tIp(const std::string& ip) -> uint32_t;
+
 } //End of tristan::network::utility namespace
 
 #endif //NETWORK_UTILITY_HPP
