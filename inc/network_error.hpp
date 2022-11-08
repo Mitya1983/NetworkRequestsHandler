@@ -27,20 +27,67 @@ namespace tristan::network {
         BAD_URL_FORMAT,
         IP_CONVERTER_ERROR,
     };
+    enum class SocketErrors : uint8_t {
+        SUCCESS,
+        SOCKET_PROTOCOL_NOT_SUPPORTED,
+        SOCKET_PROCESS_TABLE_IS_FULL,
+        SOCKET_SYSTEM_TABLE_IS_FULL,
+        SOCKET_NOT_ENOUGH_PERMISSIONS,
+        SOCKET_NOT_ENOUGH_MEMORY,
+        SOCKET_WRONG_PROTOCOL,
+        SOCKET_WRONG_IP_FORMAT,
+        SOCKET_NOT_INITIALISED,
+        SOCKET_NOT_CONNECTED,
+        CONNECT_NOT_ENOUGH_PERMISSIONS,
+        CONNECT_ADDRESS_IN_USE,
+        CONNECT_ADDRESS_NOT_AVAILABLE,
+        CONNECT_AF_NOT_SUPPORTED,
+        CONNECT_TRY_AGAIN,
+        CONNECT_ALREADY_IN_PROCESS,
+        CONNECT_BAD_FILE_DESCRIPTOR,
+        CONNECT_CONNECTION_REFUSED,
+        CONNECT_ADDRESS_OUTSIDE_USER_SPACE,
+        CONNECT_IN_PROGRESS,
+        CONNECT_INTERRUPTED,
+        CONNECT_CONNECTED,
+        CONNECT_NETWORK_UNREACHABLE,
+        CONNECT_FILE_DESCRIPTOR_IS_NOT_SOCKET,
+        CONNECT_PROTOCOL_NOT_SUPPORTED,
+        CONNECT_TIMED_OUT,
+        WRITE_TRY_AGAIN,
+        WRITE_BAD_FILE_DESCRIPTOR,
+        WRITE_DESTINATION_ADDRESS,
+        WRITE_USER_QUOTA,
+        WRITE_BUFFER_OUT_OF_RANGE,
+        WRITE_BIG,
+        WRITE_INTERRUPTED,
+        WRITE_INVALID_ARGUMENT,
+        WRITE_LOW_LEVEL_IO,
+        WRITE_NO_SPACE,
+        WRITE_NOT_PERMITTED,
+        WRITE_PIPE
+    };
 
     /**
      * \brief Creates std::error_code object that stores error information.
      * \param error_code ErrorCode
      * \return std::error_code
      */
-    auto makeError(ErrorCode error_code) -> std::error_code;
+    [[nodiscard]] auto makeError(ErrorCode error_code) -> std::error_code;
 
     /**
      * \brief Creates std::error_code object that stores error information.
-     * \param error_code ErrorCode
+     * \param error_code UrlErrors
      * \return std::error_code
      */
-    auto makeError(UrlErrors error_code) -> std::error_code;
+    [[nodiscard]] auto makeError(UrlErrors error_code) -> std::error_code;
+
+    /**
+     * \brief Creates std::error_code object that stores error information.
+     * \param error_code SocketErrors
+     * \return std::error_code
+     */
+    [[nodiscard]] auto makeError(SocketErrors error_code) -> std::error_code;
 
 }  // namespace tristan::network
 
@@ -58,6 +105,13 @@ namespace std {
      */
     template <>
     struct is_error_code_enum< tristan::network::UrlErrors > : true_type {
+    };
+
+    /**
+     * \brief //This is needed to specialise the standard type trait.
+     */
+    template <>
+    struct is_error_code_enum< tristan::network::SocketErrors > : true_type {
     };
 
 }  // namespace std

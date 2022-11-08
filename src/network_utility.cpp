@@ -108,7 +108,7 @@ auto tristan::network::utility::getUuid() -> std::string {
 auto tristan::network::utility::encodeUrl(const std::string& string_to_encode) -> std::string {
     netDebug("Encoding url " + string_to_encode);
     std::string result(string_to_encode);
-    size_t char_to_encode = 0;
+    uint64_t char_to_encode = 0;
     while (true) {
         char_to_encode = result.find_first_of(" !@#$%&*()+=[]:;\',/?", char_to_encode);
         if (char_to_encode == std::string::npos) {
