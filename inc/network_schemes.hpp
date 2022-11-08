@@ -1,9 +1,19 @@
 #ifndef NETWORK_SCHEMES_HPP
 #define NETWORK_SCHEMES_HPP
 
-namespace tristan::network::schemes{
-    inline constexpr const char* http = "http";
-    inline constexpr const char* https = "https";
-} //End of tristan::network::schemes namespace
+#include <string>
+#include <utility>
 
-#endif //NETWORK_SCHEMES_HPP
+struct NetworkScheme {
+    std::string name;
+    uint16_t port;
+};
+
+namespace tristan::network::schemes {
+
+    [[nodiscard]] auto getNetworkSchemeDefaultPort(const std::string& scheme_name) noexcept -> uint16_t;
+    [[nodiscard]] auto getNetworkSchemeName(uint16_t port) noexcept -> std::string;
+
+}  // namespace tristan::network::schemes
+
+#endif  //NETWORK_SCHEMES_HPP
