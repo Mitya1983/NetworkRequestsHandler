@@ -135,7 +135,7 @@ auto tristan::network::utility::uint32_tIpToStringIp(uint32_t ip) -> std::string
 
 auto tristan::network::utility::stringIpToUint32_tIp(const std::string& ip) -> uint32_t {
     netDebug("Converting string ip representation" + ip + " to uint32_t representation");
-    uint32_t result;
+    uint32_t result = 0;
     if (inet_pton(AF_INET, ip.c_str(), &result) <= 0){
         netError("Failed to convert ip address");
         return {};

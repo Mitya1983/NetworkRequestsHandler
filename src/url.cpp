@@ -52,7 +52,7 @@ tristan::network::Url::Url(const std::string& url) :
     }
     m_scheme = url.substr(0, scheme_end);
     auto port = tristan::network::schemes::getNetworkSchemeDefaultPort(m_scheme);
-    if (port != 0){
+    if (port != 0) {
         Url::setPort(port);
     }
     l_url.erase(0, scheme_end + 1);
@@ -85,13 +85,13 @@ tristan::network::Url::Url(const std::string& url) :
         if (ip_check_result.empty()) {
             m_host = std::move(authority);
             Url::_resolveHost();
-            if (m_error){
+            if (m_error) {
                 return;
             }
         } else {
             IP ip;
             ip.as_int = tristan::network::utility::stringIpToUint32_tIp(authority);
-            if (ip.as_int == 0){
+            if (ip.as_int == 0) {
                 m_error = tristan::network::makeError(tristan::network::UrlErrors::IP_CONVERTER_ERROR);
                 return;
             }
@@ -121,28 +121,24 @@ void tristan::network::Url::setScheme(const std::string& scheme) {
         m_valid = false;
         return;
     }
-    const auto not_allowed_char
-        = scheme.find_first_not_of("+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+    const auto not_allowed_char = scheme.find_first_not_of("+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
     if (not_allowed_char != std::string::npos) {
         m_valid = false;
         return;
     }
     m_scheme = scheme;
     auto port = tristan::network::schemes::getNetworkSchemeDefaultPort(m_scheme);
-    if (port != 0){
+    if (port != 0) {
         Url::setPort(port);
     }
 }
 
-void tristan::network::Url::setAuthority(const std::string& host,
-                                         const std::string& user_name,
-                                         const std::string& user_password) {
+void tristan::network::Url::setAuthority(const std::string& host, const std::string& user_name, const std::string& user_password) {
     if (host.size() > 253) {
         m_valid = true;
         return;
     }
-    const auto not_allowed_char
-        = host.find_first_not_of("-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+    const auto not_allowed_char = host.find_first_not_of("-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
     if (not_allowed_char != std::string::npos) {
         m_valid = false;
         return;
@@ -153,7 +149,7 @@ void tristan::network::Url::setAuthority(const std::string& host,
     }
     m_host = host;
     Url::_resolveHost();
-    if (m_error){
+    if (m_error) {
         m_valid = false;
         return;
     }
@@ -180,9 +176,17 @@ void tristan::network::Url::setAuthority(const std::string& host,
 }
 
 void tristan::network::Url::addHostIP(const std::string& ip) {
+    std::regex regex(g_ip_regex_pattern);
+    std::smatch ip_check_result;
+    std::regex_match(ip, ip_check_result, regex);
+    if (ip_check_result.empty()) {
+        m_error = tristan::network::makeError(tristan::network::UrlErrors::BAD_IP_FORMAT);
+        m_valid = false;
+        return;
+    }
     IP l_ip;
     l_ip.as_int = tristan::network::utility::stringIpToUint32_tIp(ip);
-    if (l_ip.as_int == 0){
+    if (l_ip.as_int == 0) {
         m_error = tristan::network::makeError(tristan::network::UrlErrors::IP_CONVERTER_ERROR);
         m_valid = false;
         return;
@@ -244,7 +248,7 @@ void tristan::network::Url::setFragment(const std::string& fragment) {
 
 auto tristan::network::Url::composeUrl() const -> std::string {
     std::string uri;
-    if (not m_scheme.empty()){
+    if (not m_scheme.empty()) {
         uri += m_scheme;
         uri += ':';
     }
@@ -258,10 +262,9 @@ auto tristan::network::Url::composeUrl() const -> std::string {
             }
             uri += '@';
         }
-        if (not m_host.empty()){
+        if (not m_host.empty()) {
             uri += m_host;
-        }
-        else{
+        } else {
             uri += m_host_ip.at(0).as_string;
         }
         if (not m_port.empty()) {
@@ -287,34 +290,34 @@ void tristan::network::Url::_resolveHost() {
     if (resolver_results == nullptr) {
         switch (h_errno) {
             case HOST_NOT_FOUND: {
-                m_error = tristan::network::makeError(tristan::network::UrlErrors::NOT_FOUND_ERRNO);
+                m_error = tristan::network::makeError(tristan::network::UrlErrors::NOT_FOUND_ERROR);
                 break;
             }
             case TRY_AGAIN: {
-                m_error = tristan::network::makeError(tristan::network::UrlErrors::TRY_AGAIN_ERRNO);
+                m_error = tristan::network::makeError(tristan::network::UrlErrors::TRY_AGAIN_ERROR);
                 break;
             }
             case NO_RECOVERY: {
-                m_error = tristan::network::makeError(tristan::network::UrlErrors::NO_RECOVERY_ERRNO);
+                m_error = tristan::network::makeError(tristan::network::UrlErrors::NO_RECOVERY_ERROR);
                 break;
             }
             case NO_DATA: {
-                m_error = tristan::network::makeError(tristan::network::UrlErrors::NO_DATA_ERRNO);
+                m_error = tristan::network::makeError(tristan::network::UrlErrors::NO_DATA_ERROR);
                 break;
             }
         }
         return;
     }
     uint8_t index = 0;
-    while (true){
+    while (true) {
         auto* address = resolver_results->h_addr_list[index];
-        if (address == nullptr){
+        if (address == nullptr) {
             break;
         }
         IP ip;
         memmove(&ip.as_int, address, 4);
         auto string_ip = tristan::network::utility::uint32_tIpToStringIp(ip.as_int);
-        if (not string_ip.empty()){
+        if (not string_ip.empty()) {
             ip.as_string = std::move(string_ip);
             m_host_ip.emplace_back(std::move(ip));
         } else {

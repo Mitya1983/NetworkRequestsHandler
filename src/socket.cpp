@@ -15,6 +15,7 @@ tristan::network::Socket::Socket(tristan::network::SocketType socket_type) :
     m_ip(0),
     m_port(0),
     m_type(socket_type),
+    m_non_blocking(false),
     m_connected(false) {
 
     auto protocol = getprotobyname("ip");
@@ -55,23 +56,16 @@ tristan::network::Socket::Socket(tristan::network::SocketType socket_type) :
     }
 }
 
-tristan::network::Socket::~Socket() {
-    close(m_socket);
+tristan::network::Socket::~Socket() { close(m_socket); }
+
+auto tristan::network::Socket::createSocket(tristan::network::SocketType socket_type) -> std::unique_ptr< Socket > {
+    //NOLINTNEXTLINE
+    return std::unique_ptr< Socket >(new tristan::network::Socket(socket_type));
 }
 
-void tristan::network::Socket::setRemoteIp(const std::string& ip) {
-    std::regex regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
-    std::smatch match_result;
+void tristan::network::Socket::setRemoteIp(uint32_t ip) { m_ip = ip; }
 
-    std::regex_match(ip, match_result, regex);
-    if (match_result.empty()) {
-        m_error = tristan::network::makeError(tristan::network::SocketErrors::SOCKET_WRONG_IP_FORMAT);
-        return;
-    }
-    m_ip = tristan::network::utility::stringIpToUint32_tIp(ip);
-}
-
-void tristan::network::Socket::setRemotePort(uint16_t port) { m_port = htons(port); }
+void tristan::network::Socket::setRemotePort(uint16_t port) { m_port = port; }
 
 void tristan::network::Socket::setNonBlocking(bool non_blocking) {
     if (m_socket == -1) {
@@ -83,6 +77,7 @@ void tristan::network::Socket::setNonBlocking(bool non_blocking) {
     } else {
         fcntl(m_socket, F_SETFL, 0);
     }
+    m_non_blocking = non_blocking;
 }
 
 void tristan::network::Socket::connect() {
@@ -168,11 +163,17 @@ void tristan::network::Socket::connect() {
     m_connected = true;
 }
 
-auto tristan::network::Socket::write(const std::vector< uint8_t >& data) -> uint64_t {
-
+auto tristan::network::Socket::write(const std::vector< uint8_t >& data, uint16_t size, uint64_t offset) -> uint64_t {
+    if (data.empty()){
+        return 0;
+    }
     int64_t bytes_sent = 0;
+    uint64_t l_size = size;
+    if (l_size == 0){
+        l_size = data.size();
+    }
     if (m_connected) {
-        bytes_sent = ::write(m_socket, data.data(), data.size());
+        bytes_sent = ::write(m_socket, data.data() + offset, l_size);
     } else {
         if (m_type == tristan::network::SocketType::TCP) {
             m_error = tristan::network::makeError(tristan::network::SocketErrors::SOCKET_NOT_CONNECTED);
@@ -182,7 +183,7 @@ auto tristan::network::Socket::write(const std::vector< uint8_t >& data) -> uint
             remote_address.sin_addr.s_addr = m_ip;
             remote_address.sin_port = m_port;
             bytes_sent
-                = ::sendto(m_socket, data.data(), data.size(), MSG_NOSIGNAL, reinterpret_cast< struct sockaddr* >(&remote_address), sizeof(remote_address));
+                = ::sendto(m_socket, data.data() + offset, l_size, MSG_NOSIGNAL, reinterpret_cast< struct sockaddr* >(&remote_address), sizeof(remote_address));
         }
     }
     if (bytes_sent < 0) {
@@ -244,30 +245,100 @@ auto tristan::network::Socket::write(const std::vector< uint8_t >& data) -> uint
     return bytes_sent;
 }
 
-auto tristan::network::Socket::read() const -> uint8_t {
+auto tristan::network::Socket::read() -> uint8_t {
     uint8_t byte;
-    ::read(m_socket, &byte, 1);
+    auto status = ::read(m_socket, &byte, 1);
+    if (status < 0) {
+        tristan::network::SocketErrors error = tristan::network::SocketErrors::SUCCESS;
+        switch (errno) {
+            case EAGAIN: {
+                error = tristan::network::SocketErrors::READ_TRY_AGAIN;
+                break;
+            }
+            case EBADF: {
+                error = tristan::network::SocketErrors::READ_BAD_FILE_DESCRIPTOR;
+                break;
+            }
+            case EFAULT: {
+                error = tristan::network::SocketErrors::READ_BUFFER_OUT_OF_RANGE;
+                break;
+            }
+            case EINTR: {
+                error = tristan::network::SocketErrors::READ_INTERRUPTED;
+                break;
+            }
+            case EINVAL: {
+                error = tristan::network::SocketErrors::READ_INVALID_FILE_DESCRIPTOR;
+                break;
+            }
+            case EIO: {
+                error = tristan::network::SocketErrors::READ_IO;
+                break;
+            }
+            case EISDIR: {
+                error = tristan::network::SocketErrors::READ_IS_DIRECTORY;
+                break;
+            }
+        }
+        m_error = tristan::network::makeError(error);
+    }
     return byte;
 }
 
-auto tristan::network::Socket::read(uint16_t size) const -> std::vector< uint8_t > {
+auto tristan::network::Socket::read(uint16_t size) -> std::vector< uint8_t > {
     if (size == 0) {
         return {};
     }
     std::vector< uint8_t > data;
-    data.reserve(size);
+    data.resize(size);
 
-    for (uint16_t i = 0; i < size; ++i) {
-        uint8_t byte = Socket::read();
-        if (m_error) {
-            break;
+    auto status = ::read(m_socket, data.data(), size);
+    if (status < 0) {
+        tristan::network::SocketErrors error = tristan::network::SocketErrors::SUCCESS;
+        switch (errno) {
+            case EAGAIN: {
+                error = tristan::network::SocketErrors::READ_TRY_AGAIN;
+                break;
+            }
+            case EBADF: {
+                error = tristan::network::SocketErrors::READ_BAD_FILE_DESCRIPTOR;
+                break;
+            }
+            case EFAULT: {
+                error = tristan::network::SocketErrors::READ_BUFFER_OUT_OF_RANGE;
+                break;
+            }
+            case EINTR: {
+                error = tristan::network::SocketErrors::READ_INTERRUPTED;
+                break;
+            }
+            case EINVAL: {
+                error = tristan::network::SocketErrors::READ_INVALID_FILE_DESCRIPTOR;
+                break;
+            }
+            case EIO: {
+                error = tristan::network::SocketErrors::READ_IO;
+                break;
+            }
+            case EISDIR: {
+                error = tristan::network::SocketErrors::READ_IS_DIRECTORY;
+                break;
+            }
         }
-        data.push_back(byte);
+        m_error = tristan::network::makeError(error);
     }
+
+//    for (uint16_t i = 0; i < size; ++i) {
+//        uint8_t byte = Socket::read();
+//        if (m_error) {
+//            break;
+//        }
+//        data.push_back(byte);
+//    }
     return data;
 }
 
-auto tristan::network::Socket::readUntil(uint8_t delimiter) const -> std::vector< uint8_t > {
+auto tristan::network::Socket::readUntil(uint8_t delimiter) -> std::vector< uint8_t > {
     std::vector< uint8_t > data;
 
     while (true) {
@@ -281,25 +352,35 @@ auto tristan::network::Socket::readUntil(uint8_t delimiter) const -> std::vector
     return data;
 }
 
-auto tristan::network::Socket::readUntil(const std::vector< uint8_t >& delimiter) const -> std::vector< uint8_t > {
+auto tristan::network::Socket::readUntil(const std::vector< uint8_t >& delimiter) -> std::vector< uint8_t > {
     std::vector< uint8_t > data;
     data.reserve(delimiter.size());
 
-    while (true){
+    while (true) {
         uint8_t byte = Socket::read();
         if (m_error) {
             break;
         }
         data.push_back(byte);
-        if (data.size() > delimiter.size()){
-            std::vector<uint8_t> to_compare(data.end() - static_cast<int64_t>(delimiter.size()), data.end());
-            if (to_compare == delimiter){
+        if (data.size() >= delimiter.size()) {
+            std::vector< uint8_t > to_compare(data.end() - static_cast< int64_t >(delimiter.size()), data.end());
+            if (to_compare == delimiter) {
                 break;
             }
-        } else if (data.size() == delimiter.size() && data == delimiter){
+        } else if (data.size() == delimiter.size() && data == delimiter) {
             break;
         }
         data.push_back(byte);
     }
     return data;
 }
+
+auto tristan::network::Socket::ip() const noexcept -> uint32_t { return m_ip; }
+
+auto tristan::network::Socket::port() const noexcept -> uint16_t { return m_port; }
+
+auto tristan::network::Socket::error() const noexcept -> std::error_code { return m_error; }
+
+auto tristan::network::Socket::nonBlocking() const noexcept -> bool { return m_non_blocking; }
+
+auto tristan::network::Socket::connected() const noexcept -> bool { return m_connected; }

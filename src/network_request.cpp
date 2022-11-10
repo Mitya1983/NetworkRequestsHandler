@@ -365,9 +365,9 @@ void tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(NetworkReque
     switch (status) {
         case tristan::network::Status::WAITING:
             [[fallthrough]];
-        case tristan::network::Status::PENDING_DOWNLOAD:
+        case tristan::network::Status::WRITING:
             [[fallthrough]];
-        case tristan::network::Status::DOWNLOADING:
+        case tristan::network::Status::READING:
             [[fallthrough]];
         case tristan::network::Status::PROCESSED:
             break;

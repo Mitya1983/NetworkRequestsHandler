@@ -18,16 +18,17 @@ namespace /*anonymous*/
 
     inline const NetworkCategory g_network_error_category;
 
-    inline const uint8_t g_max_error_code = 8;
-
-    inline const std::array< const char*, g_max_error_code > g_error_code_descriptions{"Success",
-                                                                                       "Network offline",
-                                                                                       "Invalid Url",
-                                                                                       "Remote host not found",
-                                                                                       "Output file path is empty",
-                                                                                       "Destination directory does not exists",
-                                                                                       "Downloader run() function invoked twice",
-                                                                                       "Request has not either bytes to read either delimiter"};
+    inline const std::map< tristan::network::ErrorCode, const char* > g_error_code_descriptions{
+        {tristan::network::ErrorCode::SUCCESS,                                       "Success"                                                  },
+        {tristan::network::ErrorCode::OFFLINE,                                       "Network offline"                                          },
+        {tristan::network::ErrorCode::INVALID_URL,                                   "Invalid Url"                                              },
+        {tristan::network::ErrorCode::HOST_NOT_FOUND,                                "Remote host not found"                                    },
+        {tristan::network::ErrorCode::FILE_PATH_EMPTY,                               "Output file path is empty"                                },
+        {tristan::network::ErrorCode::DESTINATION_DIR_DOES_NOT_EXISTS,               "Destination directory does not exists"                    },
+        {tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_LUNCHED_TWICE,   "AsyncTcpRequestHandler run() function invoked twice"  },
+        {tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_WAS_NOT_LUNCHED, "AsyncTcpRequestHandler run() function was not invoked"},
+        {tristan::network::ErrorCode::REQUEST_SIZE_IS_NOT_APPROPRIATE,               "Request has not either bytes to read either delimiter"    },
+    };
 
     /**
    * \private
@@ -43,15 +44,17 @@ namespace /*anonymous*/
 
     inline const uint8_t g_max_url_code = 7;
 
-    inline const std::array< const char*, g_max_url_code > g_url_code_descriptions{
-        "Success",
-        "Host not found",
-        "A temporary error occurred on an authoritative name server. Try again later",
-        "A nonrecoverable name server error occurred",
-        "The requested name is valid but does not have an IP address. Another type of request to the "
-        "name server for this domain may return an answer",
-        "Bad url format",
-        "IP address conversion failed"};
+    inline const std::map< tristan::network::UrlErrors, const char* > g_url_code_descriptions{
+        {tristan::network::UrlErrors::SUCCESS,            "Success"                                                                                    },
+        {tristan::network::UrlErrors::NOT_FOUND_ERROR,    "Host not found"                                                                             },
+        {tristan::network::UrlErrors::TRY_AGAIN_ERROR,    "A temporary error occurred on an authoritative name server. Try again later"                },
+        {tristan::network::UrlErrors::NO_RECOVERY_ERROR,  "A nonrecoverable name server error occurred"                                                },
+        {tristan::network::UrlErrors::NO_DATA_ERROR,
+         "The requested name is valid but does not have an IP address. Another type of request to the name server for this domain may return an answer"},
+        {tristan::network::UrlErrors::BAD_URL_FORMAT,     "Bad url format"                                                                             },
+        {tristan::network::UrlErrors::BAD_IP_FORMAT,      "Bad IP format"                                                                              },
+        {tristan::network::UrlErrors::IP_CONVERTER_ERROR, "IP address conversion failed"                                                               },
+    };
 
     struct SocketErrorCategory : std::error_category {
         [[nodiscard]] const char* name() const noexcept override;
@@ -73,7 +76,7 @@ namespace /*anonymous*/
         {tristan::network::SocketErrors::SOCKET_WRONG_PROTOCOL,                 "The protocol is the wrong type for the socket"                                         },
         {tristan::network::SocketErrors::SOCKET_WRONG_IP_FORMAT,                "Wrong ip format"                                                                       },
         {tristan::network::SocketErrors::SOCKET_NOT_INITIALISED,                "Socket is not initialised"                                                             },
-        {tristan::network::SocketErrors::SOCKET_NOT_CONNECTED,                  "Socket is not connected"                                                             },
+        {tristan::network::SocketErrors::SOCKET_NOT_CONNECTED,                  "Socket is not connected"                                                               },
         {tristan::network::SocketErrors::CONNECT_NOT_ENOUGH_PERMISSIONS,        "Local address is already in use"                                                       },
         {tristan::network::SocketErrors::CONNECT_ADDRESS_IN_USE,
          "For UNIX domain sockets, which are identified by pathname: Write permission is denied on the socket file, or search permission "
@@ -113,6 +116,16 @@ namespace /*anonymous*/
         {tristan::network::SocketErrors::WRITE_NO_SPACE,                        "The device containing the file referred to by fd has no room for the data"             },
         {tristan::network::SocketErrors::WRITE_NOT_PERMITTED,                   "The operation was prevented by a file seal"                                            },
         {tristan::network::SocketErrors::WRITE_PIPE,                            "The socket is connected to a pipe or socket whose reading end is closed"               },
+        {tristan::network::SocketErrors::WRITE_TIMED_OUT,                        "Timeout while attempting to write"                                                     },
+        {tristan::network::SocketErrors::READ_TRY_AGAIN,
+         "The file descriptor fd refers to a file other than a socket and has been marked nonblocking, and the read would block"                                        },
+        {tristan::network::SocketErrors::READ_BAD_FILE_DESCRIPTOR,              "The socket is not a valid file descriptor or is not open for reading"                  },
+        {tristan::network::SocketErrors::READ_BUFFER_OUT_OF_RANGE,              "Buffer is outside your accessible address space"                                       },
+        {tristan::network::SocketErrors::READ_INTERRUPTED,                      "A signal occurred before any data was read"                                            },
+        {tristan::network::SocketErrors::READ_INVALID_FILE_DESCRIPTOR,          "The socket is attached to an which is unsuitable for reading"                          },
+        {tristan::network::SocketErrors::READ_IO,                               "I/O error"                                                                             },
+        {tristan::network::SocketErrors::READ_IS_DIRECTORY,                     "File descriptor refers to a directory"                                                 },
+        {tristan::network::SocketErrors::READ_TIMED_OUT,                         "Timeout while attempting to read"                                                      },
     };
 
 }  // namespace
@@ -131,11 +144,11 @@ namespace /*anonymous*/
 {
     auto NetworkCategory::name() const noexcept -> const char* { return "NetworkCategory"; }
 
-    auto NetworkCategory::message(int ec) const -> std::string { return {g_error_code_descriptions.at(ec)}; }
+    auto NetworkCategory::message(int ec) const -> std::string { return {g_error_code_descriptions.at(static_cast< tristan::network::ErrorCode >(ec))}; }
 
     auto UrlErrorCategory::name() const noexcept -> const char* { return "UrlCategory"; }
 
-    auto UrlErrorCategory::message(int ec) const -> std::string { return {g_url_code_descriptions.at(ec)}; }
+    auto UrlErrorCategory::message(int ec) const -> std::string { return {g_url_code_descriptions.at(static_cast< tristan::network::UrlErrors >(ec))}; }
 
     auto SocketErrorCategory::name() const noexcept -> const char* { return "SocketCategory"; }
 

@@ -14,17 +14,19 @@ namespace tristan::network {
         HOST_NOT_FOUND,
         FILE_PATH_EMPTY,
         DESTINATION_DIR_DOES_NOT_EXISTS,
-        DOWNLOADER_LUNCHED_TWICE,
+        ASYNC_NETWORK_REQUEST_HANDLER_LUNCHED_TWICE,
+        ASYNC_NETWORK_REQUEST_HANDLER_WAS_NOT_LUNCHED,
         REQUEST_SIZE_IS_NOT_APPROPRIATE
     };
 
     enum class UrlErrors : uint8_t {
         SUCCESS,
-        NOT_FOUND_ERRNO,
-        TRY_AGAIN_ERRNO,
-        NO_RECOVERY_ERRNO,
-        NO_DATA_ERRNO,
+        NOT_FOUND_ERROR,
+        TRY_AGAIN_ERROR,
+        NO_RECOVERY_ERROR,
+        NO_DATA_ERROR,
         BAD_URL_FORMAT,
+        BAD_IP_FORMAT,
         IP_CONVERTER_ERROR,
     };
     enum class SocketErrors : uint8_t {
@@ -65,7 +67,16 @@ namespace tristan::network {
         WRITE_LOW_LEVEL_IO,
         WRITE_NO_SPACE,
         WRITE_NOT_PERMITTED,
-        WRITE_PIPE
+        WRITE_PIPE,
+        WRITE_TIMED_OUT,
+        READ_TRY_AGAIN,
+        READ_BAD_FILE_DESCRIPTOR,
+        READ_BUFFER_OUT_OF_RANGE,
+        READ_INTERRUPTED,
+        READ_INVALID_FILE_DESCRIPTOR,
+        READ_IO,
+        READ_IS_DIRECTORY,
+        READ_TIMED_OUT
     };
 
     /**

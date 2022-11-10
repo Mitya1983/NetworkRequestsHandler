@@ -2,7 +2,7 @@
 #define NETWORK_REQUEST_HANDLER_HPP
 
 #include "network_request.hpp"
-#include "downloader.hpp"
+#include "async_tcp_request_handler.hpp"
 
 #include <queue>
 #include <list>
@@ -164,7 +164,7 @@ namespace tristan::network {
 
         std::vector< std::function< void() > > m_notify_when_exit_functors;
 
-        std::unique_ptr< Downloader > m_downloader;
+        std::unique_ptr< AsyncTcpRequestHandler > m_downloader;
 
         std::atomic< bool > m_working;
         std::atomic< bool > m_paused;
