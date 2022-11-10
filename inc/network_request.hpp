@@ -38,12 +38,12 @@ namespace tristan::network {
         /**
          * \brief Request waits for data been downloaded
          */
-        PENDING_DOWNLOAD,
+        WRITING,
 
         /**
          * \brief Request downloads data
          */
-        DOWNLOADING,
+        READING,
 
         /**
          * \brief Request processing was paused
@@ -1073,7 +1073,7 @@ namespace tristan::network {
 
         class ProtectedMembers {
             friend class NetworkRequestsHandler;
-            friend class Downloader;
+            friend class AsyncTcpRequestHandler;
 
         public:
             /**
@@ -1177,6 +1177,7 @@ namespace tristan::network {
         std::atomic< bool > m_paused;
         std::atomic< bool > m_canceled;
         bool m_output_to_file;
+
         bool m_ssl;
 
         void pNotifyWhenBytesReadChanged();

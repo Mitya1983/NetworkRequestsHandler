@@ -125,7 +125,7 @@ namespace {
 // }
 
 tristan::network::NetworkRequestsHandler::NetworkRequestsHandler() :
-    m_downloader(tristan::network::Downloader::create()) { }
+    m_downloader(tristan::network::AsyncTcpRequestHandler::create()) { }
 
 auto tristan::network::NetworkRequestsHandler::instance() -> tristan::network::NetworkRequestsHandler& {
     static NetworkRequestsHandler network_requests_handler;
