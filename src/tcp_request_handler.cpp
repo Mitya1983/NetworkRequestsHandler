@@ -1,72 +1,14 @@
-#include "async_tcp_request_handler.hpp"
-#include "network_error.hpp"
+#include "tcp_request_handler.hpp"
 #include "net_log.hpp"
 
-#include <thread>
-#include <limits>
-#include <vector>
-
 namespace {
-
     constexpr uint8_t g_max_frame = std::numeric_limits< uint8_t >::max();
+}  //End of anonymous namespace
 
-}  // End of anonymous namespace
+tristan::network::TcpRequestHandler::TcpRequestHandler(std::chrono::seconds time_out_interval) :
+    m_time_out_interval(time_out_interval) { }
 
-tristan::network::AsyncTcpRequestHandler::AsyncTcpRequestHandler() :
-    m_time_out_interval(std::chrono::seconds(10)),
-    m_max_processed_requests_count(50),
-    m_working(false) { }
-
-auto tristan::network::AsyncTcpRequestHandler::create() -> std::unique_ptr< AsyncTcpRequestHandler > {
-    return std::unique_ptr< AsyncTcpRequestHandler >(new AsyncTcpRequestHandler());
-}
-
-void tristan::network::AsyncTcpRequestHandler::setMaxDownloadsCount(uint8_t count) { m_max_processed_requests_count = count; }
-
-void tristan::network::AsyncTcpRequestHandler::setTimeOutInterval(std::chrono::seconds interval) { m_time_out_interval = interval; }
-
-void tristan::network::AsyncTcpRequestHandler::stop() { m_working.store(false, std::memory_order_relaxed); }
-
-void tristan::network::AsyncTcpRequestHandler::run() {
-    netInfo("Starting async request handler");
-    m_working.store(true, std::memory_order_relaxed);
-
-    while (m_working) {
-        if (m_processed_requests.empty()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        } else {
-            uint8_t active_requests_counter = 0;
-            for (auto active_requests_iterator = m_processed_requests.begin(); active_requests_iterator != m_processed_requests.end();) {
-                if (active_requests_counter > m_max_processed_requests_count) {
-                    continue;
-                    netInfo("Maximum async requests number is reached");
-                }
-                if (not active_requests_iterator->resume()) {
-                    std::scoped_lock< std::mutex > lock(m_processed_requests_lock);
-                    active_requests_iterator = m_processed_requests.erase(active_requests_iterator);
-                    --active_requests_counter;
-                } else {
-                    ++active_requests_iterator;
-                    ++active_requests_counter;
-                }
-            }
-        }
-    }
-    netInfo("Async request handler stopped");
-}
-
-void tristan::network::AsyncTcpRequestHandler::addRequest(std::shared_ptr< NetworkRequest >&& network_request) {
-    if (not m_working) {
-        tristan::network::NetworkRequest::ProtectedMembers::pSetError(
-            network_request, tristan::network::makeError(tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_WAS_NOT_LUNCHED));
-        return;
-    }
-    std::scoped_lock< std::mutex > lock(m_processed_requests_lock);
-    m_processed_requests.emplace_back(AsyncTcpRequestHandler::_processRequest(std::move(network_request)));
-}
-
-auto tristan::network::AsyncTcpRequestHandler::_processRequest(std::shared_ptr< tristan::network::NetworkRequest > network_request)
-    -> tristan::network::ResumableCoroutine {
+void tristan::network::TcpRequestHandler::processRequest(std::shared_ptr< tristan::network::NetworkRequest >&& network_request) {
 
     netInfo("Starting processing of request " + network_request->uuid());
     netDebug("network_request->uuid() = " + network_request->uuid());
@@ -82,7 +24,7 @@ auto tristan::network::AsyncTcpRequestHandler::_processRequest(std::shared_ptr< 
     if (socket.error()) {
         netError(socket.error().message());
         tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, socket.error());
-        co_return;
+        return;
     }
 
     tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(network_request, tristan::network::Status::PROCESSED);
@@ -94,19 +36,18 @@ auto tristan::network::AsyncTcpRequestHandler::_processRequest(std::shared_ptr< 
     while (not socket.connected()) {
         if (network_request->isPaused()) {
             netInfo("Network request is paused network_request->uuid() = " + network_request->uuid());
-            co_return;
+            return;
         }
         netInfo("Connecting to " + network_request->url().hostIP().as_string);
         auto start = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
         socket.connect();
 
-        if (socket.error()
-            && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::CONNECT_TRY_AGAIN)
-                && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::CONNECT_IN_PROGRESS)) {
+        if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::CONNECT_TRY_AGAIN)
+            && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::CONNECT_IN_PROGRESS)) {
             netError(socket.error().message());
             netDebug("socket.error().value() = " + std::to_string(socket.error().value()));
             tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, socket.error());
-            co_return;
+            return;
         }
         auto end = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
         time_out += end - start;
@@ -114,22 +55,21 @@ auto tristan::network::AsyncTcpRequestHandler::_processRequest(std::shared_ptr< 
             netError(socket.error().message());
             tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request,
                                                                           tristan::network::makeError(tristan::network::SocketErrors::CONNECT_TIMED_OUT));
-            co_return;
+            return;
         }
-        co_await std::suspend_always();
     }
-    co_await std::suspend_always();
     socket.resetError();
 
     uint64_t bytes_written = 0;
     uint64_t bytes_to_write = network_request->requestData().size();
 
     tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(network_request, tristan::network::Status::WRITING);
+
     time_out = std::chrono::microseconds(0);
     while (bytes_written < bytes_to_write) {
         if (network_request->isPaused()) {
             netInfo("Network request is paused network_request->uuid() = " + network_request->uuid());
-            co_return;
+            return;
         }
         netInfo("Writing to " + network_request->url().hostIP().as_string);
         auto start = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
@@ -141,7 +81,7 @@ auto tristan::network::AsyncTcpRequestHandler::_processRequest(std::shared_ptr< 
             netError(socket.error().message());
             netDebug("socket.error().value() = " + std::to_string(socket.error().value()));
             tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, socket.error());
-            co_return;
+            return;
         } else if (socket.error().value() == static_cast< int >(tristan::network::SocketErrors::WRITE_TRY_AGAIN)) {
             auto end = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
             time_out += end - start;
@@ -149,16 +89,14 @@ auto tristan::network::AsyncTcpRequestHandler::_processRequest(std::shared_ptr< 
                 netError(socket.error().message());
                 tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request,
                                                                               tristan::network::makeError(tristan::network::SocketErrors::WRITE_TIMED_OUT));
-                co_return;
+                return;
             }
         }
         netDebug(std::to_string(current_frame_size) + " bytes was written");
         socket.resetError();
-        co_await std::suspend_always();
     }
 
     if (network_request->bytesToRead() != 0) {
-        co_await std::suspend_always();
         socket.resetError();
         tristan::network::NetworkRequest::ProtectedMembers::pSetStatus(network_request, tristan::network::Status::READING);
         uint64_t bytes_read = 0;
@@ -166,18 +104,17 @@ auto tristan::network::AsyncTcpRequestHandler::_processRequest(std::shared_ptr< 
         while (bytes_read < bytes_to_read) {
             if (network_request->isPaused()) {
                 netInfo("Network request is paused network_request->uuid() = " + network_request->uuid());
-                co_return;
+                return;
             }
             auto start = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
             auto bytes_remain = bytes_to_read - bytes_read;
             uint8_t current_frame_size = (g_max_frame < bytes_remain ? g_max_frame : bytes_remain);
-
             auto data = socket.read(current_frame_size);
             if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_TRY_AGAIN)) {
                 netError(socket.error().message());
                 netDebug("socket.error().value() = " + std::to_string(socket.error().value()));
                 tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request, socket.error());
-                co_return;
+                return;
             } else if (socket.error().value() == static_cast< int >(tristan::network::SocketErrors::READ_TRY_AGAIN)){
                 auto end = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
                 time_out += end - start;
@@ -185,7 +122,7 @@ auto tristan::network::AsyncTcpRequestHandler::_processRequest(std::shared_ptr< 
                     netError(socket.error().message());
                     tristan::network::NetworkRequest::ProtectedMembers::pSetError(network_request,
                                                                                   tristan::network::makeError(tristan::network::SocketErrors::READ_TIMED_OUT));
-                    co_return;
+                    return;
                 }
             }
             if (not data.empty()) {
@@ -195,7 +132,6 @@ auto tristan::network::AsyncTcpRequestHandler::_processRequest(std::shared_ptr< 
                 tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(network_request, std::move(data));
             }
             socket.resetError();
-            co_await std::suspend_always();
         }
     }
 

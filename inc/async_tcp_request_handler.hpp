@@ -21,14 +21,14 @@ namespace tristan::network {
         AsyncTcpRequestHandler& operator=(const AsyncTcpRequestHandler& other) = delete;
         AsyncTcpRequestHandler& operator=(AsyncTcpRequestHandler&& other) = delete;
 
-        ~AsyncTcpRequestHandler() = default;
+        virtual ~AsyncTcpRequestHandler() = default;
         static auto create() -> std::unique_ptr< AsyncTcpRequestHandler >;
         void run();
-        void addRequest(std::shared_ptr< NetworkRequest > network_request);
+        void addRequest(std::shared_ptr< NetworkRequest >&& network_request);
 
         void setMaxDownloadsCount(uint8_t count);
         void setTimeOutInterval(std::chrono::seconds interval);
-        void setWorking(bool value);
+        void stop();
 
     protected:
         virtual auto _processRequest(std::shared_ptr< tristan::network::NetworkRequest > network_request)

@@ -140,7 +140,7 @@ namespace tristan::network {
         void setBytesToRead(uint64_t bytes);
 
         /**
-         * \brief Sets if request should be processed as SSL. By default is set to false.
+         * \brief Sets if request should be processed as Ssl. By default is set to false.
          * @param value bool
          */
         void setSSL(bool value = true);
