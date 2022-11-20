@@ -82,13 +82,7 @@ set(CMAKE_CONFIG_INSTALL_DIR ${GENERAL_INSTALL_DIR}/cmake/${CMAKE_BUILD_TYPE})
 message(STATUS "CMake config files install directory is set to ${CMAKE_CONFIG_INSTALL_DIR}")
 
 
-include_directories(PRIVATE
-        asio
-        "${Log_INCLUDE_DIR}"
-        )
-link_directories(
-        ${Log_LIBRARY_DIR}
-)
+
 if (WIN32)
 
 else ()
@@ -97,7 +91,7 @@ else ()
             -lssl
             -lcrypto
             -lLog
-            )
+    )
 endif ()
 
 if (BUILD_SHARED)
@@ -107,6 +101,12 @@ else ()
     message(STATUS "Will build static library")
     add_library(${PROJECT_NAME} STATIC)
 endif (BUILD_SHARED)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC TRISTAN_DEBUG)
+else ()
+    target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_DISABLE_TRACE LOG_DISABLE_DEBUG)
+endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 target_sources(
         ${PROJECT_NAME}
