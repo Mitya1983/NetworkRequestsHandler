@@ -8,8 +8,6 @@
 #include <sys/fcntl.h>
 #include <arpa/inet.h>
 
-//TODO: Add EOF check in socket::read functions
-
 tristan::network::Socket::Socket(tristan::network::SocketType socket_type) :
     m_socket(-1),
     m_ip(0),
