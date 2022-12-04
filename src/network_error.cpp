@@ -25,8 +25,8 @@ namespace /*anonymous*/
         {tristan::network::ErrorCode::HOST_NOT_FOUND,                                "Remote host not found"                                },
         {tristan::network::ErrorCode::FILE_PATH_EMPTY,                               "Output file path is empty"                            },
         {tristan::network::ErrorCode::DESTINATION_DIR_DOES_NOT_EXISTS,               "Destination directory does not exists"                },
-        {tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_LUNCHED_TWICE,   "AsyncTcpRequestHandler run() function invoked twice"  },
-        {tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_WAS_NOT_LUNCHED, "AsyncTcpRequestHandler run() function was not invoked"},
+        {tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_LUNCHED_TWICE,   "AsyncRequestHandler run() function invoked twice"     },
+        {tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_WAS_NOT_LUNCHED, "AsyncRequestHandler run() function was not invoked"   },
         {tristan::network::ErrorCode::REQUEST_SIZE_IS_NOT_APPROPRIATE,               "Request has not either bytes to read either delimiter"},
     };
 
@@ -140,6 +140,7 @@ namespace /*anonymous*/
         {tristan::network::SocketErrors::READ_INVALID_FILE_DESCRIPTOR,            "The socket is attached to an which is unsuitable for reading"                          },
         {tristan::network::SocketErrors::READ_IO,                                 "I/O error"                                                                             },
         {tristan::network::SocketErrors::READ_IS_DIRECTORY,                       "File descriptor refers to a directory"                                                 },
+        {tristan::network::SocketErrors::READ_EOF,                                "EOF received"                                                                          },
         {tristan::network::SocketErrors::READ_TIMED_OUT,                          "Timeout while attempting to read"                                                      },
     };
 

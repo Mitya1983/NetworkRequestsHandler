@@ -1,5 +1,6 @@
 #include "http_request.hpp"
 #include "http_header_names.hpp"
+#include "http_response.hpp"
 #include "network_utility.hpp"
 #include "net_log.hpp"
 
@@ -50,6 +51,10 @@ void tristan::network::HttpRequest::addParam(tristan::network::Parameter&& param
         return;
     }
     m_params.addParameter(std::move(parameter));
+}
+
+void tristan::network::HttpRequest::initResponse(std::vector< uint8_t >&& headers_data) {
+    m_response = tristan::network::HttpResponse::createResponse(m_uuid, std::move(headers_data));
 }
 
 tristan::network::GetRequest::GetRequest(Url&& url) :
@@ -290,8 +295,6 @@ auto tristan::network::PostRequest::requestData() -> const std::vector< uint8_t 
 //             std::filesystem::remove(m_output_path);
 //         }
 //     }
-// }
-
 // void tristan::network::HttpRequest::_doHttpRequest(){
 //     asio::io_context context;
 //     asio::ip::tcp::resolver resolver(context);
@@ -430,4 +433,5 @@ auto tristan::network::PostRequest::requestData() -> const std::vector< uint8_t 
 //     m_status = tristan::network::Status::DONE;
 //     m_response = std::make_shared<tristan::network::HttpResponse>(std::move(response));
 //     _notifyWhenFinished();
+// }
 // }

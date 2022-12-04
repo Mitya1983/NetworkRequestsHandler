@@ -36,7 +36,7 @@ namespace tristan::network {
          * \brief Constructor
          * \param headers_data const std::vector< uint8_t >&.
          */
-        explicit HttpHeaders(const std::vector< uint8_t >& headers_data);
+        explicit HttpHeaders(std::vector< uint8_t >&& headers_data);
         /**
          * \brief Copy constructor
          * \param other const HttpHeaders& other

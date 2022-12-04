@@ -40,7 +40,9 @@ namespace tristan::network{
          */
         void addParam(Parameter&& parameter);
 
+        void initResponse(std::vector<uint8_t>&& headers_data);
       protected:
+
         /**
          * \brief Constructor
          * \param url url

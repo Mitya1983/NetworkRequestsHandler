@@ -71,7 +71,7 @@ void tristan::network::NetworkRequest::setRequest(std::vector< uint8_t >&& reque
 
 void tristan::network::NetworkRequest::setRequest(const std::vector< uint8_t >& request_data) { m_request_data = request_data; }
 
-auto tristan::network::NetworkRequest::responseData() -> std::shared_ptr< std::vector< uint8_t > > { return m_response_data; }
+auto tristan::network::NetworkRequest::response() -> std::shared_ptr< tristan::network::NetworkResponse > { return m_response; }
 
 void tristan::network::NetworkRequest::addReadBytesValueChangedCallback(std::function< void(uint64_t) >&& functor) {
     m_read_bytes_changed_callback_functors.emplace_back(std::move(functor));
@@ -89,11 +89,11 @@ void tristan::network::NetworkRequest::addFinishedCallback(std::function< void(c
     m_finished_with_id_callback_functors.emplace_back(std::move(functor));
 }
 
-void tristan::network::NetworkRequest::addFinishedCallback(std::function< void(std::shared_ptr< std::vector< uint8_t > >) >&& functor) {
+void tristan::network::NetworkRequest::addFinishedCallback(std::function< void(std::shared_ptr< tristan::network::NetworkResponse >) >&& functor) {
     m_finished_with_response_callback_functors.emplace_back(std::move(functor));
 }
 
-void tristan::network::NetworkRequest::addFinishedCallback(std::function< void(const std::string&, std::shared_ptr< std::vector< uint8_t > >) >&& functor) {
+void tristan::network::NetworkRequest::addFinishedCallback(std::function< void(const std::string&, std::shared_ptr< tristan::network::NetworkResponse >) >&& functor) {
     m_finished_with_id_and_response_callback_functors.emplace_back(std::move(functor));
 }
 
@@ -235,12 +235,12 @@ void tristan::network::NetworkRequest::pNotifyWhenFinished() {
     }
     if (not m_finished_with_response_callback_functors.empty()) {
         for (const auto& functor: m_finished_with_response_callback_functors) {
-            functor(m_response_data);
+            functor(m_response);
         }
     }
     if (not m_finished_with_id_and_response_callback_functors.empty()) {
         for (const auto& functor: m_finished_with_id_and_response_callback_functors) {
-            functor(m_uuid, m_response_data);
+            functor(m_uuid, m_response);
         }
     }
 }
@@ -270,10 +270,11 @@ void tristan::network::NetworkRequest::pNotifyWhenFailed() {
 
 void tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(NetworkRequest& network_request, std::vector< uint8_t >&& data) {
     if (not network_request.m_output_to_file) {
-        if (not network_request.m_response_data) {
-            network_request.m_response_data = std::make_shared< std::vector< uint8_t > >(std::move(data));
+        if (not network_request.m_response) {
+            network_request.m_response = tristan::network::NetworkResponse::createResponse(network_request.m_uuid);
+            network_request.m_response->m_response_data = std::make_shared< std::vector< uint8_t > >(std::move(data));
         } else {
-            network_request.m_response_data->insert(network_request.m_response_data->end(), data.begin(), data.end());
+            network_request.m_response->m_response_data->insert(network_request.m_response->m_response_data->end(), data.begin(), data.end());
         }
     } else {
         if (network_request.m_output_path.empty()) {
@@ -294,7 +295,7 @@ void tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(Networ
         }
         network_request.m_output_file.write(reinterpret_cast< const char* >(data.data()), static_cast< std::streamsize >(data.size()));
     }
-    network_request.m_bytes_read = network_request.m_response_data->size();
+    network_request.m_bytes_read = network_request.m_response->m_response_data->size();
 }
 
 void tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(std::shared_ptr< NetworkRequest > network_request, std::vector< uint8_t >&& data) {

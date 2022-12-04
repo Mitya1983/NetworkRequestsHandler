@@ -8,6 +8,8 @@
 #include <sys/fcntl.h>
 #include <arpa/inet.h>
 
+//TODO: Add EOF check in socket::read functions
+
 tristan::network::Socket::Socket(tristan::network::SocketType socket_type) :
     m_socket(-1),
     m_ip(0),
@@ -218,11 +220,13 @@ void tristan::network::Socket::connect(bool ssl) {
 }
 
 void tristan::network::Socket::close() {
-    if (m_error.value() != static_cast< int >(tristan::network::SocketErrors::SSL_IO_ERROR)
-        && m_error.value() != static_cast< int >(tristan::network::SocketErrors::SSL_FATAL_ERROR)) {
-        m_ssl->shutdown();
+    if (m_ssl) {
+        if (m_error.value() != static_cast< int >(tristan::network::SocketErrors::SSL_IO_ERROR)
+            && m_error.value() != static_cast< int >(tristan::network::SocketErrors::SSL_FATAL_ERROR)) {
+            m_ssl->shutdown();
+        }
+        m_ssl.reset();
     }
-    m_ssl.reset();
     ::close(m_socket);
 }
 
@@ -393,6 +397,10 @@ auto tristan::network::Socket::read() -> uint8_t {
         m_error = tristan::network::makeError(error);
         netError(m_error.message());
     }
+    if (byte == 255){
+        m_error = tristan::network::makeError(tristan::network::SocketErrors::READ_EOF);
+        byte = 0;
+    }
     return byte;
 }
 
@@ -487,7 +495,7 @@ auto tristan::network::Socket::readUntil(uint8_t delimiter) -> std::vector< uint
 
 auto tristan::network::Socket::readUntil(const std::vector< uint8_t >& delimiter) -> std::vector< uint8_t > {
     netInfo("Reading from " + (m_host_name.empty() ? std::to_string(m_ip) : m_host_name) + ":" + std::to_string(m_port) + " until "
-           + std::string(delimiter.begin(), delimiter.end()));
+            + std::string(delimiter.begin(), delimiter.end()));
 
     std::vector< uint8_t > data;
     data.reserve(delimiter.size());

@@ -41,7 +41,7 @@ tristan::network::HttpHeaders::HttpHeaders(const std::string& headers_data) {
     netTrace("End");
 }
 
-tristan::network::HttpHeaders::HttpHeaders(const std::vector< uint8_t >& headers_data) :
+tristan::network::HttpHeaders::HttpHeaders(std::vector< uint8_t >&& headers_data) :
     tristan::network::HttpHeaders(std::string(headers_data.begin(), headers_data.end())) { }
 
 auto tristan::network::HttpHeaders::headerValue(const std::string& header_name) const -> std::optional< std::string > {
