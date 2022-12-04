@@ -142,9 +142,9 @@ void tristan::network::NetworkRequestsHandler::addRequest(tristan::network::Supp
 
 void tristan::network::NetworkRequestsHandler::_run() {
 
-    m_async_tcp_requests_handler = tristan::network::AsyncTcpRequestHandler::create();
+    m_async_tcp_requests_handler = tristan::network::AsyncRequestHandler::create();
     netInfo("Launching Async request handler");
-    m_async_request_handler_thread = std::thread(&tristan::network::AsyncTcpRequestHandler::run, std::ref(*m_async_tcp_requests_handler));
+    m_async_request_handler_thread = std::thread(&tristan::network::AsyncRequestHandler::run, std::ref(*m_async_tcp_requests_handler));
     if (not m_working.load(std::memory_order_relaxed)) {
         m_working.store(true, std::memory_order_relaxed);
     } else {
@@ -354,6 +354,10 @@ void tristan::network::NetworkRequestsHandler::_processTcpRequest(std::shared_pt
                 netDebug("data = " + std::string(data.begin(), data.end()));
                 bytes_read += data.size();
                 tristan::network::NetworkRequest::ProtectedMembers::pAddResponseData(network_request, std::move(data));
+                if (network_request->error()){
+                    netError(network_request->error().message());
+                    return;
+                }
             }
             auto end = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
             time_out += end - start;

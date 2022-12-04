@@ -93,6 +93,7 @@ namespace tristan::network {
         READ_INVALID_FILE_DESCRIPTOR,
         READ_IO,
         READ_IS_DIRECTORY,
+        READ_EOF,
         READ_TIMED_OUT
     };
 

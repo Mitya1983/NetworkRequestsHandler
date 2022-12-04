@@ -2,7 +2,7 @@
 #define NETWORK_REQUEST_HANDLER_HPP
 
 #include "network_request.hpp"
-#include "async_tcp_request_handler.hpp"
+#include "async_request_handler.hpp"
 
 #include <queue>
 #include <list>
@@ -150,7 +150,7 @@ namespace tristan::network {
         std::vector< std::function< void() > > m_notify_when_exit_functors;
 
         std::chrono::seconds m_time_out_interval;
-        std::unique_ptr< AsyncTcpRequestHandler > m_async_tcp_requests_handler;
+        std::unique_ptr< AsyncRequestHandler > m_async_tcp_requests_handler;
 
         std::thread m_async_request_handler_thread;
 

@@ -1,8 +1,6 @@
 #ifndef RESUMABLE_COROUTINE_HPP
 #define RESUMABLE_COROUTINE_HPP
-
-#include "network_request.hpp"
-
+#include <exception>
 #include <coroutine>
 
 namespace tristan::network {

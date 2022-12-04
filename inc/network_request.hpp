@@ -263,7 +263,7 @@ namespace tristan::network {
          * If request was not processed an empty std::shared_ptr is returned.
          * \return std::shared_ptr<std::vector<uint8_t>>
          */
-        [[nodiscard]] auto responseData() -> std::shared_ptr< std::vector< uint8_t > >;
+        [[nodiscard]] auto response() -> std::shared_ptr< NetworkResponse >;
 
         /**
          * \brief Registers callback functions which will be invoked each time read bytes value is increased.
@@ -431,7 +431,7 @@ namespace tristan::network {
          * \brief Registers callback functions which will be invoked when network request was processed.
          * \param functor std::function<void(std::shared_ptr<std::vector<uint8_t>>)>&& functor
          */
-        void addFinishedCallback(std::function< void(std::shared_ptr< std::vector< uint8_t > >) >&& functor);
+        void addFinishedCallback(std::function< void(std::shared_ptr< NetworkResponse >) >&& functor);
 
         /**
          * \overload
@@ -442,7 +442,7 @@ namespace tristan::network {
          */
         template < class Object >
         void addFinishedCallback(std::weak_ptr< Object > object,
-                                 void (Object::*functor)(std::shared_ptr< std::vector< uint8_t > >)) {
+                                 void (Object::*functor)(std::shared_ptr< NetworkResponse >)) {
             m_finished_with_response_callback_functors.emplace_back(
                 [object, functor](std::shared_ptr< std::vector< uint8_t > > response) -> void {
                     if (auto l_object = object.lock()) {
@@ -460,7 +460,7 @@ namespace tristan::network {
          */
         template < class Object >
         void addFinishedCallback(Object* object,
-                                 void (Object::*functor)(std::shared_ptr< std::vector< uint8_t > >)) {
+                                 void (Object::*functor)(std::shared_ptr< NetworkResponse >)) {
             m_finished_with_id_callback_functors.emplace_back(
                 [object, functor](std::shared_ptr< std::vector< uint8_t > > response) -> void {
                     if (object != nullptr) {
@@ -475,7 +475,7 @@ namespace tristan::network {
          * \param functor std::function<void(const std::string&, std::shared_ptr<std::vector<uint8_t>>)>&& functor
          */
         void addFinishedCallback(
-            std::function< void(const std::string&, std::shared_ptr< std::vector< uint8_t > >) >&& functor);
+            std::function< void(const std::string&, std::shared_ptr< NetworkResponse >) >&& functor);
 
         /**
          * \overload
@@ -487,7 +487,7 @@ namespace tristan::network {
         template < class Object >
         void addFinishedCallback(std::weak_ptr< Object > object,
                                  void (Object::*functor)(const std::string&,
-                                                         std::shared_ptr< std::vector< uint8_t > >)) {
+                                                         std::shared_ptr< NetworkResponse >)) {
             m_finished_with_response_callback_functors.emplace_back(
                 [object, functor](const std::string& id,
                                   std::shared_ptr< std::vector< uint8_t > > response) -> void {
@@ -507,7 +507,7 @@ namespace tristan::network {
         template < class Object >
         void addFinishedCallback(Object* object,
                                  void (Object::*functor)(const std::string&,
-                                                         std::shared_ptr< std::vector< uint8_t > >)) {
+                                                         std::shared_ptr< NetworkResponse >)) {
             m_finished_with_id_callback_functors.emplace_back(
                 [object, functor](const std::string& id,
                                   std::shared_ptr< std::vector< uint8_t > > response) -> void {
@@ -1073,7 +1073,7 @@ namespace tristan::network {
 
         class ProtectedMembers {
             friend class NetworkRequestsHandler;
-            friend class AsyncTcpRequestHandler;
+            friend class AsyncRequestHandler;
 
         public:
             /**
@@ -1125,29 +1125,25 @@ namespace tristan::network {
         };
 
     protected:
-        std::vector< uint8_t > m_request_data;
         Url m_url;
-
-        /**
-         * \brief Stores protected modifying API for RequestHandler class and derived classes
-         */
+        std::string m_uuid;
+        std::vector< uint8_t > m_request_data;
+        std::shared_ptr< NetworkResponse > m_response;
 
     private:
+        //TODO: change implementation here as std::ofstream occupies to much memory which not always needed
         std::ofstream m_output_file;
-
         std::filesystem::path m_output_path;
 
-        std::string m_uuid;
         std::vector<uint8_t> m_delimiter;
-
         std::vector< std::function< void(uint64_t) > > m_read_bytes_changed_callback_functors;
         std::vector< std::function< void(const std::string&, uint64_t) > >
             m_read_bytes_changed_with_id_callback_functors;
         std::vector< std::function< void() > > m_finished_void_callback_functors;
         std::vector< std::function< void(const std::string&) > > m_finished_with_id_callback_functors;
-        std::vector< std::function< void(std::shared_ptr< std::vector< uint8_t > >) > >
+        std::vector< std::function< void(std::shared_ptr< NetworkResponse >) > >
             m_finished_with_response_callback_functors;
-        std::vector< std::function< void(const std::string&, std::shared_ptr< std::vector< uint8_t > >) > >
+        std::vector< std::function< void(const std::string&, std::shared_ptr< NetworkResponse >) > >
             m_finished_with_id_and_response_callback_functors;
         std::vector< std::function< void() > > m_status_changed_void_callback_functors;
         std::vector< std::function< void(const std::string&) > > m_status_changed_with_id_callback_functors;
@@ -1163,11 +1159,10 @@ namespace tristan::network {
         std::vector< std::function< void() > > m_failed_void_callback_functors;
         std::vector< std::function< void(const std::string&) > > m_failed_with_id_callback_functors;
         std::vector< std::function< void(std::error_code) > > m_failed_with_error_code_callback_functors;
+
         std::vector< std::function< void(const std::string&, std::error_code) > >
             m_failed_with_id_and_error_code_callback_functors;
-
         std::error_code m_error;
-        std::shared_ptr< std::vector< uint8_t > > m_response_data;
 
         uint64_t m_bytes_to_read;
         uint64_t m_bytes_read;
