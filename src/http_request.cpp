@@ -22,8 +22,7 @@ tristan::network::HttpRequest::HttpRequest(Url&& url) :
         || (m_url.scheme() != "http" && m_url.scheme() != "https" && m_url.port() != "80"
             && m_url.port() != "443")) {
         netError("Invalid url for HTTP request received");
-        NetworkRequest::ProtectedMembers::pSetError(
-            *this, tristan::network::makeError(tristan::network::ErrorCode::INVALID_URL));
+        tristan::network::NetworkRequestProtectedAPI::setError(tristan::network::makeError(tristan::network::ErrorCode::INVALID_URL));
         return;
     }
     m_headers.addHeader(tristan::network::Header(tristan::network::http::header_names::host, m_url.host()));
