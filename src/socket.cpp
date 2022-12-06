@@ -468,6 +468,7 @@ auto tristan::network::Socket::read(uint16_t size) -> std::vector< uint8_t > {
     //        }
     //        data.push_back(byte);
     //    }
+    data.shrink_to_fit();
     if (data.at(0) == 0) {
         return {};
     }
@@ -482,11 +483,16 @@ auto tristan::network::Socket::readUntil(uint8_t delimiter) -> std::vector< uint
 
     while (true) {
         uint8_t byte = Socket::read();
-        if (m_error || byte == delimiter || byte == 0) {
+        if (m_error || byte == 0) {
+            break;
+        }
+        if (byte == delimiter){
+            m_error = tristan::network::makeError(tristan::network::SocketErrors::READ_DONE);
             break;
         }
         data.push_back(byte);
     }
+    data.shrink_to_fit();
     netDebug("data = " + std::string(data.begin(), data.end()));
     return data;
 }
@@ -497,7 +503,6 @@ auto tristan::network::Socket::readUntil(const std::vector< uint8_t >& delimiter
 
     std::vector< uint8_t > data;
     data.reserve(delimiter.size());
-
     while (true) {
         uint8_t byte = Socket::read();
         if (m_error || byte == 0) {
@@ -507,12 +512,16 @@ auto tristan::network::Socket::readUntil(const std::vector< uint8_t >& delimiter
         if (data.size() >= delimiter.size()) {
             std::vector< uint8_t > to_compare(data.end() - static_cast< int64_t >(delimiter.size()), data.end());
             if (to_compare == delimiter) {
+                m_error = tristan::network::makeError(tristan::network::SocketErrors::READ_DONE);
                 break;
             }
         } else if (data.size() == delimiter.size() && data == delimiter) {
+            m_error = tristan::network::makeError(tristan::network::SocketErrors::READ_DONE);
             break;
         }
     }
+    data.erase(data.end() - static_cast<int64_t>(delimiter.size()), data.end());
+    data.shrink_to_fit();
     netDebug("data = " + std::string(data.begin(), data.end()));
     return data;
 }
