@@ -1,6 +1,6 @@
 #include "ssl.hpp"
 #include "network_error.hpp"
-#include "net_log.hpp"
+#include "network_logger.hpp"
 
 #include <openssl/x509_vfy.h>
 
@@ -49,6 +49,12 @@ auto tristan::network::Ssl::connect() -> std::error_code {
     if (status < 0) {
         auto error = SSL_get_error(m_ssl, status);
         switch (error) {
+            case SSL_ERROR_WANT_WRITE:{
+                [[fallthrough]];
+            }
+            case SSL_ERROR_WANT_READ:{
+                [[fallthrough]];
+            }
             case SSL_ERROR_WANT_CONNECT: {
                 [[fallthrough]];
             }
