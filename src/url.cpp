@@ -1,7 +1,7 @@
 #include "url.hpp"
 #include "network_utility.hpp"
 #include "network_schemes.hpp"
-#include "net_log.hpp"
+#include "network_logger.hpp"
 
 #include <netdb.h>
 

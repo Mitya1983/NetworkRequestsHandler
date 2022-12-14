@@ -1,5 +1,5 @@
 #include "network_utility.hpp"
-#include "net_log.hpp"
+#include "network_logger.hpp"
 #include <arpa/inet.h>
 
 #include <cmath>

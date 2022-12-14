@@ -70,8 +70,8 @@ namespace tristan::network {
         SocketType m_type;
 
         bool m_non_blocking;
+        bool m_not_ssl_connected;
         bool m_connected;
-        bool m_ssl_connected;
     };
 
 }  // namespace tristan::network

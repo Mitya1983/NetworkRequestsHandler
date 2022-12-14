@@ -1,7 +1,7 @@
 #ifndef NETWORK_REQUEST_HPP
 #define NETWORK_REQUEST_HPP
 
-#include "network_request_public_API.hpp"
+#include "network_request_base.hpp"
 #include "network_utility.hpp"
 #include "network_response.hpp"
 #include "network_error.hpp"
@@ -17,10 +17,10 @@
 namespace tristan::network {
 
     /**
-     * \class NetworkRequest
+     * \class TcpRequest
      * \brief Used as a base class for network request classes. E.g. HttpRequest.
      */
-    class NetworkRequest : public NetworkRequestPublicAPI {
+    class TcpRequest : virtual public NetworkRequestBase {
 
     public:
 
@@ -28,26 +28,26 @@ namespace tristan::network {
          * \brief Constructor
          * \param url Uri&&
          */
-        explicit NetworkRequest(Url&& url);
+        explicit TcpRequest(Url&& url);
 
         /**
          * \overload
          * \brief Constructor
          * \param uri const Url&
          */
-        explicit NetworkRequest(const Url& url);
+        explicit TcpRequest(const Url& url);
 
-        NetworkRequest() = delete;
+        TcpRequest() = delete;
 
-        NetworkRequest(const NetworkRequest& other) = delete;
+        TcpRequest(const TcpRequest& other) = delete;
 
-        NetworkRequest(NetworkRequest&& other) noexcept = delete;
+        TcpRequest(TcpRequest&& other) noexcept = delete;
 
-        NetworkRequest& operator=(const NetworkRequest& other) = delete;
+        TcpRequest& operator=(const TcpRequest& other) = delete;
 
-        NetworkRequest& operator=(NetworkRequest&& other) noexcept = delete;
+        TcpRequest& operator=(TcpRequest&& other) noexcept = delete;
 
-        ~NetworkRequest() override = default;
+        ~TcpRequest() override = default;
 
         auto requestData() -> const std::vector<uint8_t>& override;
 

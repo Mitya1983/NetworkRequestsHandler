@@ -1,8 +1,8 @@
 #ifndef HTTP_REQUEST_H
 #define HTTP_REQUEST_H
 
-#include "network_request.hpp"
-#include "status_codes.hpp"
+#include "network_request_base.hpp"
+#include "http_status_codes.hpp"
 #include "url.hpp"
 #include "http_header.hpp"
 #include "http_param.hpp"
@@ -22,10 +22,10 @@ namespace tristan::network{
 
     /**
      * \class HttpRequest
-     * \extends NetworkRequest
+     * \extends TcpRequest
      * \brief Base class for http requests
      */
-    class HttpRequest : public NetworkRequest{
+    class HttpRequest : public NetworkRequestBase {
       public:
         /**
          * \brief Adds header and corresponding value.
@@ -52,6 +52,7 @@ namespace tristan::network{
         ~HttpRequest() override = default;
         HttpHeaders m_headers;
         HttpParams m_params;
+        bool m_request_composed;
     };
 
     /**
@@ -71,7 +72,7 @@ namespace tristan::network{
 
         /**
          * \brief Prepares std::vector<uint8_t> representation of the request.
-         * \implements NetworkRequest::requestData()
+         * \implements TcpRequest::requestData()
          * \return const std::vector<uint8_t>&
          */
         auto requestData() -> const std::vector<uint8_t>& override;
@@ -94,7 +95,7 @@ namespace tristan::network{
 
         /**
         * \brief Prepares std::vector<uint8_t> representation of the request.
-        * \implements NetworkRequest::requestData()
+        * \implements TcpRequest::requestData()
         * \return const std::vector<uint8_t>&
         */
         auto requestData() -> const std::vector<uint8_t>& override;

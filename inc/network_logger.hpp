@@ -1,5 +1,5 @@
-#ifndef NET_LOG_HPP
-#define NET_LOG_HPP
+#ifndef NETWORK_LOGGER_HPP
+#define NETWORK_LOGGER_HPP
 
 #include <log.hpp>
 
@@ -70,4 +70,4 @@ namespace tristan::network {
 
 }  // namespace tristan::network
 
-#endif  //NET_LOG_HPP
+#endif  //NETWORK_LOGGER_HPP

@@ -11,7 +11,7 @@ namespace tristan::network {
      * \brief Used as a base class for network responses.
      */
     class NetworkResponse {
-    friend class NetworkRequestProtectedAPI;
+    friend class NetworkRequestBase;
     public:
         NetworkResponse() = delete;
 
