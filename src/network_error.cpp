@@ -78,6 +78,7 @@ namespace /*anonymous*/
         {tristan::network::SocketErrors::SOCKET_NOT_INITIALISED,                  "Socket is not initialised"                                                             },
         {tristan::network::SocketErrors::SOCKET_FCNTL_ERROR,                      "Fcntl failed to change O_NONBLOCKING flag"                                             },
         {tristan::network::SocketErrors::SOCKET_NOT_CONNECTED,                    "Socket is not connected"                                                               },
+        {tristan::network::SocketErrors::SOCKET_TIMED_OUT,                        "Socket operation timed out"                                                            },
         {tristan::network::SocketErrors::CONNECT_NOT_ENOUGH_PERMISSIONS,          "Local address is already in use"                                                       },
         {tristan::network::SocketErrors::CONNECT_ADDRESS_IN_USE,
          "For UNIX domain sockets, which are identified by pathname: Write permission is denied on the socket file, or search permission "
@@ -100,7 +101,6 @@ namespace /*anonymous*/
         {tristan::network::SocketErrors::CONNECT_FILE_DESCRIPTOR_IS_NOT_SOCKET,   "The file descriptor does not refer to a socket"                                        },
         {tristan::network::SocketErrors::CONNECT_PROTOCOL_NOT_SUPPORTED,
          "The protocol type or the specified protocol is not supported within this communication domain"                                                                  },
-        {tristan::network::SocketErrors::CONNECT_TIMED_OUT,                       "Timeout while attempting connection"                                                   },
         {tristan::network::SocketErrors::SSL_METHOD_ERROR,                        "TLS_client_method() returned nullptr"                                                  },
         {tristan::network::SocketErrors::SSL_CONTEXT_ERROR,                       "SSL_CTX_new returned nullptr"                                                          },
         {tristan::network::SocketErrors::SSL_INIT_ERROR,                          "SSL_new returned nullptr"                                                              },
@@ -131,7 +131,6 @@ namespace /*anonymous*/
         {tristan::network::SocketErrors::WRITE_NO_SPACE,                          "The device containing the file referred to by fd has no room for the data"             },
         {tristan::network::SocketErrors::WRITE_NOT_PERMITTED,                     "The operation was prevented by a file seal"                                            },
         {tristan::network::SocketErrors::WRITE_PIPE,                              "The socket is connected to a pipe or socket whose reading end is closed"               },
-        {tristan::network::SocketErrors::WRITE_TIMED_OUT,                         "Timeout while attempting to write"                                                     },
         {tristan::network::SocketErrors::READ_TRY_AGAIN,
          "The file descriptor fd refers to a file other than a socket and has been marked nonblocking, and the read would block"                                          },
         {tristan::network::SocketErrors::READ_BAD_FILE_DESCRIPTOR,                "The socket is not a valid file descriptor or is not open for reading"                  },
@@ -141,7 +140,21 @@ namespace /*anonymous*/
         {tristan::network::SocketErrors::READ_IO,                                 "I/O error"                                                                             },
         {tristan::network::SocketErrors::READ_IS_DIRECTORY,                       "File descriptor refers to a directory"                                                 },
         {tristan::network::SocketErrors::READ_EOF,                                "EOF received"                                                                          },
-        {tristan::network::SocketErrors::READ_TIMED_OUT,                          "Timeout while attempting to read"                                                      },
+        {tristan::network::SocketErrors::READ_DONE,                               "Read until finished reading by reaching the delimiter"                                 },
+    };
+
+    struct NetworkResponseCategory : std::error_category {
+        [[nodiscard]] const char* name() const noexcept override;
+
+        [[nodiscard]] std::string message(int ec) const override;
+    };
+
+    inline const NetworkResponseCategory g_network_response_error_category;
+
+    inline const std::map< tristan::network::NetworkResponseError, const char* > g_network_response_code_descriptions{
+        {tristan::network::NetworkResponseError::SUCCESS,                  "Success"                                                                         },
+        {tristan::network::NetworkResponseError::HTTP_BAD_RESPONSE_FORMAT, "Bad format of the received http response"                                        },
+        {tristan::network::NetworkResponseError::HTTP_RESPONSE_SIZE_ERROR, "Content-length and transfer-encoding chunked are not present in response headers"},
     };
 
 }  // namespace
@@ -154,6 +167,11 @@ auto tristan::network::makeError(tristan::network::UrlErrors error_code) -> std:
 
 auto tristan::network::makeError(tristan::network::SocketErrors error_code) -> std::error_code {
     return {static_cast< int >(error_code), g_socket_error_category};
+}
+
+auto tristan::network::makeError(tristan::network::NetworkResponseError error_code) -> std::error_code {
+    return {static_cast< int >(error_code), g_network_response_error_category};
+    ;
 }
 
 namespace /*anonymous*/
@@ -170,5 +188,11 @@ namespace /*anonymous*/
 
     auto SocketErrorCategory::message(int ec) const -> std::string {
         return {g_socket_code_descriptions.at(static_cast< tristan::network::SocketErrors >(ec))};
+    }
+
+    auto NetworkResponseCategory::name() const noexcept -> const char* { return "NetworkResponseCategory"; }
+
+    auto NetworkResponseCategory::message(int ec) const -> std::string {
+        return {g_network_response_code_descriptions.at(static_cast< tristan::network::NetworkResponseError >(ec))};
     }
 }  // namespace

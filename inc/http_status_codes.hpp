@@ -1,5 +1,5 @@
-#ifndef STATUS_CODES_HPP
-#define STATUS_CODES_HPP
+#ifndef HTTP_STATUS_CODES_HPP
+#define HTTP_STATUS_CODES_HPP
 
 #include <cstdint>
 #include <string>
@@ -138,4 +138,4 @@ namespace tristan::network{
 
     auto getHttpStatusDetails(HttpStatus status) -> const std::string&;
 } // namespace tristan::network
-#endif // STATUS_CODES_HPP
+#endif // HTTP_STATUS_CODES_HPP

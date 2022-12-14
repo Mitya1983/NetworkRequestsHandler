@@ -1,8 +1,9 @@
 #ifndef NETWORK_REQUEST_HANDLER_HPP
 #define NETWORK_REQUEST_HANDLER_HPP
 
-#include "network_request.hpp"
+#include "tcp_request.hpp"
 #include "async_request_handler.hpp"
+#include "sync_network_request_handler_impl.hpp"
 
 #include <queue>
 #include <list>
@@ -17,7 +18,7 @@
 
 namespace tristan::network {
 
-    using SuppoertedRequestTypes = std::variant< std::shared_ptr< NetworkRequest > >;
+//    using SuppoertedRequestTypes = std::variant< std::shared_ptr< TcpRequest >, std::shared_ptr< HttpRequest > >;
 
     /**
      * \class NetworkRequestsHandler
@@ -26,7 +27,7 @@ namespace tristan::network {
      */
     class NetworkRequestsHandler {
 
-        NetworkRequestsHandler();
+        NetworkRequestsHandler() = default;
 
         static auto instance() -> NetworkRequestsHandler&;
 
@@ -111,13 +112,13 @@ namespace tristan::network {
          * \brief Adds request to the queue
          * \param request std::shared_ptr<Request>
          */
-        static void addRequest(SuppoertedRequestTypes&& request);
+        static void addRequest(std::shared_ptr< NetworkRequestBase >&& request);
 
         /**
          * \brief Returns list of currently active requests.
          * \return std::list<std::shared_ptr<Request>>
          */
-        inline static auto activeRequests() -> std::list< SuppoertedRequestTypes >& {
+        inline static auto activeRequests() -> std::list< std::shared_ptr< NetworkRequestBase > >& {
             return NetworkRequestsHandler::instance().m_active_requests;
         }
 
@@ -125,7 +126,7 @@ namespace tristan::network {
          * \brief Returns queue of requests which encountered error.
          * \return const std::queue<std::shared_ptr<Request>>&
          */
-        inline static auto errorRequests() -> const std::list< SuppoertedRequestTypes >& {
+        inline static auto errorRequests() -> const std::list< std::shared_ptr< NetworkRequestBase > >& {
             return NetworkRequestsHandler::instance().m_error_requests;
         }
 
@@ -136,22 +137,21 @@ namespace tristan::network {
         std::mutex m_active_nr_lock;
 
         struct Compare {
-            bool operator()(const SuppoertedRequestTypes& left, const SuppoertedRequestTypes& right) const {
+            bool operator()(const std::shared_ptr< NetworkRequestBase >& left, const std::shared_ptr< NetworkRequestBase >& right) const {
                 return left < right;
             }
         };
 
-        std::priority_queue< SuppoertedRequestTypes, std::deque< SuppoertedRequestTypes >, Compare >
+        std::priority_queue< std::shared_ptr< NetworkRequestBase >, std::deque< std::shared_ptr< NetworkRequestBase > >, Compare >
             m_requests;
 
-        std::list< SuppoertedRequestTypes > m_error_requests;
-        std::list< SuppoertedRequestTypes > m_active_requests;
+        std::list< std::shared_ptr< NetworkRequestBase > > m_error_requests;
+        std::list< std::shared_ptr< NetworkRequestBase > > m_active_requests;
 
         std::vector< std::function< void() > > m_notify_when_exit_functors;
 
-        std::chrono::seconds m_time_out_interval;
         std::unique_ptr< AsyncRequestHandler > m_async_tcp_requests_handler;
-
+        std::unique_ptr< private_::SyncNetworkRequestHandlerImpl > m_request_handler;
         std::thread m_async_request_handler_thread;
 
         std::atomic< bool > m_working;
@@ -165,9 +165,7 @@ namespace tristan::network {
 
         void _stop();
 
-        void _processRequest(SuppoertedRequestTypes&& request);
-
-        void _addRequest(SuppoertedRequestTypes&& request);
+        void _addRequest(std::shared_ptr< NetworkRequestBase >&& request);
 
         template < class Object >
         void _notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
@@ -188,7 +186,8 @@ namespace tristan::network {
             m_notify_when_exit_functors.emplace_back(functor);
         }
 
-        void _processTcpRequest(std::shared_ptr< tristan::network::NetworkRequest > tcp_request);
+        void _processTcpRequest(std::shared_ptr< tristan::network::TcpRequest > tcp_request);
+        void _processHttpRequest(std::shared_ptr< tristan::network::HttpRequest > http_request);
     };
 }  // namespace tristan::network
 

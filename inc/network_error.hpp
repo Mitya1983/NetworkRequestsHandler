@@ -43,6 +43,7 @@ namespace tristan::network {
         SOCKET_NOT_INITIALISED,
         SOCKET_FCNTL_ERROR,
         SOCKET_NOT_CONNECTED,
+        SOCKET_TIMED_OUT,
         CONNECT_NOT_ENOUGH_PERMISSIONS,
         CONNECT_ADDRESS_IN_USE,
         CONNECT_ADDRESS_NOT_AVAILABLE,
@@ -58,7 +59,6 @@ namespace tristan::network {
         CONNECT_NETWORK_UNREACHABLE,
         CONNECT_FILE_DESCRIPTOR_IS_NOT_SOCKET,
         CONNECT_PROTOCOL_NOT_SUPPORTED,
-        CONNECT_TIMED_OUT,
         SSL_METHOD_ERROR,
         SSL_CONTEXT_ERROR,
         SSL_INIT_ERROR,
@@ -85,7 +85,6 @@ namespace tristan::network {
         WRITE_NO_SPACE,
         WRITE_NOT_PERMITTED,
         WRITE_PIPE,
-        WRITE_TIMED_OUT,
         READ_TRY_AGAIN,
         READ_BAD_FILE_DESCRIPTOR,
         READ_BUFFER_OUT_OF_RANGE,
@@ -94,7 +93,13 @@ namespace tristan::network {
         READ_IO,
         READ_IS_DIRECTORY,
         READ_EOF,
-        READ_TIMED_OUT
+        READ_DONE
+    };
+
+    enum class NetworkResponseError : uint8_t {
+        SUCCESS,
+        HTTP_BAD_RESPONSE_FORMAT,
+        HTTP_RESPONSE_SIZE_ERROR,
     };
 
     /**
@@ -117,6 +122,13 @@ namespace tristan::network {
      * \return std::error_code
      */
     [[nodiscard]] auto makeError(SocketErrors error_code) -> std::error_code;
+
+    /**
+     * \brief Creates std::error_code object that stores error information.
+     * \param error_code SocketErrors
+     * \return std::error_code
+     */
+    [[nodiscard]] auto makeError(NetworkResponseError error_code) -> std::error_code;
 
 }  // namespace tristan::network
 
@@ -141,6 +153,13 @@ namespace std {
      */
     template <>
     struct is_error_code_enum< tristan::network::SocketErrors > : true_type {
+    };
+
+    /**
+     * \brief //This is needed to specialise the standard type trait.
+     */
+    template <>
+    struct is_error_code_enum< tristan::network::NetworkResponseError > : true_type {
     };
 
 }  // namespace std

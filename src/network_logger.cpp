@@ -1,4 +1,4 @@
-#include "net_log.hpp"
+#include "network_logger.hpp"
 
 tristan::network::Logger::Logger() :
     m_logger(tristan::log::Log::createLogInstance()) {

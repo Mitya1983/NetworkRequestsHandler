@@ -1,5 +1,5 @@
 #include "http_header.hpp"
-#include "net_log.hpp"
+#include "network_logger.hpp"
 
 #include <algorithm>
 
@@ -19,11 +19,13 @@ tristan::network::HttpHeaders::HttpHeaders(const std::string& headers_data) {
         auto line = headers_data.substr(new_line_start, new_line_end - new_line_start);
         if (line.find("HTTP/") != std::string::npos) {
             netDebug("Http base bar was received");
+            new_line_start = new_line_end + 2;
             continue;
         }
         auto header_name_end = line.find(':');
         if (header_name_end == std::string::npos) {
             netError("HTTP header format not conform: " + line);
+            new_line_start = new_line_end + 2;
             continue;
         }
         auto header_name = line.substr(0, header_name_end);

@@ -1,6 +1,6 @@
 #include "socket.hpp"
 #include "network_error.hpp"
-#include "net_log.hpp"
+#include "network_logger.hpp"
 
 #include <netdb.h>
 #include <sys/socket.h>
@@ -14,8 +14,8 @@ tristan::network::Socket::Socket(tristan::network::SocketType socket_type) :
     m_port(0),
     m_type(socket_type),
     m_non_blocking(false),
-    m_connected(false),
-    m_ssl_connected(false) {
+    m_not_ssl_connected(false),
+    m_connected(false) {
 
     netInfo("Creating socket of type " + std::to_string(static_cast< int >(socket_type)));
     auto protocol = getprotobyname("ip");
@@ -93,7 +93,8 @@ void tristan::network::Socket::setNonBlocking(bool non_blocking) {
 void tristan::network::Socket::resetError() { m_error = tristan::network::makeError(tristan::network::SocketErrors::SUCCESS); }
 
 void tristan::network::Socket::connect(bool ssl) {
-    if (not m_connected) {
+
+    if (not m_not_ssl_connected) {
         netInfo("Connecting to " + (m_host_name.empty() ? std::to_string(m_ip) : m_host_name) + ":" + std::to_string(m_port));
         sockaddr_in remote_address{};
         remote_address.sin_family = AF_INET;
@@ -167,7 +168,7 @@ void tristan::network::Socket::connect(bool ssl) {
                     break;
                 }
                 case ETIMEDOUT: {
-                    error = tristan::network::SocketErrors::CONNECT_TIMED_OUT;
+                    error = tristan::network::SocketErrors::SOCKET_TIMED_OUT;
                     break;
                 }
             }
@@ -175,11 +176,16 @@ void tristan::network::Socket::connect(bool ssl) {
             netError(m_error.message());
             return;
         }
-        m_connected = true;
+        m_not_ssl_connected = true;
+        if (not ssl) {
+            m_connected = true;
+        }
     }
-    if (ssl && not m_ssl_connected) {
+    if (ssl) {
         try {
-            m_ssl = tristan::network::Ssl::create(m_socket);
+            if (not m_ssl) {
+                m_ssl = tristan::network::Ssl::create(m_socket);
+            }
         } catch (const std::system_error& error) {
             m_error = error.code();
             netError(error.what());
@@ -212,7 +218,7 @@ void tristan::network::Socket::connect(bool ssl) {
             netError(m_error.message());
             return;
         }
-        m_ssl_connected = true;
+        m_connected = true;
     }
     netInfo("Connection to " + (m_host_name.empty() ? std::to_string(m_ip) : m_host_name) + " was successful");
 }
@@ -236,10 +242,6 @@ auto tristan::network::Socket::write(const std::vector< uint8_t >& data, uint16_
         return 0;
     }
 
-    if (m_ssl && not m_ssl_connected) {
-        m_error = tristan::network::makeError(tristan::network::SocketErrors::SOCKET_NOT_CONNECTED);
-        return 0;
-    }
     netDebug("data = " + std::string(data.begin(), data.end()));
     netDebug("size = " + std::to_string(size));
     netDebug("offset = " + std::to_string(offset));
@@ -395,7 +397,7 @@ auto tristan::network::Socket::read() -> uint8_t {
         m_error = tristan::network::makeError(error);
         netError(m_error.message());
     }
-    if (byte == 255){
+    if (byte == 255) {
         m_error = tristan::network::makeError(tristan::network::SocketErrors::READ_EOF);
         byte = 0;
     }
@@ -468,6 +470,7 @@ auto tristan::network::Socket::read(uint16_t size) -> std::vector< uint8_t > {
     //        }
     //        data.push_back(byte);
     //    }
+    data.shrink_to_fit();
     if (data.at(0) == 0) {
         return {};
     }
@@ -482,22 +485,27 @@ auto tristan::network::Socket::readUntil(uint8_t delimiter) -> std::vector< uint
 
     while (true) {
         uint8_t byte = Socket::read();
-        if (m_error || byte == delimiter || byte == 0) {
+        if (m_error || byte == 0) {
+            break;
+        }
+        if (byte == delimiter) {
+            m_error = tristan::network::makeError(tristan::network::SocketErrors::READ_DONE);
             break;
         }
         data.push_back(byte);
+    }
+    if (not data.empty()) {
+        data.shrink_to_fit();
     }
     netDebug("data = " + std::string(data.begin(), data.end()));
     return data;
 }
 
 auto tristan::network::Socket::readUntil(const std::vector< uint8_t >& delimiter) -> std::vector< uint8_t > {
-    netInfo("Reading from " + (m_host_name.empty() ? std::to_string(m_ip) : m_host_name) + ":" + std::to_string(m_port) + " until "
-            + std::string(delimiter.begin(), delimiter.end()));
+    netInfo("Reading from " + (m_host_name.empty() ? std::to_string(m_ip) : m_host_name) + ":" + std::to_string(m_port));
 
     std::vector< uint8_t > data;
     data.reserve(delimiter.size());
-
     while (true) {
         uint8_t byte = Socket::read();
         if (m_error || byte == 0) {
@@ -507,13 +515,22 @@ auto tristan::network::Socket::readUntil(const std::vector< uint8_t >& delimiter
         if (data.size() >= delimiter.size()) {
             std::vector< uint8_t > to_compare(data.end() - static_cast< int64_t >(delimiter.size()), data.end());
             if (to_compare == delimiter) {
+                m_error = tristan::network::makeError(tristan::network::SocketErrors::READ_DONE);
                 break;
             }
         } else if (data.size() == delimiter.size() && data == delimiter) {
+            m_error = tristan::network::makeError(tristan::network::SocketErrors::READ_DONE);
             break;
         }
     }
-    netDebug("data = " + std::string(data.begin(), data.end()));
+
+    if (m_error.value() == static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+        data.erase(data.end() - static_cast< int64_t >(delimiter.size()), data.end());
+    }
+    if (not data.empty()) {
+        data.shrink_to_fit();
+        netDebug("data = " + std::string(data.begin(), data.end()));
+    }
     return data;
 }
 
