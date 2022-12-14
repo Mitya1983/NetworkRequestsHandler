@@ -1,5 +1,5 @@
 #include "network_utility.hpp"
-#include "net_log.hpp"
+#include "network_logger.hpp"
 #include <arpa/inet.h>
 
 #include <cmath>
@@ -122,7 +122,7 @@ auto tristan::network::utility::encodeUrl(const std::string& string_to_encode) -
 }
 
 auto tristan::network::utility::uint32_tIpToStringIp(uint32_t ip) -> std::string {
-    netDebug("Converting uint32_t ip representation" + std::to_string(ip) + " to string representation");
+    netDebug("Converting uint32_t ip representation " + std::to_string(ip) + " to string representation");
     char buf[INET_ADDRSTRLEN];
     std::string address = inet_ntop(AF_INET, &ip, buf, sizeof(buf));
     if (address.empty()){
@@ -134,8 +134,8 @@ auto tristan::network::utility::uint32_tIpToStringIp(uint32_t ip) -> std::string
 }
 
 auto tristan::network::utility::stringIpToUint32_tIp(const std::string& ip) -> uint32_t {
-    netDebug("Converting string ip representation" + ip + " to uint32_t representation");
-    uint32_t result;
+    netDebug("Converting string ip representation " + ip + " to uint32_t representation");
+    uint32_t result = 0;
     if (inet_pton(AF_INET, ip.c_str(), &result) <= 0){
         netError("Failed to convert ip address");
         return {};

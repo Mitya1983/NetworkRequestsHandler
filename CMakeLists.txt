@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
 
-include(CustomFunctions.cmake)
-
 list(APPEND CMAKE_PREFIX_PATH "/home/dtristan/Personal/tristan_libs/cmake/${CMAKE_BUILD_TYPE}")
 
 project(NetworkRequestHandler LANGUAGES CXX)
@@ -11,17 +9,61 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_SHARED "" ON)
 option(BUILD_STATIC "" OFF)
+option(GENERATE_DEB_PACKAGE "" OFF)
 
 if (${BUILD_STATIC})
     message(STATUS "Static library is enabled - switching off shared one")
     set(BUILD_SHARED OFF)
 endif (${BUILD_STATIC})
 
-set_project_properties()
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # using Clang
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_CXX_FLAGS "-g -g3 -glldb -ggdb -ggdb3 -O0 -Wall -Wextra -Wpedantic -Wfloat-equal -Werror -fsanitize=address")
+#        set(CMAKE_CXX_FLAGS "-g -g3 -glldb -ggdb -ggdb3 -O0 -Wall -Wextra -Wpedantic -Wfloat-equal -Werror")
+    endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_CXX_FLAGS "-g0 -ggdb0 -glldb0 -O3")
+    endif (CMAKE_BUILD_TYPE STREQUAL "Release")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # using GCC
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_CXX_FLAGS "-g -ggdb3 -O0 -Wall -Wextra -Wpedantic -Wfloat-equal -Werror")
+    endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_CXX_FLAGS "-g0 -ggdb0 -O3")
+    endif (CMAKE_BUILD_TYPE STREQUAL "Release")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # using Visual Studio C++
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_CXX_FLAGS "/Zi /Od /JMC /WX")
+    endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_CXX_FLAGS "/Ot /O2")
+    endif (CMAKE_BUILD_TYPE STREQUAL "Release")
+else ()
+    message(FATAL_ERROR "Compiler not supported")
+endif ()
 
-prepare_source_files(INC_FILES SRC_FILES)
+find_package(Log 0.1 PATHS ${CMAKE_CONFIG_INSTALL_DIR} REQUIRED)
 
-set(LIB_VERSION 1.0)
+include_directories(
+        inc/
+        "${Log_INCLUDE_DIR}"
+)
+
+link_directories(
+        ${Log_LIBRARY_DIR}
+)
+
+file(GLOB_RECURSE INC_FILES CONFIGURE_DEPENDS
+        inc/*.hpp
+        )
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
+        src/*.cpp
+        )
+
+set(LIB_VERSION 0.1)
 
 if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
     message(STATUS "CMAKE_INSTALL_PREFIX is not set. $ENV{HOME} directory will be used")
@@ -39,17 +81,8 @@ message(STATUS "Include install directory is set to ${INCLUDE_INSTALL_DIR}")
 set(CMAKE_CONFIG_INSTALL_DIR ${GENERAL_INSTALL_DIR}/cmake/${CMAKE_BUILD_TYPE})
 message(STATUS "CMake config files install directory is set to ${CMAKE_CONFIG_INSTALL_DIR}")
 
-set(UNINSTALLER_NAME uninstall_${CMAKE_BUILD_TYPE}.sh)
 
-find_package(Log 1.0 PATHS ${CMAKE_CONFIG_INSTALL_DIR} REQUIRED)
 
-include_directories(PRIVATE
-        asio
-        "${Log_INCLUDE_DIR}"
-        )
-link_directories(
-        ${Log_LIBRARY_DIR}
-)
 if (WIN32)
 
 else ()
@@ -58,7 +91,7 @@ else ()
             -lssl
             -lcrypto
             -lLog
-            )
+    )
 endif ()
 
 if (BUILD_SHARED)
@@ -68,6 +101,12 @@ else ()
     message(STATUS "Will build static library")
     add_library(${PROJECT_NAME} STATIC)
 endif (BUILD_SHARED)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC TRISTAN_DEBUG)
+else ()
+    target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_DISABLE_TRACE LOG_DISABLE_DEBUG)
+endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 target_sources(
         ${PROJECT_NAME}
@@ -111,11 +150,7 @@ install(FILES
         CONFIGURATIONS ${CMAKE_BUILD_TYPE}
         DESTINATION ${INCLUDE_INSTALL_DIR})
 
-install(CODE "include(${CMAKE_CURRENT_SOURCE_DIR}/CustomFunctions.cmake)\ngenerate_uninstall_script(${PROJECT_INSTALL_DIR} ${CMAKE_CONFIG_INSTALL_DIR} ${GENERAL_INSTALL_DIR} ${UNINSTALLER_NAME})")
-
-install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/${UNINSTALLER_NAME}
-        CONFIGURATIONS ${CMAKE_BUILD_TYPE}
-        DESTINATION ${PROJECT_INSTALL_DIR})
-
-install(CODE "execute_process(COMMAND chmod +x ${PROJECT_INSTALL_DIR}/${UNINSTALLER_NAME})")
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_NAME "Log")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "tristan.it@outlook.com")
+include(CPack)

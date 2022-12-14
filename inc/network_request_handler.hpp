@@ -1,8 +1,9 @@
 #ifndef NETWORK_REQUEST_HANDLER_HPP
 #define NETWORK_REQUEST_HANDLER_HPP
 
-#include "network_request.hpp"
-#include "downloader.hpp"
+#include "tcp_request.hpp"
+#include "async_request_handler.hpp"
+#include "sync_network_request_handler_impl.hpp"
 
 #include <queue>
 #include <list>
@@ -17,19 +18,16 @@
 
 namespace tristan::network {
 
-    using SuppoertedRequestTypes = std::variant< std::shared_ptr< NetworkRequest > >;
+//    using SuppoertedRequestTypes = std::variant< std::shared_ptr< TcpRequest >, std::shared_ptr< HttpRequest > >;
 
     /**
      * \class NetworkRequestsHandler
-     * \brief Implements http network request queue.
+     * \brief Implements network requests queue.
      * \Threadsafe Yes
      */
     class NetworkRequestsHandler {
-        /**
-         * \brief Constructor. Sets active limit to 5.
-         *
-         */
-        NetworkRequestsHandler();
+
+        NetworkRequestsHandler() = default;
 
         static auto instance() -> NetworkRequestsHandler&;
 
@@ -42,14 +40,14 @@ namespace tristan::network {
 
         NetworkRequestsHandler& operator=(NetworkRequestsHandler&& other) = delete;
 
-        ~NetworkRequestsHandler() = default;
+        ~NetworkRequestsHandler();
 
         /**
          * \brief Sets simultaneous requests limit which by default is 5.
          * \param limit uint8_t.
          */
         inline static void setActiveDownloadsLimit(uint8_t limit) {
-            NetworkRequestsHandler::instance().m_downloader->setMaxDownloadsCount(limit);
+            NetworkRequestsHandler::instance().m_async_tcp_requests_handler->setMaxDownloadsCount(limit);
         }
 
         /**
@@ -69,14 +67,14 @@ namespace tristan::network {
          * The difference with stop() call is that in this case handler doesn't exists from execution loop.
          */
         inline static void pause() {
-            NetworkRequestsHandler::instance().m_paused.store(true, std::memory_order_relaxed);
+            NetworkRequestsHandler::instance()._pause();
         }
 
         /**
          * \brief Resumes the processing of the requests.
          */
         inline static void resume() {
-            NetworkRequestsHandler::instance().m_paused.store(false, std::memory_order_relaxed);
+            NetworkRequestsHandler::instance()._resume();
         }
 
         /**
@@ -114,25 +112,13 @@ namespace tristan::network {
          * \brief Adds request to the queue
          * \param request std::shared_ptr<Request>
          */
-        inline static void addRequest(SuppoertedRequestTypes&& request) {
-            auto is_derived_fro_network_request = std::visit(
-                [](const auto& shared_pointer) -> bool {
-                    using T = std::decay_t< decltype(shared_pointer.get()) >;
-                    return std::is_base_of_v< NetworkRequest, T >;
-                },
-                request);
-            if (not is_derived_fro_network_request) {
-                throw std::invalid_argument(
-                    "Object passed to NetworkRequestHander is not derived from NetworkRequest");
-            }
-            NetworkRequestsHandler::instance()._addRequest(std::move(request));
-        }
+        static void addRequest(std::shared_ptr< NetworkRequestBase >&& request);
 
         /**
          * \brief Returns list of currently active requests.
          * \return std::list<std::shared_ptr<Request>>
          */
-        inline static auto activeRequests() -> std::list< SuppoertedRequestTypes >& {
+        inline static auto activeRequests() -> std::list< std::shared_ptr< NetworkRequestBase > >& {
             return NetworkRequestsHandler::instance().m_active_requests;
         }
 
@@ -140,7 +126,7 @@ namespace tristan::network {
          * \brief Returns queue of requests which encountered error.
          * \return const std::queue<std::shared_ptr<Request>>&
          */
-        inline static auto errorRequests() -> const std::list< SuppoertedRequestTypes >& {
+        inline static auto errorRequests() -> const std::list< std::shared_ptr< NetworkRequestBase > >& {
             return NetworkRequestsHandler::instance().m_error_requests;
         }
 
@@ -151,32 +137,35 @@ namespace tristan::network {
         std::mutex m_active_nr_lock;
 
         struct Compare {
-            bool operator()(const SuppoertedRequestTypes& left, const SuppoertedRequestTypes& right) const {
+            bool operator()(const std::shared_ptr< NetworkRequestBase >& left, const std::shared_ptr< NetworkRequestBase >& right) const {
                 return left < right;
             }
         };
 
-        std::priority_queue< SuppoertedRequestTypes, std::deque< SuppoertedRequestTypes >, Compare >
+        std::priority_queue< std::shared_ptr< NetworkRequestBase >, std::deque< std::shared_ptr< NetworkRequestBase > >, Compare >
             m_requests;
 
-        std::list< SuppoertedRequestTypes > m_error_requests;
-        std::list< SuppoertedRequestTypes > m_active_requests;
+        std::list< std::shared_ptr< NetworkRequestBase > > m_error_requests;
+        std::list< std::shared_ptr< NetworkRequestBase > > m_active_requests;
 
         std::vector< std::function< void() > > m_notify_when_exit_functors;
 
-        std::unique_ptr< Downloader > m_downloader;
+        std::unique_ptr< AsyncRequestHandler > m_async_tcp_requests_handler;
+        std::unique_ptr< private_::SyncNetworkRequestHandlerImpl > m_request_handler;
+        std::thread m_async_request_handler_thread;
 
         std::atomic< bool > m_working;
         std::atomic< bool > m_paused;
 
         void _run();
 
-        void _stop() { m_working.store(false, std::memory_order_relaxed); }
+        void _pause();
 
-        void _addRequest(SuppoertedRequestTypes&& request) {
-            std::scoped_lock< std::mutex > lock(m_nr_queue_lock);
-            m_requests.push(std::move(request));
-        }
+        void _resume();
+
+        void _stop();
+
+        void _addRequest(std::shared_ptr< NetworkRequestBase >&& request);
 
         template < class Object >
         void _notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
@@ -197,7 +186,8 @@ namespace tristan::network {
             m_notify_when_exit_functors.emplace_back(functor);
         }
 
-        void _processTcpRequest(std::shared_ptr< tristan::network::NetworkRequest > tcp_request);
+        void _processTcpRequest(std::shared_ptr< tristan::network::TcpRequest > tcp_request);
+        void _processHttpRequest(std::shared_ptr< tristan::network::HttpRequest > http_request);
     };
 }  // namespace tristan::network
 
