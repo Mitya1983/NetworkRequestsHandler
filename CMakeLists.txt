@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
 
-list(APPEND CMAKE_PREFIX_PATH "/home/dtristan/Personal/tristan_libs/cmake/${CMAKE_BUILD_TYPE}")
-
 project(NetworkRequestHandler LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -19,8 +17,7 @@ endif (${BUILD_STATIC})
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # using Clang
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(CMAKE_CXX_FLAGS "-g -g3 -glldb -ggdb -ggdb3 -O0 -Wall -Wextra -Wpedantic -Wfloat-equal -Werror -fsanitize=address")
-#        set(CMAKE_CXX_FLAGS "-g -g3 -glldb -ggdb -ggdb3 -O0 -Wall -Wextra -Wpedantic -Wfloat-equal -Werror")
+        set(CMAKE_CXX_FLAGS "-g -g3 -glldb -ggdb -ggdb3 -O0 -Wall -Wextra -Wpedantic -Wfloat-equal -Werror -fsanitize=address -shared-libasan")
     endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (CMAKE_BUILD_TYPE STREQUAL "Release")
         set(CMAKE_CXX_FLAGS "-g0 -ggdb0 -glldb0 -O3")
@@ -45,6 +42,21 @@ else ()
     message(FATAL_ERROR "Compiler not supported")
 endif ()
 
+if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
+    message(STATUS "CMAKE_INSTALL_PREFIX is not set. $ENV{HOME} directory will be used")
+    set(INSTALL_PREFIX "$ENV{HOME}/tristan_libs")
+else ()
+    set(INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+endif ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
+
+set(PROJECT_INSTALL_DIR ${INSTALL_PREFIX}/${PROJECT_NAME})
+set(LIBRARY_INSTALL_DIR ${PROJECT_INSTALL_DIR}/${CMAKE_BUILD_TYPE})
+message(STATUS "Library install directory is set to ${LIBRARY_INSTALL_DIR}")
+set(INCLUDE_INSTALL_DIR ${LIBRARY_INSTALL_DIR}/inc)
+message(STATUS "Include install directory is set to ${INCLUDE_INSTALL_DIR}")
+set(CMAKE_CONFIG_INSTALL_DIR ${INSTALL_PREFIX}/cmake/${CMAKE_BUILD_TYPE})
+message(STATUS "CMake config files install directory is set to ${CMAKE_CONFIG_INSTALL_DIR}")
+
 find_package(Log 0.1 PATHS ${CMAKE_CONFIG_INSTALL_DIR} REQUIRED)
 
 include_directories(
@@ -65,24 +77,6 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
 
 set(LIB_VERSION 0.1)
 
-if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
-    message(STATUS "CMAKE_INSTALL_PREFIX is not set. $ENV{HOME} directory will be used")
-    set(INSTALL_PREFIX "$ENV{HOME}")
-else ()
-    set(INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
-endif ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
-
-set(GENERAL_INSTALL_DIR ${INSTALL_PREFIX}/tristan_libs)
-set(PROJECT_INSTALL_DIR ${GENERAL_INSTALL_DIR}/${PROJECT_NAME})
-set(LIBRARY_INSTALL_DIR ${PROJECT_INSTALL_DIR}/${CMAKE_BUILD_TYPE})
-message(STATUS "Library install directory is set to ${LIBRARY_INSTALL_DIR}")
-set(INCLUDE_INSTALL_DIR ${LIBRARY_INSTALL_DIR}/inc)
-message(STATUS "Include install directory is set to ${INCLUDE_INSTALL_DIR}")
-set(CMAKE_CONFIG_INSTALL_DIR ${GENERAL_INSTALL_DIR}/cmake/${CMAKE_BUILD_TYPE})
-message(STATUS "CMake config files install directory is set to ${CMAKE_CONFIG_INSTALL_DIR}")
-
-
-
 if (WIN32)
 
 else ()
@@ -90,8 +84,7 @@ else ()
             -lpthread
             -lssl
             -lcrypto
-            -lLog
-    )
+            -lLog    )
 endif ()
 
 if (BUILD_SHARED)
