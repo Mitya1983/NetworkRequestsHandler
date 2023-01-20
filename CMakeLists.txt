@@ -19,7 +19,7 @@ endif (${BUILD_STATIC})
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # using Clang
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(CMAKE_CXX_FLAGS "-g -g3 -glldb -ggdb -ggdb3 -O0 -Wall -Wextra -Wpedantic -Wfloat-equal -Werror -fsanitize=address -shared-libasan")
+        set(CMAKE_CXX_FLAGS "-g -g3 -glldb -ggdb -ggdb3 -O0 -Wall -Wextra -Wpedantic -Wfloat-equal -Werror -fsanitize=address")
     endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (CMAKE_BUILD_TYPE STREQUAL "Release")
         set(CMAKE_CXX_FLAGS "-g0 -ggdb0 -glldb0 -O3")
