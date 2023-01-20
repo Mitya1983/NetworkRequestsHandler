@@ -2,7 +2,6 @@
 #define ASYNC_REQUEST_HANDLER_HPP
 
 #include "async_network_request_handler_impl.hpp"
-#include "socket.hpp"
 #include "tcp_request.hpp"
 #include "http_request.hpp"
 

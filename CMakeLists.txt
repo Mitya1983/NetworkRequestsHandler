@@ -9,6 +9,8 @@ option(BUILD_SHARED "" ON)
 option(BUILD_STATIC "" OFF)
 option(GENERATE_DEB_PACKAGE "" OFF)
 
+set(DEPENDENCIES_LOOKUP_PATH)
+
 if (${BUILD_STATIC})
     message(STATUS "Static library is enabled - switching off shared one")
     set(BUILD_SHARED OFF)
@@ -42,36 +44,29 @@ else ()
     message(FATAL_ERROR "Compiler not supported")
 endif ()
 
-if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
-    message(STATUS "CMAKE_INSTALL_PREFIX is not set. $ENV{HOME} directory will be used")
-    set(INSTALL_PREFIX "$ENV{HOME}/tristan_libs")
-else ()
-    set(INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
-endif ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
+string(APPEND DEPENDENCIES_LOOKUP_PATH "/${CMAKE_BUILD_TYPE}")
 
-set(PROJECT_INSTALL_DIR ${INSTALL_PREFIX}/${PROJECT_NAME})
-set(LIBRARY_INSTALL_DIR ${PROJECT_INSTALL_DIR}/${CMAKE_BUILD_TYPE})
-message(STATUS "Library install directory is set to ${LIBRARY_INSTALL_DIR}")
-set(INCLUDE_INSTALL_DIR ${LIBRARY_INSTALL_DIR}/inc)
-message(STATUS "Include install directory is set to ${INCLUDE_INSTALL_DIR}")
-set(CMAKE_CONFIG_INSTALL_DIR ${INSTALL_PREFIX}/cmake/${CMAKE_BUILD_TYPE})
-message(STATUS "CMake config files install directory is set to ${CMAKE_CONFIG_INSTALL_DIR}")
-
-find_package(Log 0.1 PATHS ${CMAKE_CONFIG_INSTALL_DIR} REQUIRED)
+find_package(Log PATHS ${DEPENDENCIES_LOOKUP_PATH} REQUIRED)
+find_package(Sockets PATHS ${DEPENDENCIES_LOOKUP_PATH} REQUIRED)
 
 include_directories(
         inc/
-        "${Log_INCLUDE_DIR}"
+        ${Log_INCLUDE_DIR}
+        ${Sockets_INCLUDE_DIR}
 )
 
 link_directories(
         ${Log_LIBRARY_DIR}
+        ${Sockets_LIBRARY_DIR}
 )
 
-file(GLOB_RECURSE INC_FILES CONFIGURE_DEPENDS
+file(GLOB PRIVATE_INC_FILES CONFIGURE_DEPENDS
         inc/*.hpp
         )
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
+file(GLOB PUBLIC_INC_FILES CONFIGURE_DEPENDS
+        inc/public/*.hpp
+        )
+file(GLOB SRC_FILES CONFIGURE_DEPENDS
         src/*.cpp
         )
 
@@ -84,7 +79,9 @@ else ()
             -lpthread
             -lssl
             -lcrypto
-            -lLog    )
+            -lLog
+            -lSockets
+    )
 endif ()
 
 if (BUILD_SHARED)
@@ -104,7 +101,8 @@ endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 target_sources(
         ${PROJECT_NAME}
         PRIVATE ${SRC_FILES}
-        PUBLIC ${INC_FILES}
+        PRIVATE ${PRIVATE_INC_FILES}
+        PUBLIC ${PUBLIC_INC_FILES}
 )
 
 set_target_properties(
@@ -115,6 +113,21 @@ set_target_properties(
 )
 
 include(CMakePackageConfigHelpers)
+
+if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
+    message(STATUS "CMAKE_INSTALL_PREFIX is not set. $ENV{HOME} directory will be used")
+    set(INSTALL_PREFIX "$ENV{HOME}/tristan_libs")
+else ()
+    set(INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+endif ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
+
+set(PROJECT_INSTALL_DIR ${INSTALL_PREFIX}/${PROJECT_NAME})
+set(LIBRARY_INSTALL_DIR ${PROJECT_INSTALL_DIR}/${CMAKE_BUILD_TYPE})
+message(STATUS "Library install directory is set to ${LIBRARY_INSTALL_DIR}")
+set(INCLUDE_INSTALL_DIR ${LIBRARY_INSTALL_DIR}/inc)
+message(STATUS "Include install directory is set to ${INCLUDE_INSTALL_DIR}")
+set(CMAKE_CONFIG_INSTALL_DIR ${INSTALL_PREFIX}/cmake/${CMAKE_BUILD_TYPE})
+message(STATUS "CMake config files install directory is set to ${CMAKE_CONFIG_INSTALL_DIR}")
 
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/PackageConfig.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
@@ -139,7 +152,7 @@ install(FILES
         DESTINATION ${CMAKE_CONFIG_INSTALL_DIR})
 
 install(FILES
-        ${INC_FILES}
+        ${PUBLIC_INC_FILES}
         CONFIGURATIONS ${CMAKE_BUILD_TYPE}
         DESTINATION ${INCLUDE_INSTALL_DIR})
 
