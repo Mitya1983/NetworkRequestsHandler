@@ -60,11 +60,8 @@ link_directories(
         ${Sockets_LIBRARY_DIR}
 )
 
-file(GLOB PRIVATE_INC_FILES CONFIGURE_DEPENDS
+file(GLOB INC_FILES CONFIGURE_DEPENDS
         inc/*.hpp
-        )
-file(GLOB PUBLIC_INC_FILES CONFIGURE_DEPENDS
-        inc/public/*.hpp
         )
 file(GLOB SRC_FILES CONFIGURE_DEPENDS
         src/*.cpp
@@ -101,8 +98,7 @@ endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 target_sources(
         ${PROJECT_NAME}
         PRIVATE ${SRC_FILES}
-        PRIVATE ${PRIVATE_INC_FILES}
-        PUBLIC ${PUBLIC_INC_FILES}
+        PUBLIC ${INC_FILES}
 )
 
 set_target_properties(
@@ -152,7 +148,7 @@ install(FILES
         DESTINATION ${CMAKE_CONFIG_INSTALL_DIR})
 
 install(FILES
-        ${PUBLIC_INC_FILES}
+        ${INC_FILES}
         CONFIGURATIONS ${CMAKE_BUILD_TYPE}
         DESTINATION ${INCLUDE_INSTALL_DIR})
 
