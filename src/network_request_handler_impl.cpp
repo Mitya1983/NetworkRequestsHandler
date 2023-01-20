@@ -13,7 +13,7 @@ void tristan::network::private_::NetworkRequestHandlerImpl::debugNetworkRequestI
 }
 
 bool tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperationErrorAndTimeOut(
-    const tristan::network::Socket& socket,
+    const tristan::sockets::InetSocket& socket,
     std::chrono::time_point< std::chrono::system_clock, std::chrono::microseconds > time_point,
     const std::shared_ptr<NetworkRequestBase>& network_request) {
     if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::CONNECT_TRY_AGAIN)

@@ -28,6 +28,7 @@ namespace /*anonymous*/
         {tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_LUNCHED_TWICE,   "AsyncRequestHandler run() function invoked twice"     },
         {tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_WAS_NOT_LUNCHED, "AsyncRequestHandler run() function was not invoked"   },
         {tristan::network::ErrorCode::REQUEST_SIZE_IS_NOT_APPROPRIATE,               "Request has not either bytes to read either delimiter"},
+        {tristan::network::ErrorCode::REQUEST_NOT_SUPPORTED,                         "Request type is not supported"                        },
     };
 
     /**
