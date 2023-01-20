@@ -5,19 +5,21 @@
 
 void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleRequest(std::shared_ptr< NetworkRequestBase >&& network_request) {
     if (auto tcp_ptr = std::dynamic_pointer_cast< tristan::network::TcpRequest >(network_request)) {
-        std::thread(&SyncNetworkRequestHandlerImpl::handleTcpRequest, this, tcp_ptr).detach();
+        std::thread(&SyncNetworkRequestHandlerImpl::handleTcpRequest, this, std::move(tcp_ptr)).detach();
     } else if (auto http_ptr = std::dynamic_pointer_cast< tristan::network::HttpRequest >(network_request)){
-        std::thread(&SyncNetworkRequestHandlerImpl::handleHttpRequest, this, http_ptr).detach();
+        std::thread(&SyncNetworkRequestHandlerImpl::handleHttpRequest, this, std::move(http_ptr)).detach();
+    } else {
+        this->handleUnimplementedRequest(std::move(network_request));
     }
 }
 // NOLINTNEXTLINE
-void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleTcpRequest(std::shared_ptr< TcpRequest > tcp_request) {
+void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleTcpRequest(std::shared_ptr< TcpRequest >&& tcp_request) {
     netTrace("Start");
     netInfo("Starting processing of request " + tcp_request->uuid());
 
     tristan::network::private_::NetworkRequestHandlerImpl::debugNetworkRequestInfo(tcp_request);
 
-    tristan::network::Socket socket;
+    tristan::sockets::InetSocket socket;
 
     if (socket.error()) {
         netError(socket.error().message());
@@ -28,7 +30,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleTcpRequest
     tcp_request->request_handlers_api.setStatus(tristan::network::Status::PROCESSED);
 
     socket.setHost(tcp_request->url().hostIP().as_int, tcp_request->url().host());
-    socket.setRemotePort(tcp_request->url().portUint16_t_network_byte_order());
+    socket.setPort(tcp_request->url().portUint16_t_network_byte_order());
     socket.setNonBlocking();
     auto start = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
     while (not socket.connected()) {
@@ -115,14 +117,14 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleTcpRequest
     netTrace("End");
 }
 // NOLINTNEXTLINE
-void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpRequest(std::shared_ptr< HttpRequest > http_request) {
+void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpRequest(std::shared_ptr< HttpRequest >&& http_request) {
     netTrace("Start");
 
     netInfo("Starting processing of HTTP request " + http_request->uuid());
 
     tristan::network::private_::NetworkRequestHandlerImpl::debugNetworkRequestInfo(http_request);
 
-    tristan::network::Socket socket;
+    tristan::sockets::InetSocket socket;
 
     if (socket.error()) {
         netError(socket.error().message());
@@ -133,7 +135,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpReques
     http_request->request_handlers_api.setStatus(tristan::network::Status::PROCESSED);
 
     socket.setHost(http_request->url().hostIP().as_int, http_request->url().host());
-    socket.setRemotePort(http_request->url().portUint16_t_network_byte_order());
+    socket.setPort(http_request->url().portUint16_t_network_byte_order());
     socket.setNonBlocking();
     auto start = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
     while (not socket.connected()) {
@@ -337,4 +339,12 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpReques
     http_request->request_handlers_api.setStatus(tristan::network::Status::DONE);
     netInfo("Request " + http_request->uuid() + " successfully processed");
     netTrace("End");
+}
+
+void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleUnimplementedRequest(
+    std::shared_ptr< tristan::network::NetworkRequestBase >&& network_request) {
+    netError("Unimplemented network request received");
+    tristan::network::private_::NetworkRequestHandlerImpl::debugNetworkRequestInfo(network_request);
+    network_request->request_handlers_api.setStatus(tristan::network::Status::ERROR);
+    network_request->request_handlers_api.setError(tristan::network::makeError(tristan::network::ErrorCode::REQUEST_NOT_SUPPORTED));
 }

@@ -3,7 +3,7 @@
 
 #include "tcp_request.hpp"
 #include "http_request.hpp"
-#include "socket.hpp"
+#include "inet_socket.hpp"
 
 #include <chrono>
 
@@ -15,7 +15,7 @@ namespace tristan::network::private_ {
     protected:
         static void debugNetworkRequestInfo(const std::shared_ptr< NetworkRequestBase >& network_request);
         [[nodiscard]] static bool
-            checkSocketOperationErrorAndTimeOut(const Socket& socket,
+            checkSocketOperationErrorAndTimeOut(const tristan::sockets::InetSocket& socket,
                                                 std::chrono::time_point< std::chrono::system_clock, std::chrono::microseconds > time_point,
                                                 const std::shared_ptr< NetworkRequestBase >& network_request);
 
