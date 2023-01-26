@@ -7,13 +7,13 @@ namespace tristan::network::private_ {
 
     class AsyncNetworkRequestHandlerImpl : public NetworkRequestHandlerImpl {
     public:
-        auto handleRequest(std::shared_ptr< NetworkRequestBase >&& network_request)  -> tristan::network::ResumableCoroutine;
+        auto handleRequest(std::shared_ptr< NetworkRequestBase >&& network_request)  -> tristan::ResumableCoroutine;
         ~AsyncNetworkRequestHandlerImpl() override = default;
 
     protected:
-        auto handleTcpRequest(std::shared_ptr< tristan::network::TcpRequest > tcp_request) -> tristan::network::ResumableCoroutine;
-        auto handleHTTPRequest(std::shared_ptr< tristan::network::HttpRequest > http_request) -> tristan::network::ResumableCoroutine;
-        auto handleUnimplementedRequest(std::shared_ptr< tristan::network::NetworkRequestBase > network_request) -> tristan::network::ResumableCoroutine;
+        auto handleTcpRequest(std::shared_ptr< tristan::network::TcpRequest > tcp_request) -> tristan::ResumableCoroutine;
+        auto handleHTTPRequest(std::shared_ptr< tristan::network::HttpRequest > http_request) -> tristan::ResumableCoroutine;
+        auto handleUnimplementedRequest(std::shared_ptr< tristan::network::NetworkRequestBase > network_request) -> tristan::ResumableCoroutine;
     };
 
 }  // namespace tristan::network::private_

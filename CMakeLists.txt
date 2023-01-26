@@ -48,16 +48,19 @@ string(APPEND DEPENDENCIES_LOOKUP_PATH "/${CMAKE_BUILD_TYPE}")
 
 find_package(Log PATHS ${DEPENDENCIES_LOOKUP_PATH} REQUIRED)
 find_package(Sockets PATHS ${DEPENDENCIES_LOOKUP_PATH} REQUIRED)
+find_package(ResumableCoroutine PATHS ${DEPENDENCIES_LOOKUP_PATH} REQUIRED)
 
 include_directories(
         inc/
         ${Log_INCLUDE_DIR}
         ${Sockets_INCLUDE_DIR}
+        ${ResumableCoroutine_INCLUDE_DIR}
 )
 
 link_directories(
         ${Log_LIBRARY_DIR}
         ${Sockets_LIBRARY_DIR}
+        ${ResumableCoroutine_LIBRARY_DIR}
 )
 
 file(GLOB INC_FILES CONFIGURE_DEPENDS
