@@ -185,9 +185,6 @@ namespace tristan::network {
         void _notifyWhenExit(std::function< void() >&& functor) {
             m_notify_when_exit_functors.emplace_back(functor);
         }
-
-        void _processTcpRequest(std::shared_ptr< tristan::network::TcpRequest > tcp_request);
-        void _processHttpRequest(std::shared_ptr< tristan::network::HttpRequest > http_request);
     };
 }  // namespace tristan::network
 

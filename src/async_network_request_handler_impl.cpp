@@ -3,7 +3,7 @@
 #include "http_response.hpp"
 
 auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleRequest(std::shared_ptr< NetworkRequestBase >&& network_request)
-    -> tristan::network::ResumableCoroutine {
+    -> tristan::ResumableCoroutine {
     if (auto tcp_ptr = std::dynamic_pointer_cast< tristan::network::TcpRequest >(network_request)) {
         return handleTcpRequest(tcp_ptr);
     } else if (auto http_ptr = std::dynamic_pointer_cast< tristan::network::HttpRequest >(network_request)) {
@@ -13,7 +13,7 @@ auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleRequest(s
 }
 
 auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleTcpRequest(std::shared_ptr< tristan::network::TcpRequest > tcp_request)
-    -> tristan::network::ResumableCoroutine {
+    -> tristan::ResumableCoroutine {
     netInfo("Starting processing of request " + tcp_request->uuid());
 
     tristan::network::private_::NetworkRequestHandlerImpl::debugNetworkRequestInfo(tcp_request);
@@ -105,7 +105,7 @@ auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleTcpReques
 }
 
 auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleHTTPRequest(std::shared_ptr< tristan::network::HttpRequest > http_request)
-    -> tristan::network::ResumableCoroutine {
+    -> tristan::ResumableCoroutine {
     netInfo("Starting processing of HTTP request " + http_request->uuid());
 
     tristan::network::private_::NetworkRequestHandlerImpl::debugNetworkRequestInfo(http_request);
@@ -317,7 +317,7 @@ auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleHTTPReque
 }
 
 auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleUnimplementedRequest(
-    std::shared_ptr< tristan::network::NetworkRequestBase > network_request) -> tristan::network::ResumableCoroutine {
+    std::shared_ptr< tristan::network::NetworkRequestBase > network_request) -> tristan::ResumableCoroutine {
     netError("Unimplemented network request received");
     tristan::network::private_::NetworkRequestHandlerImpl::debugNetworkRequestInfo(network_request);
     network_request->request_handlers_api.setStatus(tristan::network::Status::ERROR);
