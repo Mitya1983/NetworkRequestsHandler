@@ -35,7 +35,7 @@ namespace tristan::network {
 
         std::mutex m_processed_requests_lock;
 
-        std::list< ResumableCoroutine > m_processed_requests;
+        std::list< tristan::ResumableCoroutine > m_processed_requests;
 
         std::unique_ptr<private_::AsyncNetworkRequestHandlerImpl> m_request_handler;
 
