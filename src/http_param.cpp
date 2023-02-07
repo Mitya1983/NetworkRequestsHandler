@@ -1,5 +1,7 @@
 #include "http_param.hpp"
 
+#include <algorithm>
+
 tristan::network::HttpParams::HttpParams(const std::string& params_data) {
     size_t parameter_name_start = 0;
     while (true) {

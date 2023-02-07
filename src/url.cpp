@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include <regex>
+#include <cstring>
 
 namespace {
 
@@ -354,7 +355,7 @@ void tristan::network::Url::_resolveHost() {
             break;
         }
         IP ip;
-        memmove(&ip.as_int, address, 4);
+        std::memmove(&ip.as_int, address, 4);
         auto string_ip = tristan::network::utility::uint32_tIpToStringIp(ip.as_int);
         if (not string_ip.empty()) {
             ip.as_string = std::move(string_ip);
