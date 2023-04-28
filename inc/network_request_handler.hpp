@@ -52,42 +52,42 @@ namespace tristan::network {
          * Sets user provided logger.
          * \param p_log std::unique_ptr<tristan::log::Log>&&
          */
-        inline static void setLogger(std::unique_ptr<tristan::log::Log>&& p_log);
+        static void setLogger(std::unique_ptr<tristan::log::Log>&& p_log);
 
         /**
          * \brief Sets simultaneous requests limit which by default is 5.
          * \param limit uint8_t.
          */
-        inline static void setActiveDownloadsLimit(uint8_t limit);
+        static void setActiveDownloadsLimit(uint8_t limit);
 
         /**
          * \brief Starts the handler loop.
          * \note This function if blocking and should be ran in a separate thread.
          */
-        inline static void run();
+        static void run();
 
         /**
          * \brief Stops the processing of all network requests.
          * \note This function does not clear any data.
          */
-        inline static void stop();
+        static void stop();
 
         /**
          * \brief Pauses the processing of the requests.
          * The difference with stop() call is that in this case handler doesn't exists from execution loop.
          */
-        inline static void pause();
+        static void pause();
 
         /**
          * \brief Resumes the processing of the requests.
          */
-        inline static void resume();
+        static void resume();
 
         /**
          * \brief Registers callback functions which will be invoked when request processing is stopped.
          * \param functor std::function<void()>&& functor
          */
-        inline static void notifyWhenExit(std::function< void() >&& functor);
+        static void notifyWhenExit(std::function< void() >&& functor);
 
         /**
          * \brief Registers callback functions which will be invoked when request processing is stopped.
@@ -96,7 +96,7 @@ namespace tristan::network {
          * \param functor void (Object::*functor)()
          */
         template < class Object >
-        inline static void notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
+        static void notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
             NetworkRequestsHandler::instance()._notifyWhenExit(object, functor);
         }
 
@@ -108,7 +108,7 @@ namespace tristan::network {
          * \param functor void (Object::*functor)()
          */
         template < class Object >
-        inline static void notifyWhenExit(Object* object, void (Object::*functor)());
+        static void notifyWhenExit(Object* object, void (Object::*functor)());
 
         /**
          * \brief Adds request to the queue
@@ -120,13 +120,13 @@ namespace tristan::network {
          * \brief Returns list of currently active requests.
          * \return std::list<std::shared_ptr<Request>>
          */
-        inline static auto activeRequests() -> std::list< std::shared_ptr< NetworkRequestBase > >&;
+        static auto activeRequests() -> std::list< std::shared_ptr< NetworkRequestBase > >&;
 
         /**
          * \brief Returns queue of requests which encountered error.
          * \return const std::queue<std::shared_ptr<Request>>&
          */
-        inline static auto errorRequests() -> const std::list< std::shared_ptr< NetworkRequestBase > >&;
+        static auto errorRequests() -> const std::list< std::shared_ptr< NetworkRequestBase > >&;
 
     protected:
     private:
