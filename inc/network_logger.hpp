@@ -16,8 +16,8 @@ namespace tristan::network {
         Logger& operator=(Logger&& other) = delete;
         ~Logger() = default;
 
+        static void setLogger(std::unique_ptr<tristan::log::Log>&& p_log);
         static void write(tristan::log::LogEvent&& event);
-
     protected:
     private:
         Logger();

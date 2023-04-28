@@ -1,6 +1,10 @@
 #include "network_request_handler_impl.hpp"
 #include "network_logger.hpp"
 
+tristan::network::private_::NetworkRequestHandlerImpl::NetworkRequestHandlerImpl() = default;
+
+tristan::network::private_::NetworkRequestHandlerImpl::~NetworkRequestHandlerImpl() = default;
+
 void tristan::network::private_::NetworkRequestHandlerImpl::debugNetworkRequestInfo(const std::shared_ptr< NetworkRequestBase >& network_request) {
     netDebug("network_request->uuid() = " + network_request->uuid());
     netDebug("network_request->url().hostIP().as_string = " + network_request->url().hostIP().as_string);
@@ -35,4 +39,3 @@ bool tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperation
     }
     return true;
 }
-

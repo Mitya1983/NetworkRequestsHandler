@@ -1,24 +1,28 @@
 #include "async_request_handler.hpp"
+#include "async_network_request_handler_impl.hpp"
 #include "network_error.hpp"
 #include "network_logger.hpp"
 #include "http_response.hpp"
 
-#include <thread>
-#include <vector>
+#include <resumable_coroutine.hpp>
 
-tristan::network::AsyncRequestHandler::AsyncRequestHandler() :
+#include <thread>
+
+tristan::network::private_::AsyncRequestHandler::AsyncRequestHandler() :
     m_max_processed_requests_count(50),
     m_working(false) { }
 
-auto tristan::network::AsyncRequestHandler::create() -> std::unique_ptr< AsyncRequestHandler > {
+tristan::network::private_::AsyncRequestHandler::~AsyncRequestHandler() = default;
+
+auto tristan::network::private_::AsyncRequestHandler::create() -> std::unique_ptr< AsyncRequestHandler > {
     return std::unique_ptr< AsyncRequestHandler >(new AsyncRequestHandler());
 }
 
-void tristan::network::AsyncRequestHandler::setMaxDownloadsCount(uint8_t count) { m_max_processed_requests_count = count; }
+void tristan::network::private_::AsyncRequestHandler::setMaxDownloadsCount(uint8_t count) { m_max_processed_requests_count = count; }
 
-void tristan::network::AsyncRequestHandler::stop() { m_working.store(false, std::memory_order_relaxed); }
+void tristan::network::private_::AsyncRequestHandler::stop() { m_working.store(false, std::memory_order_relaxed); }
 
-void tristan::network::AsyncRequestHandler::run() {
+void tristan::network::private_::AsyncRequestHandler::run() {
     netInfo("Starting async request handler");
     if (not m_request_handler){
         m_request_handler = std::make_unique< tristan::network::private_::AsyncNetworkRequestHandlerImpl >();
@@ -49,7 +53,7 @@ void tristan::network::AsyncRequestHandler::run() {
     netInfo("Async request handler stopped");
 }
 
-void tristan::network::AsyncRequestHandler::addRequest(std::shared_ptr< NetworkRequestBase >&& network_request) {
+void tristan::network::private_::AsyncRequestHandler::addRequest(std::shared_ptr< NetworkRequestBase >&& network_request) {
     if (not m_working) {
         network_request->request_handlers_api.setError(tristan::network::makeError(tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_WAS_NOT_LUNCHED));
         return;

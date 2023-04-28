@@ -20,6 +20,7 @@ namespace tristan::network {
         class NetworkRequestHandlerImpl;
         class SyncNetworkRequestHandlerImpl;
         class AsyncNetworkRequestHandlerImpl;
+        class AsyncRequestHandler;
     } //End of private_ namespace
 
     /**
@@ -100,8 +101,8 @@ namespace tristan::network {
             friend class private_::NetworkRequestHandlerImpl;
             friend class private_::SyncNetworkRequestHandlerImpl;
             friend class private_::AsyncNetworkRequestHandlerImpl;
+            friend class private_::AsyncRequestHandler;
             friend class NetworkRequestsHandler;
-            friend class AsyncRequestHandler;
             explicit FriendClassesAPI(NetworkRequestBase& base) : m_base(base) {}
 
             NetworkRequestBase& m_base;
