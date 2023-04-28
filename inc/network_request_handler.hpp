@@ -2,7 +2,6 @@
 #define NETWORK_REQUEST_HANDLER_HPP
 
 #include "tcp_request.hpp"
-#include "async_request_handler.hpp"
 
 #include <queue>
 #include <list>
