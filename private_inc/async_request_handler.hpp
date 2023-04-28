@@ -1,16 +1,21 @@
 #ifndef ASYNC_REQUEST_HANDLER_HPP
 #define ASYNC_REQUEST_HANDLER_HPP
 
-#include "async_network_request_handler_impl.hpp"
 #include "tcp_request.hpp"
 #include "http_request.hpp"
+
+#include <resumable_coroutine.hpp>
 
 #include <memory>
 #include <list>
 #include <mutex>
 #include <atomic>
 
-namespace tristan::network {
+namespace tristan::network::private_ {
+
+//    namespace private_ {
+        class AsyncNetworkRequestHandlerImpl;
+//    } //End of private_ namespace
 
     class AsyncRequestHandler {
         AsyncRequestHandler();
@@ -22,7 +27,7 @@ namespace tristan::network {
         AsyncRequestHandler& operator=(const AsyncRequestHandler& other) = delete;
         AsyncRequestHandler& operator=(AsyncRequestHandler&& other) = delete;
 
-        virtual ~AsyncRequestHandler() = default;
+        virtual ~AsyncRequestHandler();
         static auto create() -> std::unique_ptr< AsyncRequestHandler >;
         void run();
         void addRequest(std::shared_ptr< NetworkRequestBase >&& network_request);

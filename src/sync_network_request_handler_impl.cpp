@@ -3,6 +3,9 @@
 #include "http_response.hpp"
 #include <thread>
 
+tristan::network::private_::SyncNetworkRequestHandlerImpl::SyncNetworkRequestHandlerImpl() = default;
+
+tristan::network::private_::SyncNetworkRequestHandlerImpl::~SyncNetworkRequestHandlerImpl() = default;
 void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleRequest(std::shared_ptr< NetworkRequestBase >&& network_request) {
     if (auto tcp_ptr = std::dynamic_pointer_cast< tristan::network::TcpRequest >(network_request)) {
         std::thread(&SyncNetworkRequestHandlerImpl::handleTcpRequest, this, std::move(tcp_ptr)).detach();
@@ -12,6 +15,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleRequest(st
         this->handleUnimplementedRequest(std::move(network_request));
     }
 }
+
 // NOLINTNEXTLINE
 void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleTcpRequest(std::shared_ptr< TcpRequest >&& tcp_request) {
     netTrace("Start");
@@ -116,6 +120,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleTcpRequest
 
     netTrace("End");
 }
+
 // NOLINTNEXTLINE
 void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpRequest(std::shared_ptr< HttpRequest >&& http_request) {
     netTrace("Start");

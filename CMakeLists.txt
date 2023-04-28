@@ -52,6 +52,7 @@ find_package(ResumableCoroutine PATHS ${DEPENDENCIES_LOOKUP_PATH} REQUIRED)
 
 include_directories(
         inc/
+        private_inc/
         ${Log_INCLUDE_DIR}
         ${Sockets_INCLUDE_DIR}
         ${ResumableCoroutine_INCLUDE_DIR}
@@ -66,11 +67,14 @@ link_directories(
 file(GLOB INC_FILES CONFIGURE_DEPENDS
         inc/*.hpp
         )
+file(GLOB PRIVATE_INC_FILES CONFIGURE_DEPENDS
+        private_inc/*.hpp
+        )
 file(GLOB SRC_FILES CONFIGURE_DEPENDS
         src/*.cpp
         )
 
-set(LIB_VERSION 0.1)
+set(LIB_VERSION 0.2.0)
 
 if (WIN32)
 
@@ -101,6 +105,7 @@ endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 target_sources(
         ${PROJECT_NAME}
         PRIVATE ${SRC_FILES}
+        PRIVATE ${PRIVATE_INC_FILES}
         PUBLIC ${INC_FILES}
 )
 
