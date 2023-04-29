@@ -139,6 +139,7 @@ void tristan::network::NetworkRequestBase::notifyWhenFailed() {
 }
 
 void tristan::network::NetworkRequestBase::addResponseData(std::vector< uint8_t >&& data) {
+    auto data_size = data.size();
     if (not m_output_to_file) {
         if (not m_response) {
             m_response = tristan::network::NetworkResponse::createResponse(m_uuid);
@@ -151,13 +152,6 @@ void tristan::network::NetworkRequestBase::addResponseData(std::vector< uint8_t 
             tristan::network::NetworkRequestBase::setError(tristan::network::makeError(tristan::network::ErrorCode::FILE_PATH_EMPTY));
             return;
         }
-        //        if (not std::filesystem::exists(m_output_path)) {
-        //            if (not std::filesystem::exists(m_output_path.parent_path())) {
-        //                tristan::network::NetworkRequestBase::setError(tristan::network::makeError(tristan::network::ErrorCode::DESTINATION_DIR_DOES_NOT_EXISTS));
-        //                return;
-        //            }
-        //        }
-
         if (not m_output_file) {
             m_output_file = std::make_unique< std::ofstream >(m_output_path, std::ios::binary);
         }
@@ -171,7 +165,7 @@ void tristan::network::NetworkRequestBase::addResponseData(std::vector< uint8_t 
         }
         m_output_file->write(reinterpret_cast< const char* >(data.data()), static_cast< std::streamsize >(data.size()));
     }
-    m_bytes_read += data.size();
+    m_bytes_read += data_size;
     tristan::network::NetworkRequestBase::notifyWhenBytesReadChanged();
 }
 
@@ -217,6 +211,7 @@ void tristan::network::NetworkRequestBase::setStatus(tristan::network::Status st
             if (std::filesystem::exists(m_output_path)) {
                 std::filesystem::remove(m_output_path);
             }
+            break;
         }
         case tristan::network::Status::CANCELED: {
             m_canceled.store(true, std::memory_order_relaxed);
@@ -230,6 +225,7 @@ void tristan::network::NetworkRequestBase::setStatus(tristan::network::Status st
             if (std::filesystem::exists(m_output_path)) {
                 std::filesystem::remove(m_output_path);
             }
+            break;
         }
         case tristan::network::Status::DONE: {
             tristan::network::NetworkRequestBase::notifyWhenFinished();
@@ -239,6 +235,7 @@ void tristan::network::NetworkRequestBase::setStatus(tristan::network::Status st
                 }
                 m_output_file.reset();
             }
+            break;
         }
     }
     m_status = status;
