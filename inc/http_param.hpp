@@ -82,25 +82,25 @@ namespace tristan::network {
          * \brief Returns iterator begin
          * \return std::vector< Parameter >::iterator
          */
-        [[nodiscard]] constexpr auto begin() noexcept -> std::vector< Parameter >::iterator;
+        [[nodiscard]] auto begin() noexcept -> std::vector< Parameter >::iterator;
 
         /**
          * \brief Returns const_iterator begin
          * \return std::vector< Parameter >::const_iterator
          */
-        [[nodiscard]] constexpr auto cbegin() const noexcept -> std::vector< Parameter >::const_iterator;
+        [[nodiscard]] auto cbegin() const noexcept -> std::vector< Parameter >::const_iterator;
 
         /**
          * \brief Returns iterator end
          * \return std::vector< Parameter >::const_iterator
          */
-        [[nodiscard]] constexpr auto end() noexcept -> std::vector< Parameter >::iterator;
+        [[nodiscard]] auto end() noexcept -> std::vector< Parameter >::iterator;
 
         /**
          * \brief Returns const_iterator end
          * \return std::vector< Parameter >::const_iterator
          */
-        [[nodiscard]] constexpr auto cend() const noexcept -> std::vector< Parameter >::const_iterator;
+        [[nodiscard]] auto cend() const noexcept -> std::vector< Parameter >::const_iterator;
 
     private:
         std::vector< Parameter > m_params;
