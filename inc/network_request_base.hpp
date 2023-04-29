@@ -301,13 +301,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(uint64_t)
          */
-        template < class Object > void addReadBytesValueChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(uint64_t)) {
-            m_read_bytes_changed_callback_functors.emplace_back([object, functor](uint64_t value) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, value);
-                }
-            });
-        }
+        template < class Object > void addReadBytesValueChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(uint64_t));
 
         /**
          * \overload
@@ -316,13 +310,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(uint64_t)
          */
-        template < class Object > void addReadBytesValueChangedCallback(Object* object, void (Object::*functor)(uint64_t)) {
-            m_read_bytes_changed_callback_functors.emplace_back([object, functor](uint64_t value) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, value);
-                }
-            });
-        }
+        template < class Object > void addReadBytesValueChangedCallback(Object* object, void (Object::*functor)(uint64_t));
 
         /**
          * \overload
@@ -338,13 +326,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::string&, uint64_t)
          */
-        template < class Object > void addReadBytesValueChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, uint64_t)) {
-            m_read_bytes_changed_callback_functors.emplace_back([object, functor](const std::string& id, uint64_t value) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, id, value);
-                }
-            });
-        }
+        template < class Object > void addReadBytesValueChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, uint64_t));
 
         /**
          * \overload
@@ -353,13 +335,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&, uint64_t)
          */
-        template < class Object > void addReadBytesValueChangedCallback(Object* object, void (Object::*functor)(const std::string&, uint64_t)) {
-            m_read_bytes_changed_callback_functors.emplace_back([object, functor](const std::string& id, uint64_t value) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, id, value);
-                }
-            });
-        }
+        template < class Object > void addReadBytesValueChangedCallback(Object* object, void (Object::*functor)(const std::string&, uint64_t));
 
         /**
          * \brief Registers callback functions which will be invoked when network request was processed.
@@ -374,13 +350,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
-            m_finished_void_callback_functors.emplace_back([object, functor]() -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object);
-                }
-            });
-        }
+        template < class Object > void addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)());
 
         /**
          * \overload
@@ -389,13 +359,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addFinishedCallback(Object* object, void (Object::*functor)()) {
-            m_finished_void_callback_functors.emplace_back([object, functor]() -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object);
-                }
-            });
-        }
+        template < class Object > void addFinishedCallback(Object* object, void (Object::*functor)());
 
         /**
          * \overload
@@ -411,13 +375,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
-            m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, id);
-                }
-            });
-        }
+        template < class Object > void addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&));
 
         /**
          * \overload
@@ -426,13 +384,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addFinishedCallback(Object* object, void (Object::*functor)(const std::string&)) {
-            m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, id);
-                }
-            });
-        }
+        template < class Object > void addFinishedCallback(Object* object, void (Object::*functor)(const std::string&));
 
         /**
          * \overload
@@ -448,13 +400,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(std::shared_ptr<std::vector<uint8_t>>)
          */
-        template < class Object > void addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)(std::shared_ptr< NetworkResponse >)) {
-            m_finished_with_response_callback_functors.emplace_back([object, functor](std::shared_ptr< std::vector< uint8_t > > response) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, response);
-                }
-            });
-        }
+        template < class Object > void addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)(std::shared_ptr< NetworkResponse >));
 
         /**
          * \overload
@@ -463,13 +409,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(std::shared_ptr<std::vector<uint8_t>>)
          */
-        template < class Object > void addFinishedCallback(Object* object, void (Object::*functor)(std::shared_ptr< NetworkResponse >)) {
-            m_finished_with_id_callback_functors.emplace_back([object, functor](std::shared_ptr< std::vector< uint8_t > > response) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, response);
-                }
-            });
-        }
+        template < class Object > void addFinishedCallback(Object* object, void (Object::*functor)(std::shared_ptr< NetworkResponse >));
 
         /**
          * \overload
@@ -486,14 +426,7 @@ namespace tristan::network {
          * \param functor void (Object::*functor)(const std::string&, std::shared_ptr<std::vector<uint8_t>>)
          */
         template < class Object >
-        void addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, std::shared_ptr< NetworkResponse >)) {
-            m_finished_with_response_callback_functors.emplace_back(
-                [object, functor](const std::string& id, std::shared_ptr< std::vector< uint8_t > > response) -> void {
-                    if (auto l_object = object.lock()) {
-                        std::invoke(functor, l_object, id, response);
-                    }
-                });
-        }
+        void addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, std::shared_ptr< NetworkResponse >));
 
         /**
          * \overload
@@ -502,14 +435,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&, std::shared_ptr<std::vector<uint8_t>>)
          */
-        template < class Object > void addFinishedCallback(Object* object, void (Object::*functor)(const std::string&, std::shared_ptr< NetworkResponse >)) {
-            m_finished_with_id_callback_functors.emplace_back(
-                [object, functor](const std::string& id, std::shared_ptr< std::vector< uint8_t > > response) -> void {
-                    if (object != nullptr) {
-                        std::invoke(functor, object, id, response);
-                    }
-                });
-        }
+        template < class Object > void addFinishedCallback(Object* object, void (Object::*functor)(const std::string&, std::shared_ptr< NetworkResponse >));
 
         /**
          * \brief Registers callback functions which will be invoked when network request status had changed.
@@ -524,13 +450,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
-            m_finished_void_callback_functors.emplace_back([object, functor]() -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object);
-                }
-            });
-        }
+        template < class Object > void addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)());
 
         /**
          * \overload
@@ -539,13 +459,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addStatusChangedCallback(Object* object, void (Object::*functor)()) {
-            m_finished_void_callback_functors.emplace_back([object, functor]() -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object);
-                }
-            });
-        }
+        template < class Object > void addStatusChangedCallback(Object* object, void (Object::*functor)());
 
         /**
          * \overload
@@ -561,13 +475,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
-            m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, id);
-                }
-            });
-        }
+        template < class Object > void addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&));
 
         /**
          * \overload
@@ -576,13 +484,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addStatusChangedCallback(Object* object, void (Object::*functor)(const std::string&)) {
-            m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, id);
-                }
-            });
-        }
+        template < class Object > void addStatusChangedCallback(Object* object, void (Object::*functor)(const std::string&));
 
         /**
          * \overload
@@ -598,13 +500,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(Status)
          */
-        template < class Object > void addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(Status)) {
-            m_finished_with_response_callback_functors.emplace_back([object, functor](Status status) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, status);
-                }
-            });
-        }
+        template < class Object > void addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(Status));
 
         /**
          * \overload
@@ -613,13 +509,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(Status)
          */
-        template < class Object > void addStatusChangedCallback(Object* object, void (Object::*functor)(Status)) {
-            m_finished_with_id_callback_functors.emplace_back([object, functor](Status status) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, status);
-                }
-            });
-        }
+        template < class Object > void addStatusChangedCallback(Object* object, void (Object::*functor)(Status));
 
         /**
          * \overload
@@ -635,13 +525,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::string&, Status)
          */
-        template < class Object > void addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, Status)) {
-            m_finished_with_response_callback_functors.emplace_back([object, functor](const std::string& id, Status status) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, id, status);
-                }
-            });
-        }
+        template < class Object > void addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, Status));
 
         /**
          * \overload
@@ -650,13 +534,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&, Status)
          */
-        template < class Object > void addStatusChangedCallback(Object* object, void (Object::*functor)(const std::string&, Status)) {
-            m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id, Status status) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, id, status);
-                }
-            });
-        }
+        template < class Object > void addStatusChangedCallback(Object* object, void (Object::*functor)(const std::string&, Status));
 
         /**
          * \brief Registers callback functions which will be invoked when network request processing is paused.
@@ -671,13 +549,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addPausedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
-            m_paused_void_functors.emplace_back([object, functor]() -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object);
-                }
-            });
-        }
+        template < class Object > void addPausedCallback(std::weak_ptr< Object > object, void (Object::*functor)());
 
         /**
          * \overload
@@ -686,13 +558,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addPausedCallback(Object* object, void (Object::*functor)()) {
-            m_paused_void_functors.emplace_back([object, functor]() -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object);
-                }
-            });
-        }
+        template < class Object > void addPausedCallback(Object* object, void (Object::*functor)());
 
         /**
          * \overload
@@ -708,13 +574,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addPausedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
-            m_paused_void_functors.template emplace_back([object, functor](const std::string& id) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, id);
-                }
-            });
-        }
+        template < class Object > void addPausedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&));
 
         /**
          * \overload
@@ -723,13 +583,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addPausedCallback(Object* object, void (Object::*functor)(const std::string&)) {
-            m_paused_void_functors.template emplace_back([object, functor](const std::string& id) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, id);
-                }
-            });
-        }
+        template < class Object > void addPausedCallback(Object* object, void (Object::*functor)(const std::string&));
 
         /**
          * \brief Registers callback functions which will be invoked when network request processing was resumed.
@@ -744,13 +598,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addResumedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
-            m_resumed_void_functors.emplace_back([object, functor]() -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object);
-                }
-            });
-        }
+        template < class Object > void addResumedCallback(std::weak_ptr< Object > object, void (Object::*functor)());
 
         /**
          * \overload
@@ -759,13 +607,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addResumedCallback(Object* object, void (Object::*functor)()) {
-            m_resumed_void_functors.emplace_back([object, functor]() -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object);
-                }
-            });
-        }
+        template < class Object > void addResumedCallback(Object* object, void (Object::*functor)());
 
         /**
          * \overload
@@ -781,13 +623,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addResumedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
-            m_resumed_with_id_functors.template emplace_back([object, functor](const std::string& id) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, id);
-                }
-            });
-        }
+        template < class Object > void addResumedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&));
 
         /**
          * \overload
@@ -796,13 +632,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addResumedCallback(Object* object, void (Object::*functor)(const std::string&)) {
-            m_resumed_with_id_functors.template emplace_back([object, functor](const std::string& id) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, id);
-                }
-            });
-        }
+        template < class Object > void addResumedCallback(Object* object, void (Object::*functor)(const std::string&));
 
         /**
          * \brief Registers callback functions which will be invoked when network request processing was canceled.
@@ -817,13 +647,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addCanceledCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
-            m_canceled_void_functors.emplace_back([object, functor]() -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object);
-                }
-            });
-        }
+        template < class Object > void addCanceledCallback(std::weak_ptr< Object > object, void (Object::*functor)());
 
         /**
          * \overload
@@ -832,13 +656,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addCanceledCallback(Object* object, void (Object::*functor)()) {
-            m_canceled_void_functors.emplace_back([object, functor]() -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object);
-                }
-            });
-        }
+        template < class Object > void addCanceledCallback(Object* object, void (Object::*functor)());
 
         /**
          * \overload
@@ -854,13 +672,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addCanceledCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
-            m_canceled_with_id_functors.template emplace_back([object, functor](const std::string& id) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, id);
-                }
-            });
-        }
+        template < class Object > void addCanceledCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&));
 
         /**
          * \overload
@@ -869,13 +681,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addCanceledCallback(Object* object, void (Object::*functor)(const std::string&)) {
-            m_canceled_with_id_functors.template emplace_back([object, functor](const std::string& id) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, id);
-                }
-            });
-        }
+        template < class Object > void addCanceledCallback(Object* object, void (Object::*functor)(const std::string&));
 
         /**
          * \brief Registers callback functions which will be invoked when network request processing had failed.
@@ -890,13 +696,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
-            m_failed_void_callback_functors.emplace_back([object, functor]() -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object);
-                }
-            });
-        }
+        template < class Object > void addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)());
 
         /**
          * \overload
@@ -905,13 +705,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)()
          */
-        template < class Object > void addFailedCallback(Object* object, void (Object::*functor)()) {
-            m_failed_void_callback_functors.emplace_back([object, functor]() -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object);
-                }
-            });
-        }
+        template < class Object > void addFailedCallback(Object* object, void (Object::*functor)());
 
         /**
          * \overload
@@ -927,13 +721,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
-            m_failed_with_id_callback_functors.template emplace_back([object, functor](const std::string& id) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, id);
-                }
-            });
-        }
+        template < class Object > void addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&));
 
         /**
          * \overload
@@ -942,13 +730,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&)
          */
-        template < class Object > void addFailedCallback(Object* object, void (Object::*functor)(const std::string&)) {
-            m_failed_with_id_callback_functors.template emplace_back([object, functor](const std::string& id) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, id);
-                }
-            });
-        }
+        template < class Object > void addFailedCallback(Object* object, void (Object::*functor)(const std::string&));
 
         /**
          * \overload
@@ -964,13 +746,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(std::error_code)
          */
-        template < class Object > void addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)(std::error_code)) {
-            m_failed_with_error_code_callback_functors.template emplace_back([object, functor](std::error_code error_code) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, error_code);
-                }
-            });
-        }
+        template < class Object > void addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)(std::error_code));
 
         /**
          * \overload
@@ -979,13 +755,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(std::error_code)
          */
-        template < class Object > void addFailedCallback(Object* object, void (Object::*functor)(std::error_code)) {
-            m_failed_with_error_code_callback_functors.emplace_back([object, functor](std::error_code error_code) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, error_code);
-                }
-            });
-        }
+        template < class Object > void addFailedCallback(Object* object, void (Object::*functor)(std::error_code));
 
         /**
          * \overload
@@ -1001,13 +771,7 @@ namespace tristan::network {
          * \param object std::weak_ptr<Object>
          * \param functor void (Object::*functor)(const std::string&, std::error_code)
          */
-        template < class Object > void addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, std::error_code)) {
-            m_failed_with_id_and_error_code_callback_functors.emplace_back([object, functor](const std::string& id, std::error_code error_code) -> void {
-                if (auto l_object = object.lock()) {
-                    std::invoke(functor, l_object, id, error_code);
-                }
-            });
-        }
+        template < class Object > void addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, std::error_code));
 
         /**
          * \overload
@@ -1016,13 +780,7 @@ namespace tristan::network {
          * \param object Object*
          * \param functor void (Object::*functor)(const std::string&, std::error_code)
          */
-        template < class Object > void addFailedCallback(Object* object, void (Object::*functor)(const std::string&, std::error_code)) {
-            m_failed_with_id_and_error_code_callback_functors.emplace_back([object, functor](const std::string& id, std::error_code error_code) -> void {
-                if (object != nullptr) {
-                    std::invoke(functor, object, id, error_code);
-                }
-            });
-        }
+        template < class Object > void addFailedCallback(Object* object, void (Object::*functor)(const std::string&, std::error_code));
 
         FriendClassesAPI request_handlers_api;
 
@@ -1105,6 +863,329 @@ namespace tristan::network {
         bool m_output_to_file;
         bool m_ssl;
     };
+
+    template < class Object > void NetworkRequestBase::addReadBytesValueChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(uint64_t)) {
+        m_read_bytes_changed_callback_functors.emplace_back([object, functor](uint64_t value) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, value);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addReadBytesValueChangedCallback(Object* object, void (Object::*functor)(uint64_t)) {
+        m_read_bytes_changed_callback_functors.emplace_back([object, functor](uint64_t value) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, value);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addReadBytesValueChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, uint64_t)) {
+        m_read_bytes_changed_callback_functors.emplace_back([object, functor](const std::string& id, uint64_t value) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, id, value);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addReadBytesValueChangedCallback(Object* object, void (Object::*functor)(const std::string&, uint64_t)) {
+        m_read_bytes_changed_callback_functors.emplace_back([object, functor](const std::string& id, uint64_t value) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, id, value);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
+        m_finished_void_callback_functors.emplace_back([object, functor]() -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFinishedCallback(Object* object, void (Object::*functor)()) {
+        m_finished_void_callback_functors.emplace_back([object, functor]() -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
+        m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFinishedCallback(Object* object, void (Object::*functor)(const std::string&)) {
+        m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)(std::shared_ptr< NetworkResponse >)) {
+        m_finished_with_response_callback_functors.emplace_back([object, functor](std::shared_ptr< std::vector< uint8_t > > response) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, response);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFinishedCallback(Object* object, void (Object::*functor)(std::shared_ptr< NetworkResponse >)) {
+        m_finished_with_id_callback_functors.emplace_back([object, functor](std::shared_ptr< std::vector< uint8_t > > response) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, response);
+            }
+        });
+    }
+
+    template < class Object >
+    void NetworkRequestBase::addFinishedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, std::shared_ptr< NetworkResponse >)) {
+        m_finished_with_response_callback_functors.emplace_back(
+            [object, functor](const std::string& id, std::shared_ptr< std::vector< uint8_t > > response) -> void {
+                if (auto l_object = object.lock()) {
+                    std::invoke(functor, l_object, id, response);
+                }
+            });
+    }
+
+    template < class Object > void NetworkRequestBase::addFinishedCallback(Object* object, void (Object::*functor)(const std::string&, std::shared_ptr< NetworkResponse >)) {
+        m_finished_with_id_callback_functors.emplace_back(
+            [object, functor](const std::string& id, std::shared_ptr< std::vector< uint8_t > > response) -> void {
+                if (object != nullptr) {
+                    std::invoke(functor, object, id, response);
+                }
+            });
+    }
+
+    template < class Object > void NetworkRequestBase::addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
+        m_finished_void_callback_functors.emplace_back([object, functor]() -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addStatusChangedCallback(Object* object, void (Object::*functor)()) {
+        m_finished_void_callback_functors.emplace_back([object, functor]() -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
+        m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addStatusChangedCallback(Object* object, void (Object::*functor)(const std::string&)) {
+        m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(Status)) {
+        m_finished_with_response_callback_functors.emplace_back([object, functor](Status status) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, status);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addStatusChangedCallback(Object* object, void (Object::*functor)(Status)) {
+        m_finished_with_id_callback_functors.emplace_back([object, functor](Status status) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, status);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addStatusChangedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, Status)) {
+        m_finished_with_response_callback_functors.emplace_back([object, functor](const std::string& id, Status status) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, id, status);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addStatusChangedCallback(Object* object, void (Object::*functor)(const std::string&, Status)) {
+        m_finished_with_id_callback_functors.emplace_back([object, functor](const std::string& id, Status status) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, id, status);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addPausedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
+        m_paused_void_functors.emplace_back([object, functor]() -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addPausedCallback(Object* object, void (Object::*functor)()) {
+        m_paused_void_functors.emplace_back([object, functor]() -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addPausedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
+        m_paused_void_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addPausedCallback(Object* object, void (Object::*functor)(const std::string&)) {
+        m_paused_void_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addResumedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
+        m_resumed_void_functors.emplace_back([object, functor]() -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addResumedCallback(Object* object, void (Object::*functor)()) {
+        m_resumed_void_functors.emplace_back([object, functor]() -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addResumedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
+        m_resumed_with_id_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addResumedCallback(Object* object, void (Object::*functor)(const std::string&)) {
+        m_resumed_with_id_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addCanceledCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
+        m_canceled_void_functors.emplace_back([object, functor]() -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addCanceledCallback(Object* object, void (Object::*functor)()) {
+        m_canceled_void_functors.emplace_back([object, functor]() -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addCanceledCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
+        m_canceled_with_id_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addCanceledCallback(Object* object, void (Object::*functor)(const std::string&)) {
+        m_canceled_with_id_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)()) {
+        m_failed_void_callback_functors.emplace_back([object, functor]() -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFailedCallback(Object* object, void (Object::*functor)()) {
+        m_failed_void_callback_functors.emplace_back([object, functor]() -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&)) {
+        m_failed_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFailedCallback(Object* object, void (Object::*functor)(const std::string&)) {
+        m_failed_with_id_callback_functors.emplace_back([object, functor](const std::string& id) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, id);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)(std::error_code)) {
+        m_failed_with_error_code_callback_functors.emplace_back([object, functor](std::error_code error_code) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, error_code);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFailedCallback(Object* object, void (Object::*functor)(std::error_code)) {
+        m_failed_with_error_code_callback_functors.emplace_back([object, functor](std::error_code error_code) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, error_code);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFailedCallback(std::weak_ptr< Object > object, void (Object::*functor)(const std::string&, std::error_code)) {
+        m_failed_with_id_and_error_code_callback_functors.emplace_back([object, functor](const std::string& id, std::error_code error_code) -> void {
+            if (auto l_object = object.lock()) {
+                std::invoke(functor, l_object, id, error_code);
+            }
+        });
+    }
+
+    template < class Object > void NetworkRequestBase::addFailedCallback(Object* object, void (Object::*functor)(const std::string&, std::error_code)) {
+        m_failed_with_id_and_error_code_callback_functors.emplace_back([object, functor](const std::string& id, std::error_code error_code) -> void {
+            if (object != nullptr) {
+                std::invoke(functor, object, id, error_code);
+            }
+        });
+    }
 
 }  // namespace tristan::network
 

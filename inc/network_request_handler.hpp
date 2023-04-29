@@ -96,9 +96,7 @@ namespace tristan::network {
          * \param functor void (Object::*functor)()
          */
         template < class Object >
-        static void notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
-            NetworkRequestsHandler::instance()._notifyWhenExit(object, functor);
-        }
+        static void notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)());
 
         /**
          * \overload
@@ -174,12 +172,17 @@ namespace tristan::network {
     };
 
     template < class Object >
-    void tristan::network::NetworkRequestsHandler::notifyWhenExit(Object* object, void (Object::*functor)()) {
+    void NetworkRequestsHandler::notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
         NetworkRequestsHandler::instance()._notifyWhenExit(object, functor);
     }
 
     template < class Object >
-    void tristan::network::NetworkRequestsHandler::_notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
+    void NetworkRequestsHandler::notifyWhenExit(Object* object, void (Object::*functor)()) {
+        NetworkRequestsHandler::instance()._notifyWhenExit(object, functor);
+    }
+
+    template < class Object >
+    void NetworkRequestsHandler::_notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
         m_notify_when_exit_functors.emplace_back([object, functor]() -> void {
             if (auto l_object = object.lock()) {
                 std::invoke(functor, l_object);

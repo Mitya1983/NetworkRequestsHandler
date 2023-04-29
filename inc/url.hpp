@@ -94,79 +94,73 @@ namespace tristan::network {
          * \brief Scheme getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto scheme() const noexcept -> const std::string& { return m_scheme; }
+        [[nodiscard]] auto scheme() const noexcept -> const std::string&;
 
         /**
          * \brief User name getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto userName() const noexcept -> const std::string& { return m_user_name; }
+        [[nodiscard]] auto userName() const noexcept -> const std::string&;
 
         /**
          * \brief User password getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto userPassword() const noexcept -> const std::string& { return m_user_password; }
+        [[nodiscard]] auto userPassword() const noexcept -> const std::string&;
 
         /**
          * \brief Host getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto host() const noexcept -> const std::string& { return m_host; }
+        [[nodiscard]] auto host() const noexcept -> const std::string&;
 
         /**
          * \brief Returns host in form of ip address
          * \return const std::string&
          */
-        [[nodiscard]] auto hostIP() const noexcept -> const IP& { return m_host_ip.at(0); }
+        [[nodiscard]] auto hostIP() const noexcept -> const IP&;
 
         /**
          * \brief Returns list of host ip addresses
          * \return const std::vector<std::string>&
          */
-        [[nodiscard]] auto hostIPList() const noexcept -> const std::vector< IP >& {
-            return m_host_ip;
-        }
+        [[nodiscard]] auto hostIPList() const noexcept -> const std::vector< IP >&;
 
         /**
          * \brief Port getter.
          * \return Port or empty string.
          */
-        [[nodiscard]] auto port() const noexcept -> const std::string& { return m_port; }
+        [[nodiscard]] auto port() const noexcept -> const std::string&;
 
         /**
          * \brief Port getter in local byte order
          * \return uint16_t
          */
-        [[nodiscard]] auto portUint16_t_local_byte_order() const noexcept -> uint16_t {
-            return static_cast< uint16_t >(m_port_local_byte_order);
-        }
+        [[nodiscard]] auto portUint16_t_local_byte_order() const noexcept -> uint16_t;
 
         /**
          * \brief Port getter in network byte order
          * \return uint16_t
          */
-        [[nodiscard]] auto portUint16_t_network_byte_order() const noexcept -> uint16_t {
-            return static_cast< uint16_t >(m_port_network_byte_order);
-        }
+        [[nodiscard]] auto portUint16_t_network_byte_order() const noexcept -> uint16_t;
 
         /**
         * \brief Path getter.
         * \return const std::string&
         */
-        [[nodiscard]] auto path() const noexcept -> const std::string& { return m_path; }
+        [[nodiscard]] auto path() const noexcept -> const std::string&;
 
         /**
          * \brief Query getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto query() const noexcept -> const std::string& { return m_query; }
+        [[nodiscard]] auto query() const noexcept -> const std::string&;
 
         /**
          * \brief Fragment getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto fragment() const noexcept -> const std::string& { return m_fragment; }
+        [[nodiscard]] auto fragment() const noexcept -> const std::string&;
 
         /**
          * \brief Composes a string representation of URI.
@@ -179,13 +173,13 @@ namespace tristan::network {
          * \brief Check if URI is valid. Should be used in case of overloaded constructor.
          * \return True is valid and false otherwise.
          */
-        [[nodiscard]] auto isValid() const noexcept -> bool { return m_valid; }
+        [[nodiscard]] auto isValid() const noexcept -> bool;
 
         /**
          * Retuns error if Url is in invalid state
          * @return std::error_code
          */
-        [[nodiscard]] auto error() const noexcept -> std::error_code { return m_error; }
+        [[nodiscard]] auto error() const noexcept -> std::error_code;
 
     protected:
     private:

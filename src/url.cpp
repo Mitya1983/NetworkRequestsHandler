@@ -284,6 +284,30 @@ void tristan::network::Url::setFragment(const std::string& fragment) {
     netDebug("m_fragment = " + m_fragment);
 }
 
+auto tristan::network::Url::scheme() const noexcept -> const std::string& { return m_scheme; }
+
+auto tristan::network::Url::userName() const noexcept -> const std::string& { return m_user_name; }
+
+auto tristan::network::Url::userPassword() const noexcept -> const std::string& { return m_user_password; }
+
+auto tristan::network::Url::host() const noexcept -> const std::string& { return m_host; }
+
+auto tristan::network::Url::hostIP() const noexcept -> const IP& { return m_host_ip.at(0); }
+
+auto tristan::network::Url::hostIPList() const noexcept -> const std::vector< IP >& { return m_host_ip; }
+
+auto tristan::network::Url::port() const noexcept -> const std::string& { return m_port; }
+
+auto tristan::network::Url::portUint16_t_local_byte_order() const noexcept -> uint16_t { return static_cast< uint16_t >(m_port_local_byte_order); }
+
+auto tristan::network::Url::portUint16_t_network_byte_order() const noexcept -> uint16_t { return static_cast< uint16_t >(m_port_network_byte_order); }
+
+auto tristan::network::Url::path() const noexcept -> const std::string& { return m_path; }
+
+auto tristan::network::Url::query() const noexcept -> const std::string& { return m_query; }
+
+auto tristan::network::Url::fragment() const noexcept -> const std::string& { return m_fragment; }
+
 auto tristan::network::Url::composeUrl() const -> std::string {
     netInfo("Composing url");
     std::string uri;
@@ -323,6 +347,10 @@ auto tristan::network::Url::composeUrl() const -> std::string {
     netInfo("Composed url = " + uri);
     return uri;
 }
+
+auto tristan::network::Url::isValid() const noexcept -> bool { return m_valid; }
+
+auto tristan::network::Url::error() const noexcept -> std::error_code { return m_error; }
 
 void tristan::network::Url::_resolveHost() {
     netInfo("Resolving host " + m_host);

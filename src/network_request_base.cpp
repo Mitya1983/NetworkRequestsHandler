@@ -1,6 +1,7 @@
 #include "network_request_base.hpp"
-
 #include "network_response.hpp"
+
+#include <socket_error.hpp>
 
 tristan::network::NetworkRequestBase::NetworkRequestBase(tristan::network::Url&& url) :
     request_handlers_api(*this),
@@ -203,7 +204,7 @@ void tristan::network::NetworkRequestBase::setStatus(tristan::network::Status st
             break;
         }
         case tristan::network::Status::ERROR: {
-            if (m_error.value() == static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+            if (m_error.value() == static_cast< int >(tristan::sockets::Error::READ_DONE)) {
                 return;
             }
             tristan::network::NetworkRequestBase::notifyWhenFailed();
@@ -245,7 +246,7 @@ void tristan::network::NetworkRequestBase::setStatus(tristan::network::Status st
 
 void tristan::network::NetworkRequestBase::setError(std::error_code error_code) {
     m_error = error_code;
-    if (m_error.value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+    if (m_error.value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
         tristan::network::NetworkRequestBase::setStatus(tristan::network::Status::ERROR);
     }
 }

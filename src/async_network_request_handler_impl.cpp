@@ -2,6 +2,8 @@
 #include "network_logger.hpp"
 #include "http_response.hpp"
 
+#include <socket_error.hpp>
+
 tristan::network::private_::AsyncNetworkRequestHandlerImpl::AsyncNetworkRequestHandlerImpl() = default;
 
 tristan::network::private_::AsyncNetworkRequestHandlerImpl::~AsyncNetworkRequestHandlerImpl() = default;
@@ -177,7 +179,7 @@ auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleHTTPReque
         if (not tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperationErrorAndTimeOut(socket, start, http_request)) {
             co_return;
         }
-        if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+        if (socket.error() && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
             if (not data.empty()) {
                 netDebug(std::to_string(data.size()) + " bytes was read");
                 netDebug("Data: " + std::string(data.begin(), data.end()));
@@ -265,7 +267,7 @@ auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleHTTPReque
             if (not tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperationErrorAndTimeOut(socket, start, http_request)) {
                 co_return;
             }
-            if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+            if (socket.error() && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
                 co_await std::suspend_always();
                 socket.resetError();
                 continue;

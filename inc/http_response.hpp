@@ -10,7 +10,6 @@ namespace tristan::network {
 
     class HttpResponse : public NetworkResponse
     {
-//        friend class TcpRequest;
         friend class HttpRequest;
     public:
         HttpResponse() = delete;

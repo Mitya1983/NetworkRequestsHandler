@@ -1,6 +1,8 @@
 #include "network_request_handler_impl.hpp"
 #include "network_logger.hpp"
 
+#include <socket_error.hpp>
+
 tristan::network::private_::NetworkRequestHandlerImpl::NetworkRequestHandlerImpl() = default;
 
 tristan::network::private_::NetworkRequestHandlerImpl::~NetworkRequestHandlerImpl() = default;
@@ -20,12 +22,12 @@ bool tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperation
     const tristan::sockets::InetSocket& socket,
     std::chrono::time_point< std::chrono::system_clock, std::chrono::microseconds > time_point,
     const std::shared_ptr<NetworkRequestBase>& network_request) {
-    if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::CONNECT_TRY_AGAIN)
-        && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::CONNECT_IN_PROGRESS)
-        && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::CONNECT_ALREADY_IN_PROCESS)
-        && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::WRITE_TRY_AGAIN)
-        && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_TRY_AGAIN)
-        && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+    if (socket.error() && socket.error().value() != static_cast< int >(tristan::sockets::Error::CONNECT_TRY_AGAIN)
+        && socket.error().value() != static_cast< int >(tristan::sockets::Error::CONNECT_IN_PROGRESS)
+        && socket.error().value() != static_cast< int >(tristan::sockets::Error::CONNECT_ALREADY_IN_PROCESS)
+        && socket.error().value() != static_cast< int >(tristan::sockets::Error::WRITE_TRY_AGAIN)
+        && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_TRY_AGAIN)
+        && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
         netError(socket.error().message());
         netDebug("socket.error().value() = " + std::to_string(socket.error().value()));
         network_request->request_handlers_api.setError(socket.error());
@@ -34,7 +36,7 @@ bool tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperation
     auto end = std::chrono::time_point_cast< std::chrono::microseconds >(std::chrono::system_clock::now());
     if (std::chrono::duration_cast< std::chrono::seconds >(end - time_point) >= network_request->timeout()) {
         netError(socket.error().message());
-        network_request->request_handlers_api.setError(tristan::network::makeError(tristan::network::SocketErrors::SOCKET_TIMED_OUT));
+        network_request->request_handlers_api.setError(tristan::sockets::makeError(tristan::sockets::Error::SOCKET_TIMED_OUT));
         return false;
     }
     return true;

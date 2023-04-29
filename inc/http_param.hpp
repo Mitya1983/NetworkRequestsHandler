@@ -70,8 +70,7 @@ namespace tristan::network {
          * \param parameter_name std::optional< std::string >
          * \return Parameter value if parameter is present, std::nullopt otherwise.
          */
-        [[nodiscard]] auto parameterValue(const std::string& parameter_name) const
-            -> std::optional< std::string >;
+        [[nodiscard]] auto parameterValue(const std::string& parameter_name) const -> std::optional< std::string >;
 
         /**
          * \brief Returns if header list is empty
@@ -83,34 +82,25 @@ namespace tristan::network {
          * \brief Returns iterator begin
          * \return std::vector< Parameter >::iterator
          */
-        [[nodiscard]] constexpr auto begin() noexcept -> std::vector< Parameter >::iterator {
-            return m_params.begin();
-        }
+        [[nodiscard]] constexpr auto begin() noexcept -> std::vector< Parameter >::iterator;
 
         /**
          * \brief Returns const_iterator begin
          * \return std::vector< Parameter >::const_iterator
          */
-        [[nodiscard]] constexpr auto cbegin() const noexcept -> std::vector< Parameter >::const_iterator{
-            return m_params.cbegin();
-        }
+        [[nodiscard]] constexpr auto cbegin() const noexcept -> std::vector< Parameter >::const_iterator;
 
         /**
          * \brief Returns iterator end
          * \return std::vector< Parameter >::const_iterator
          */
-        [[nodiscard]] constexpr auto end() noexcept -> std::vector< Parameter >::iterator{
-            return m_params.end();
-        }
-
+        [[nodiscard]] constexpr auto end() noexcept -> std::vector< Parameter >::iterator;
 
         /**
          * \brief Returns const_iterator end
          * \return std::vector< Parameter >::const_iterator
          */
-        [[nodiscard]] constexpr auto cend() const noexcept -> std::vector< Parameter >::const_iterator{
-            return m_params.cend();
-        }
+        [[nodiscard]] constexpr auto cend() const noexcept -> std::vector< Parameter >::const_iterator;
 
     private:
         std::vector< Parameter > m_params;

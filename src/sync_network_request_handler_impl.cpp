@@ -1,6 +1,9 @@
 #include "sync_network_request_handler_impl.hpp"
 #include "network_logger.hpp"
 #include "http_response.hpp"
+
+#include <socket_error.hpp>
+
 #include <thread>
 
 tristan::network::private_::SyncNetworkRequestHandlerImpl::SyncNetworkRequestHandlerImpl() = default;
@@ -197,7 +200,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpReques
         if (not tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperationErrorAndTimeOut(socket, start, http_request)) {
             return;
         }
-        if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+        if (socket.error() && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
             if (not data.empty()) {
                 netDebug(std::to_string(data.size()) + " bytes was read");
                 netDebug("Data: " + std::string(data.begin(), data.end()));
@@ -287,7 +290,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpReques
             if (not tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperationErrorAndTimeOut(socket, start, http_request)) {
                 return;
             }
-            if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+            if (socket.error() && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
                 socket.resetError();
                 netDebug("Sleeping on read until");
                 std::this_thread::sleep_for(m_sleeping_interval);
