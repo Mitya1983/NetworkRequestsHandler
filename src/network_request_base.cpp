@@ -145,7 +145,11 @@ void tristan::network::NetworkRequestBase::addResponseData(std::vector< uint8_t 
             m_response = tristan::network::NetworkResponse::createResponse(m_uuid);
             m_response->m_response_data = std::make_shared< std::vector< uint8_t > >(std::move(data));
         } else {
-            m_response->m_response_data->insert(m_response->m_response_data->end(), data.begin(), data.end());
+            if (not m_response->m_response_data){
+                m_response->m_response_data = std::make_shared< std::vector< uint8_t > >(std::move(data));
+            } else {
+                m_response->m_response_data->insert(m_response->m_response_data->end(), data.begin(), data.end());
+            }
         }
     } else {
         if (m_output_path.empty()) {
