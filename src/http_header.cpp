@@ -60,18 +60,18 @@ void tristan::network::HttpHeaders::addHeader(tristan::network::Header&& header)
 
 auto tristan::network::HttpHeaders::empty() -> bool { return m_headers.empty(); }
 
-constexpr auto tristan::network::HttpHeaders::begin() noexcept -> std::vector< tristan::network::Header>::iterator {
+auto tristan::network::HttpHeaders::begin() noexcept -> std::vector< tristan::network::Header>::iterator {
     return m_headers.begin();
 }
 
-constexpr auto tristan::network::HttpHeaders::cbegin() const noexcept -> std::vector< tristan::network::Header>::const_iterator {
+auto tristan::network::HttpHeaders::cbegin() const noexcept -> std::vector< tristan::network::Header>::const_iterator {
     return m_headers.cbegin();
 }
 
-constexpr auto tristan::network::HttpHeaders::end() noexcept -> std::vector< tristan::network::Header>::iterator {
+auto tristan::network::HttpHeaders::end() noexcept -> std::vector< tristan::network::Header>::iterator {
     return m_headers.end();
 }
 
-constexpr auto tristan::network::HttpHeaders::cend() const noexcept -> std::vector< tristan::network::Header>::const_iterator {
+auto tristan::network::HttpHeaders::cend() const noexcept -> std::vector< tristan::network::Header>::const_iterator {
     return m_headers.cend();
 }
