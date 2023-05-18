@@ -227,7 +227,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpReques
     auto response = std::dynamic_pointer_cast< tristan::network::HttpResponse >(http_request->response());
     if (not response) {
         netFatal("Bad dynamic cast");
-        std::exit(1);
+        throw std::bad_cast();
     }
     if (response->status() != tristan::network::HttpStatus::Ok) {
         http_request->request_handlers_api.setStatus(tristan::network::Status::DONE);
