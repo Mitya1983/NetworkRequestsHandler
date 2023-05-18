@@ -293,7 +293,7 @@ auto tristan::network::Url::userPassword() const noexcept -> const std::string& 
 auto tristan::network::Url::host() const noexcept -> const std::string& { return m_host; }
 
 auto tristan::network::Url::hostIP() const noexcept -> IP {
-    if (not m_host.empty()) {
+    if (not m_host_ip.empty()) {
         return m_host_ip.at(0);
     }
     return {};
