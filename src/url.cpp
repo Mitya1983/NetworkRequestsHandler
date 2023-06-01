@@ -43,18 +43,18 @@ tristan::network::Url::Url() noexcept :
     m_port_network_byte_order(0),
     m_valid(true) { }
 
-tristan::network::Url::Url(const std::string& url) :
+tristan::network::Url::Url(const std::string& p_url) :
     m_port_local_byte_order(0),
     m_port_network_byte_order(0),
     m_valid(false) {
-    netInfo("Parsing url from " + url);
-    auto l_url = url;
+    netInfo("Parsing url from " + p_url);
+    auto l_url = p_url;
     auto scheme_end = l_url.find(':');
     if (scheme_end == std::string::npos) {
         m_error = tristan::network::makeError(tristan::network::UrlErrors::BAD_URL_FORMAT);
         return;
     }
-    m_scheme = url.substr(0, scheme_end);
+    m_scheme = p_url.substr(0, scheme_end);
     netDebug("m_scheme = " + m_scheme);
     auto port = tristan::network::schemes::getNetworkSchemeDefaultPort(m_scheme);
     if (port != 0) {
@@ -131,17 +131,17 @@ tristan::network::Url::Url(const std::string& url) :
     m_valid = true;
 }
 
-void tristan::network::Url::setScheme(const std::string& scheme) {
-    if ((scheme.at(0) < 'A' || scheme.at(0) > 'z') || (scheme.at(0) > 'Z' && scheme.at(0) < 'a')) {
+void tristan::network::Url::setScheme(const std::string& p_scheme) {
+    if ((p_scheme.at(0) < 'A' || p_scheme.at(0) > 'z') || (p_scheme.at(0) > 'Z' && p_scheme.at(0) < 'a')) {
         m_valid = false;
         return;
     }
-    const auto not_allowed_char = scheme.find_first_not_of("+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+    const auto not_allowed_char = p_scheme.find_first_not_of("+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
     if (not_allowed_char != std::string::npos) {
         m_valid = false;
         return;
     }
-    m_scheme = scheme;
+    m_scheme = p_scheme;
     netDebug("m_scheme = " + m_scheme);
     auto port = tristan::network::schemes::getNetworkSchemeDefaultPort(m_scheme);
     if (port != 0) {
@@ -150,27 +150,27 @@ void tristan::network::Url::setScheme(const std::string& scheme) {
     }
 }
 
-void tristan::network::Url::setAuthority(const std::string& host, const std::string& user_name, const std::string& user_password) {
-    if (host.size() > 253) {
+void tristan::network::Url::setAuthority(const std::string& p_host, const std::string& p_user_name, const std::string& p_user_password) {
+    if (p_host.size() > 253) {
         m_error = tristan::network::makeError(tristan::network::UrlErrors::BAD_HOST_SIZE);
         netError(m_error.message());
         m_valid = false;
         return;
     }
-    const auto not_allowed_char = host.find_first_not_of("-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+    const auto not_allowed_char = p_host.find_first_not_of("-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
     if (not_allowed_char != std::string::npos) {
         m_error = tristan::network::makeError(tristan::network::UrlErrors::BAD_HOST_FORMAT);
         netError(m_error.message());
         m_valid = false;
         return;
     }
-    if (host.front() == '-' || host.back() == '-') {
+    if (p_host.front() == '-' || p_host.back() == '-') {
         m_valid = false;
         m_error = tristan::network::makeError(tristan::network::UrlErrors::BAD_HOST_FORMAT);
         netError(m_error.message());
         return;
     }
-    m_host = host;
+    m_host = p_host;
     netDebug("m_host = " + m_host);
     Url::_resolveHost();
     if (m_error) {
@@ -178,11 +178,11 @@ void tristan::network::Url::setAuthority(const std::string& host, const std::str
         m_valid = false;
         return;
     }
-    m_user_name = user_name;
+    m_user_name = p_user_name;
     netDebug("m_user_name" + m_user_name);
     size_t char_to_encode = 0;
     while (true) {
-        char_to_encode = user_name.find_first_of(" !@#$%&*()+=[];:\',/?", char_to_encode);
+        char_to_encode = p_user_name.find_first_of(" !@#$%&*()+=[];:\',/?", char_to_encode);
         if (char_to_encode == std::string::npos) {
             break;
         }
@@ -190,11 +190,11 @@ void tristan::network::Url::setAuthority(const std::string& host, const std::str
         ++char_to_encode;
     }
     netDebug("m_user_name" + m_user_name);
-    m_user_password = user_password;
+    m_user_password = p_user_password;
     netDebug("m_user_password" + m_user_password);
     char_to_encode = 0;
     while (true) {
-        char_to_encode = user_name.find_first_of(" !@#$%&*()+=[];:\',/?", char_to_encode);
+        char_to_encode = p_user_name.find_first_of(" !@#$%&*()+=[];:\',/?", char_to_encode);
         if (char_to_encode == std::string::npos) {
             break;
         }
@@ -204,11 +204,11 @@ void tristan::network::Url::setAuthority(const std::string& host, const std::str
     netDebug("m_user_password" + m_user_password);
 }
 
-void tristan::network::Url::addHostIP(const std::string& ip) {
-    netDebug("Adding host ip " + ip);
+void tristan::network::Url::addHostIP(const std::string& p_ip) {
+    netDebug("Adding host ip " + p_ip);
     std::regex regex(g_ip_regex_pattern);
     std::smatch ip_check_result;
-    std::regex_match(ip, ip_check_result, regex);
+    std::regex_match(p_ip, ip_check_result, regex);
     if (ip_check_result.empty()) {
         m_error = tristan::network::makeError(tristan::network::UrlErrors::BAD_IP_FORMAT);
         netError(m_error.message());
@@ -216,7 +216,7 @@ void tristan::network::Url::addHostIP(const std::string& ip) {
         return;
     }
     IP l_ip;
-    l_ip.as_int = tristan::network::utility::stringIpToUint32_tIp(ip);
+    l_ip.as_int = tristan::network::utility::stringIpToUint32_tIp(p_ip);
     netDebug("l_ip.as_int = " + std::to_string(l_ip.as_int));
     if (l_ip.as_int == 0) {
         netError(m_error.message());
@@ -224,26 +224,26 @@ void tristan::network::Url::addHostIP(const std::string& ip) {
         m_valid = false;
         return;
     }
-    l_ip.as_string = ip;
+    l_ip.as_string = p_ip;
     m_host_ip.emplace_back(l_ip);
 }
 
-void tristan::network::Url::setPort(uint16_t port) {
-    m_port = std::to_string(port);
-    m_port_local_byte_order = port;
+void tristan::network::Url::setPort(uint16_t p_port) {
+    m_port = std::to_string(p_port);
+    m_port_local_byte_order = p_port;
     m_port_network_byte_order = htons(m_port_local_byte_order);
     netDebug("m_port_network_byte_order = " + std::to_string(m_port_network_byte_order));
 }
 
-void tristan::network::Url::setPort(const std::string& port) {
-    m_port = port;
+void tristan::network::Url::setPort(const std::string& p_port) {
+    m_port = p_port;
     m_port_local_byte_order = static_cast< uint16_t >(std::stoi(m_port));
     m_port_network_byte_order = htons(m_port_local_byte_order);
     netDebug("m_port_network_byte_order = " + std::to_string(m_port_network_byte_order));
 }
 
-void tristan::network::Url::setPath(const std::string& path) {
-    m_path = path;
+void tristan::network::Url::setPath(const std::string& p_path) {
+    m_path = p_path;
     size_t char_to_encode = 0;
     while (true) {
         char_to_encode = m_path.find_first_of(" !@#$%&*()+=[];:\',?", char_to_encode);
@@ -256,8 +256,8 @@ void tristan::network::Url::setPath(const std::string& path) {
     netDebug("m_path = " + m_path);
 }
 
-void tristan::network::Url::setQuery(const std::string& query) {
-    m_query = query;
+void tristan::network::Url::setQuery(const std::string& p_query) {
+    m_query = p_query;
     size_t char_to_encode = 0;
     while (true) {
         char_to_encode = m_query.find_first_of(" !@#$%*()+[]:\',/?", char_to_encode);
@@ -270,8 +270,8 @@ void tristan::network::Url::setQuery(const std::string& query) {
     netDebug("m_query = " + m_query);
 }
 
-void tristan::network::Url::setFragment(const std::string& fragment) {
-    m_fragment = fragment;
+void tristan::network::Url::setFragment(const std::string& p_fragment) {
+    m_fragment = p_fragment;
     size_t char_to_encode = 0;
     while (true) {
         char_to_encode = m_fragment.find_first_of(" !@#$%&*()+=[];:\',/?", char_to_encode);
@@ -283,6 +283,35 @@ void tristan::network::Url::setFragment(const std::string& fragment) {
     }
     netDebug("m_fragment = " + m_fragment);
 }
+
+auto tristan::network::Url::scheme() const noexcept -> const std::string& { return m_scheme; }
+
+auto tristan::network::Url::userName() const noexcept -> const std::string& { return m_user_name; }
+
+auto tristan::network::Url::userPassword() const noexcept -> const std::string& { return m_user_password; }
+
+auto tristan::network::Url::host() const noexcept -> const std::string& { return m_host; }
+
+auto tristan::network::Url::hostIP() const noexcept -> IP {
+    if (not m_host_ip.empty()) {
+        return m_host_ip.at(0);
+    }
+    return {};
+}
+
+auto tristan::network::Url::hostIPList() const noexcept -> const std::vector< IP >& { return m_host_ip; }
+
+auto tristan::network::Url::port() const noexcept -> const std::string& { return m_port; }
+
+auto tristan::network::Url::portUint16_t_local_byte_order() const noexcept -> uint16_t { return static_cast< uint16_t >(m_port_local_byte_order); }
+
+auto tristan::network::Url::portUint16_t_network_byte_order() const noexcept -> uint16_t { return static_cast< uint16_t >(m_port_network_byte_order); }
+
+auto tristan::network::Url::path() const noexcept -> const std::string& { return m_path; }
+
+auto tristan::network::Url::query() const noexcept -> const std::string& { return m_query; }
+
+auto tristan::network::Url::fragment() const noexcept -> const std::string& { return m_fragment; }
 
 auto tristan::network::Url::composeUrl() const -> std::string {
     netInfo("Composing url");
@@ -323,6 +352,10 @@ auto tristan::network::Url::composeUrl() const -> std::string {
     netInfo("Composed url = " + uri);
     return uri;
 }
+
+auto tristan::network::Url::isValid() const noexcept -> bool { return m_valid; }
+
+auto tristan::network::Url::error() const noexcept -> std::error_code { return m_error; }
 
 void tristan::network::Url::_resolveHost() {
     netInfo("Resolving host " + m_host);

@@ -2,6 +2,12 @@
 #include "network_logger.hpp"
 #include "http_response.hpp"
 
+#include <socket_error.hpp>
+
+tristan::network::private_::AsyncNetworkRequestHandlerImpl::AsyncNetworkRequestHandlerImpl() = default;
+
+tristan::network::private_::AsyncNetworkRequestHandlerImpl::~AsyncNetworkRequestHandlerImpl() = default;
+
 auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleRequest(std::shared_ptr< NetworkRequestBase >&& network_request)
     -> tristan::ResumableCoroutine {
     if (auto tcp_ptr = std::dynamic_pointer_cast< tristan::network::TcpRequest >(network_request)) {
@@ -173,7 +179,7 @@ auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleHTTPReque
         if (not tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperationErrorAndTimeOut(socket, start, http_request)) {
             co_return;
         }
-        if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+        if (socket.error() && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
             if (not data.empty()) {
                 netDebug(std::to_string(data.size()) + " bytes was read");
                 netDebug("Data: " + std::string(data.begin(), data.end()));
@@ -261,7 +267,7 @@ auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleHTTPReque
             if (not tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperationErrorAndTimeOut(socket, start, http_request)) {
                 co_return;
             }
-            if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+            if (socket.error() && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
                 co_await std::suspend_always();
                 socket.resetError();
                 continue;
@@ -316,7 +322,7 @@ auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleHTTPReque
     netInfo("Request " + http_request->uuid() + " successfully processed");
 }
 
-auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleUnimplementedRequest(
+auto tristan::network::private_::AsyncNetworkRequestHandlerImpl::handleUnimplementedRequest(//NOLINT
     std::shared_ptr< tristan::network::NetworkRequestBase > network_request) -> tristan::ResumableCoroutine {
     netError("Unimplemented network request received");
     tristan::network::private_::NetworkRequestHandlerImpl::debugNetworkRequestInfo(network_request);

@@ -7,8 +7,9 @@ namespace tristan::network::private_ {
 
     class SyncNetworkRequestHandlerImpl : public NetworkRequestHandlerImpl{
     public:
+        SyncNetworkRequestHandlerImpl();
+        ~SyncNetworkRequestHandlerImpl() override;
         void handleRequest(std::shared_ptr<NetworkRequestBase>&& network_request);
-        ~SyncNetworkRequestHandlerImpl() override = default;
     protected:
         void handleTcpRequest(std::shared_ptr<TcpRequest>&& tcp_request);
         void handleHttpRequest(std::shared_ptr<HttpRequest>&& http_request);

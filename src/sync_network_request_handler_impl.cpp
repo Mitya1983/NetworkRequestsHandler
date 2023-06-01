@@ -1,8 +1,14 @@
 #include "sync_network_request_handler_impl.hpp"
 #include "network_logger.hpp"
 #include "http_response.hpp"
+
+#include <socket_error.hpp>
+
 #include <thread>
 
+tristan::network::private_::SyncNetworkRequestHandlerImpl::SyncNetworkRequestHandlerImpl() = default;
+
+tristan::network::private_::SyncNetworkRequestHandlerImpl::~SyncNetworkRequestHandlerImpl() = default;
 void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleRequest(std::shared_ptr< NetworkRequestBase >&& network_request) {
     if (auto tcp_ptr = std::dynamic_pointer_cast< tristan::network::TcpRequest >(network_request)) {
         std::thread(&SyncNetworkRequestHandlerImpl::handleTcpRequest, this, std::move(tcp_ptr)).detach();
@@ -12,6 +18,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleRequest(st
         this->handleUnimplementedRequest(std::move(network_request));
     }
 }
+
 // NOLINTNEXTLINE
 void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleTcpRequest(std::shared_ptr< TcpRequest >&& tcp_request) {
     netTrace("Start");
@@ -116,6 +123,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleTcpRequest
 
     netTrace("End");
 }
+
 // NOLINTNEXTLINE
 void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpRequest(std::shared_ptr< HttpRequest >&& http_request) {
     netTrace("Start");
@@ -192,7 +200,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpReques
         if (not tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperationErrorAndTimeOut(socket, start, http_request)) {
             return;
         }
-        if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+        if (socket.error() && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
             if (not data.empty()) {
                 netDebug(std::to_string(data.size()) + " bytes was read");
                 netDebug("Data: " + std::string(data.begin(), data.end()));
@@ -219,7 +227,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpReques
     auto response = std::dynamic_pointer_cast< tristan::network::HttpResponse >(http_request->response());
     if (not response) {
         netFatal("Bad dynamic cast");
-        std::exit(1);
+        throw std::bad_cast();
     }
     if (response->status() != tristan::network::HttpStatus::Ok) {
         http_request->request_handlers_api.setStatus(tristan::network::Status::DONE);
@@ -282,7 +290,7 @@ void tristan::network::private_::SyncNetworkRequestHandlerImpl::handleHttpReques
             if (not tristan::network::private_::NetworkRequestHandlerImpl::checkSocketOperationErrorAndTimeOut(socket, start, http_request)) {
                 return;
             }
-            if (socket.error() && socket.error().value() != static_cast< int >(tristan::network::SocketErrors::READ_DONE)) {
+            if (socket.error() && socket.error().value() != static_cast< int >(tristan::sockets::Error::READ_DONE)) {
                 socket.resetError();
                 netDebug("Sleeping on read until");
                 std::this_thread::sleep_for(m_sleeping_interval);

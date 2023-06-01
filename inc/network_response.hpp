@@ -28,12 +28,12 @@ namespace tristan::network {
          * \brief Returns request uuid.
          * \return const std::string&
          */
-        [[nodiscard]] auto uuid() const noexcept -> const std::string& { return m_uuid; }
+        [[nodiscard]] auto uuid() const noexcept -> const std::string&;
         /**
          * \brief Provide access to data received from the remote.
          * \return const std::vector<uint8_t>&.
          */
-        [[nodiscard]] auto data() const -> std::shared_ptr< std::vector< uint8_t > > { return m_response_data; }
+        [[nodiscard]] auto data() const -> std::shared_ptr< std::vector< uint8_t > >;
 
     protected:
         explicit NetworkResponse(std::string&& uuid);

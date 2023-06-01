@@ -11,7 +11,9 @@ namespace tristan::network::private_ {
 
     class NetworkRequestHandlerImpl {
     public:
-        virtual ~NetworkRequestHandlerImpl() = default;
+        NetworkRequestHandlerImpl();
+
+        virtual ~NetworkRequestHandlerImpl();
     protected:
         static void debugNetworkRequestInfo(const std::shared_ptr< NetworkRequestBase >& network_request);
         [[nodiscard]] static bool

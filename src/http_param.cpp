@@ -40,3 +40,19 @@ auto tristan::network::HttpParams::parameterValue(const std::string& parameter_n
 }
 
 auto tristan::network::HttpParams::empty() -> bool { return m_params.empty(); }
+
+auto tristan::network::HttpParams::begin() noexcept -> std::vector< tristan::network::Parameter>::iterator {
+    return m_params.begin();
+}
+
+auto tristan::network::HttpParams::cbegin() const noexcept -> std::vector< tristan::network::Parameter>::const_iterator {
+    return m_params.cbegin();
+}
+
+auto tristan::network::HttpParams::end() noexcept -> std::vector< tristan::network::Parameter>::iterator {
+    return m_params.end();
+}
+
+auto tristan::network::HttpParams::cend() const noexcept -> std::vector< tristan::network::Parameter>::const_iterator {
+    return m_params.cend();
+}

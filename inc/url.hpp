@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-struct IP{
+struct IP {
     std::string as_string;
     uint32_t as_int;
 };
@@ -26,11 +26,12 @@ namespace tristan::network {
         Url() noexcept;
         /**
          * \brief Overloaded constructor.
-         * Parses passed uri string representation into values. If parsing was successful \param m_valid is set to true. URI representation must conform to the following format:
+         * Parses passed uri string representation into values. If parsing was successful
+         * \param m_valid is set to true. URI representation must conform to the following format:
          * \par URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]
-         * \param url const std::string& which represents and uri
+         * \param p_url const std::string& which represents and uri
          */
-        explicit Url(const std::string& url);
+        explicit Url(const std::string& p_url);
         Url(const Url& other) = default;
         Url(Url&& other) noexcept = default;
 
@@ -40,133 +41,125 @@ namespace tristan::network {
         ~Url() = default;
         /**
          * \brief Sets scheme.
-         * \param scheme const std::string&
+         * \param p_scheme const std::string&
          */
-        void setScheme(const std::string& scheme);
+        void setScheme(const std::string& p_scheme);
 
         /**
          * \brief Sets host, user name and password which are parts of userinfo part of authority.
-         * \param host const std::string&
-         * \param user_name const std::string&. Default value is an empty string.
-         * \param user_password const std::string&. Default value is an empty string.
+         * \param p_host const std::string&
+         * \param p_user_name const std::string&. Default value is an empty string.
+         * \param p_user_password const std::string&. Default value is an empty string.
          */
-        void setAuthority(const std::string& host,
-                          const std::string& user_name = "",
-                          const std::string& user_password = "");
+        void setAuthority(const std::string& p_host, const std::string& p_user_name = "", const std::string& p_user_password = "");
 
         /**
          * \brief Sets host IP
-         * \param ip const std::string& ip
+         * \param p_ip const std::string& ip
          */
-        void addHostIP(const std::string& ip);
+        void addHostIP(const std::string& p_ip);
 
         /**
          * \brief Sets port.
-         * \param port uint16_t
+         * \param p_port uint16_t
          */
-        void setPort(uint16_t port);
+        void setPort(uint16_t p_port);
 
         /**
          * \brief Sets port.
-         * \param port const std::string&
+         * \param p_port const std::string&
          */
-        void setPort(const std::string& port);
+        void setPort(const std::string& p_port);
 
         /**
          * \brief Sets path
-         * \param path const std::string&
+         * \param p_path const std::string&
          */
-        void setPath(const std::string& path);
+        void setPath(const std::string& p_path);
 
         /**
          * \brief Sets query.
-         * \param query const std::string&
+         * \param p_query const std::string&
          */
-        void setQuery(const std::string& query);
+        void setQuery(const std::string& p_query);
 
         /**
          * \brief Sets fragment.
-         * \param fragment const std::string&
+         * \param p_fragment const std::string&
          */
-        void setFragment(const std::string& fragment);
+        void setFragment(const std::string& p_fragment);
 
         /**
          * \brief Scheme getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto scheme() const noexcept -> const std::string& { return m_scheme; }
+        [[nodiscard]] auto scheme() const noexcept -> const std::string&;
 
         /**
          * \brief User name getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto userName() const noexcept -> const std::string& { return m_user_name; }
+        [[nodiscard]] auto userName() const noexcept -> const std::string&;
 
         /**
          * \brief User password getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto userPassword() const noexcept -> const std::string& { return m_user_password; }
+        [[nodiscard]] auto userPassword() const noexcept -> const std::string&;
 
         /**
          * \brief Host getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto host() const noexcept -> const std::string& { return m_host; }
+        [[nodiscard]] auto host() const noexcept -> const std::string&;
 
         /**
          * \brief Returns host in form of ip address
          * \return const std::string&
          */
-        [[nodiscard]] auto hostIP() const noexcept -> const IP& { return m_host_ip.at(0); }
+        [[nodiscard]] auto hostIP() const noexcept -> IP;
 
         /**
          * \brief Returns list of host ip addresses
          * \return const std::vector<std::string>&
          */
-        [[nodiscard]] auto hostIPList() const noexcept -> const std::vector< IP >& {
-            return m_host_ip;
-        }
+        [[nodiscard]] auto hostIPList() const noexcept -> const std::vector< IP >&;
 
         /**
          * \brief Port getter.
          * \return Port or empty string.
          */
-        [[nodiscard]] auto port() const noexcept -> const std::string& { return m_port; }
+        [[nodiscard]] auto port() const noexcept -> const std::string&;
 
         /**
          * \brief Port getter in local byte order
          * \return uint16_t
          */
-        [[nodiscard]] auto portUint16_t_local_byte_order() const noexcept -> uint16_t {
-            return static_cast< uint16_t >(m_port_local_byte_order);
-        }
+        [[nodiscard]] auto portUint16_t_local_byte_order() const noexcept -> uint16_t;
 
         /**
          * \brief Port getter in network byte order
          * \return uint16_t
          */
-        [[nodiscard]] auto portUint16_t_network_byte_order() const noexcept -> uint16_t {
-            return static_cast< uint16_t >(m_port_network_byte_order);
-        }
+        [[nodiscard]] auto portUint16_t_network_byte_order() const noexcept -> uint16_t;
 
         /**
         * \brief Path getter.
         * \return const std::string&
         */
-        [[nodiscard]] auto path() const noexcept -> const std::string& { return m_path; }
+        [[nodiscard]] auto path() const noexcept -> const std::string&;
 
         /**
          * \brief Query getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto query() const noexcept -> const std::string& { return m_query; }
+        [[nodiscard]] auto query() const noexcept -> const std::string&;
 
         /**
          * \brief Fragment getter.
          * \return const std::string&
          */
-        [[nodiscard]] auto fragment() const noexcept -> const std::string& { return m_fragment; }
+        [[nodiscard]] auto fragment() const noexcept -> const std::string&;
 
         /**
          * \brief Composes a string representation of URI.
@@ -179,13 +172,13 @@ namespace tristan::network {
          * \brief Check if URI is valid. Should be used in case of overloaded constructor.
          * \return True is valid and false otherwise.
          */
-        [[nodiscard]] auto isValid() const noexcept -> bool { return m_valid; }
+        [[nodiscard]] auto isValid() const noexcept -> bool;
 
         /**
          * Retuns error if Url is in invalid state
          * @return std::error_code
          */
-        [[nodiscard]] auto error() const noexcept -> std::error_code { return m_error; }
+        [[nodiscard]] auto error() const noexcept -> std::error_code;
 
     protected:
     private:

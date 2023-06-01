@@ -59,3 +59,19 @@ auto tristan::network::HttpHeaders::headerValue(const std::string& header_name) 
 void tristan::network::HttpHeaders::addHeader(tristan::network::Header&& header) { m_headers.emplace_back(std::move(header)); }
 
 auto tristan::network::HttpHeaders::empty() -> bool { return m_headers.empty(); }
+
+auto tristan::network::HttpHeaders::begin() noexcept -> std::vector< tristan::network::Header>::iterator {
+    return m_headers.begin();
+}
+
+auto tristan::network::HttpHeaders::cbegin() const noexcept -> std::vector< tristan::network::Header>::const_iterator {
+    return m_headers.cbegin();
+}
+
+auto tristan::network::HttpHeaders::end() noexcept -> std::vector< tristan::network::Header>::iterator {
+    return m_headers.end();
+}
+
+auto tristan::network::HttpHeaders::cend() const noexcept -> std::vector< tristan::network::Header>::const_iterator {
+    return m_headers.cend();
+}

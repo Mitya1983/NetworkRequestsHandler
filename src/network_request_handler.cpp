@@ -1,4 +1,6 @@
 #include "network_request_handler.hpp"
+#include "sync_network_request_handler_impl.hpp"
+#include "async_request_handler.hpp"
 #include "network_logger.hpp"
 #include "http_response.hpp"
 
@@ -15,16 +17,52 @@ auto tristan::network::NetworkRequestsHandler::instance() -> tristan::network::N
     return network_requests_handler;
 }
 
+void tristan::network::NetworkRequestsHandler::setLogger(std::unique_ptr<tristan::log::Log>&& p_log) {
+    tristan::network::Logger::setLogger(std::move(p_log));
+}
+
+void tristan::network::NetworkRequestsHandler::run() {
+    tristan::network::NetworkRequestsHandler::instance()._run();
+}
+
+void tristan::network::NetworkRequestsHandler::stop() {
+    tristan::network::NetworkRequestsHandler::instance()._stop();
+}
+
+void tristan::network::NetworkRequestsHandler::pause() {
+    tristan::network::NetworkRequestsHandler::instance()._pause();
+}
+
+void tristan::network::NetworkRequestsHandler::resume() {
+    tristan::network::NetworkRequestsHandler::instance()._resume();
+}
+
+void tristan::network::NetworkRequestsHandler::setActiveDownloadsLimit(uint8_t limit) {
+    NetworkRequestsHandler::instance().m_async_tcp_requests_handler->setMaxDownloadsCount(limit);
+}
+
+void tristan::network::NetworkRequestsHandler::notifyWhenExit(std::function< void() >&& functor) {
+    tristan::network::NetworkRequestsHandler::instance()._notifyWhenExit(std::move(functor));
+}
+
 void tristan::network::NetworkRequestsHandler::addRequest(std::shared_ptr< NetworkRequestBase >&& request) {
     NetworkRequestsHandler::instance()._addRequest(std::move(request));
 }
 
+auto tristan::network::NetworkRequestsHandler::activeRequests() -> std::list< std::shared_ptr< NetworkRequestBase > >& {
+    return tristan::network::NetworkRequestsHandler::instance().m_active_requests;
+}
+
+auto tristan::network::NetworkRequestsHandler::errorRequests() -> const std::list< std::shared_ptr< NetworkRequestBase > >& {
+    return tristan::network::NetworkRequestsHandler::instance().m_error_requests;
+}
+
 void tristan::network::NetworkRequestsHandler::_run() {
 
-    m_async_tcp_requests_handler = tristan::network::AsyncRequestHandler::create();
+    m_async_tcp_requests_handler = tristan::network::private_::AsyncRequestHandler::create();
     m_request_handler = std::make_unique< tristan::network::private_::SyncNetworkRequestHandlerImpl >();
     netInfo("Launching Async request handler");
-    m_async_request_handler_thread = std::thread(&tristan::network::AsyncRequestHandler::run, std::ref(*m_async_tcp_requests_handler));
+    m_async_request_handler_thread = std::thread(&tristan::network::private_::AsyncRequestHandler::run, std::ref(*m_async_tcp_requests_handler));
     if (not m_working.load(std::memory_order_relaxed)) {
         m_working.store(true, std::memory_order_relaxed);
     } else {
@@ -91,4 +129,8 @@ void tristan::network::NetworkRequestsHandler::_stop() {
 void tristan::network::NetworkRequestsHandler::_addRequest(std::shared_ptr< NetworkRequestBase >&& request) {
     std::scoped_lock< std::mutex > lock(m_nr_queue_lock);
     m_requests.emplace(std::move(request));
+}
+
+void tristan::network::NetworkRequestsHandler::_notifyWhenExit(std::function< void() >&& functor) {
+    m_notify_when_exit_functors.emplace_back(functor);
 }
