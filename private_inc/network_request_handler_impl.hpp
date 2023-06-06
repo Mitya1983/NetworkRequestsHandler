@@ -21,7 +21,7 @@ namespace tristan::network::private_ {
                                                 std::chrono::time_point< std::chrono::system_clock, std::chrono::microseconds > time_point,
                                                 const std::shared_ptr< NetworkRequestBase >& network_request);
 
-        uint8_t m_max_frame_size = std::numeric_limits<uint8_t>::max();
+        const uint16_t m_max_frame_size = std::numeric_limits<uint16_t>::max();
     };
 
 }  // namespace tristan::network::private_

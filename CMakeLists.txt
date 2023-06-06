@@ -78,7 +78,7 @@ file(GLOB SRC_FILES CONFIGURE_DEPENDS
         src/*.cpp
         )
 
-set(LIB_VERSION 1.0.0)
+set(LIB_VERSION 1.0.1)
 
 if (WIN32)
 
