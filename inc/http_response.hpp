@@ -13,15 +13,15 @@ namespace tristan::network {
         friend class HttpRequest;
     public:
         HttpResponse() = delete;
-        HttpResponse(const HttpResponse& other) = delete;
-        HttpResponse(HttpResponse&& other) = default;
+        HttpResponse(const HttpResponse& p_other) = delete;
+        HttpResponse(HttpResponse&& p_other) = default;
 
-        HttpResponse& operator=(const HttpResponse& other) = delete;
-        HttpResponse& operator=(HttpResponse&& other) = default;
+        HttpResponse& operator=(const HttpResponse& p_other) = delete;
+        HttpResponse& operator=(HttpResponse&& p_other) = default;
 
         ~HttpResponse() override = default;
 
-        [[nodiscard]] static auto createResponse(std::string uuid, std::vector<uint8_t>&& headers_data) -> std::shared_ptr<HttpResponse>;
+        [[nodiscard]] static auto createResponse(std::string p_uuid, std::vector<uint8_t>&& p_headers_data) -> std::shared_ptr<HttpResponse>;
 
         [[nodiscard]] auto error() const -> std::error_code;
 
@@ -31,7 +31,7 @@ namespace tristan::network {
 
     protected:
     private:
-        explicit HttpResponse(std::string&& uuid, std::vector<uint8_t>&& headers_data);
+        explicit HttpResponse(std::string&& p_string, std::vector<uint8_t>&& p_headers_data);
 
         std::error_code m_error;
 

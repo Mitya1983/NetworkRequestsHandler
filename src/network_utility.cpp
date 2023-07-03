@@ -33,16 +33,16 @@ namespace {
 
 }  //End of unnamed namespace
 
-void tristan::network::utility::checkFileName(std::filesystem::path& path) {
-    netDebug("Checking filename " + path.string());
+void tristan::network::utility::checkFileName(std::filesystem::path& p_path) {
+    netDebug("Checking filename " + p_path.string());
     uint16_t file_counter = 1;
     while (true) {
-        if (std::filesystem::exists(path)) {
-            auto file_extension = path.extension().string();
+        if (std::filesystem::exists(p_path)) {
+            auto file_extension = p_path.extension().string();
             if (not file_extension.empty()) {
-                path.replace_extension("");
+                p_path.replace_extension("");
             }
-            auto file_name = path.filename().string();
+            auto file_name = p_path.filename().string();
             if (file_counter == 1) {
                 file_name += "(" + std::to_string(file_counter) + ")";
             } else {
@@ -55,9 +55,9 @@ void tristan::network::utility::checkFileName(std::filesystem::path& path) {
                     file_name.replace(pos + 1, replace_counter, std::to_string(file_counter));
                 }
             }
-            path.replace_filename(file_name);
+            p_path.replace_filename(file_name);
             if (not file_extension.empty()) {
-                path.replace_extension(file_extension);
+                p_path.replace_extension(file_extension);
             }
             ++file_counter;
         } else {
@@ -105,9 +105,9 @@ auto tristan::network::utility::getUuid() -> std::string {
     return uuid;
 }
 
-auto tristan::network::utility::encodeUrl(const std::string& string_to_encode) -> std::string {
-    netDebug("Encoding url " + string_to_encode);
-    std::string result(string_to_encode);
+auto tristan::network::utility::encodeUrl(const std::string& p_string_to_encode) -> std::string {
+    netDebug("Encoding url " + p_string_to_encode);
+    std::string result(p_string_to_encode);
     uint64_t char_to_encode = 0;
     while (true) {
         char_to_encode = result.find_first_of(" !@#$%&*()+=[]:;\',/?", char_to_encode);
@@ -121,10 +121,10 @@ auto tristan::network::utility::encodeUrl(const std::string& string_to_encode) -
     return result;
 }
 
-auto tristan::network::utility::uint32_tIpToStringIp(uint32_t ip) -> std::string {
-    netDebug("Converting uint32_t ip representation " + std::to_string(ip) + " to string representation");
+auto tristan::network::utility::uint32_tIpToStringIp(uint32_t p_ip) -> std::string {
+    netDebug("Converting uint32_t ip representation " + std::to_string(p_ip) + " to string representation");
     char buf[INET_ADDRSTRLEN];
-    std::string address = inet_ntop(AF_INET, &ip, buf, sizeof(buf));
+    std::string address = inet_ntop(AF_INET, &p_ip, buf, sizeof(buf));
     if (address.empty()){
         netError("Failed to convert ip address");
         return {};
@@ -133,10 +133,10 @@ auto tristan::network::utility::uint32_tIpToStringIp(uint32_t ip) -> std::string
     return address;
 }
 
-auto tristan::network::utility::stringIpToUint32_tIp(const std::string& ip) -> uint32_t {
-    netDebug("Converting string ip representation " + ip + " to uint32_t representation");
+auto tristan::network::utility::stringIpToUint32_tIp(const std::string& p_ip) -> uint32_t {
+    netDebug("Converting string ip representation " + p_ip + " to uint32_t representation");
     uint32_t result = 0;
-    if (inet_pton(AF_INET, ip.c_str(), &result) <= 0){
+    if (inet_pton(AF_INET, p_ip.c_str(), &result) <= 0){
         netError("Failed to convert ip address");
         return {};
     }

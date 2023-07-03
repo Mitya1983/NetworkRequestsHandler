@@ -26,26 +26,26 @@ namespace tristan::network {
 
         /**
          * \brief Constructor
-         * \param url Uri&&
+         * \param p_url Uri&&
          */
-        explicit TcpRequest(Url&& url);
+        explicit TcpRequest(Url&& p_url);
 
         /**
          * \overload
          * \brief Constructor
          * \param uri const Url&
          */
-        explicit TcpRequest(const Url& url);
+        explicit TcpRequest(const Url& p_url);
 
         TcpRequest() = delete;
 
-        TcpRequest(const TcpRequest& other) = delete;
+        TcpRequest(const TcpRequest& p_other) = delete;
 
-        TcpRequest(TcpRequest&& other) noexcept = delete;
+        TcpRequest(TcpRequest&& p_other) noexcept = delete;
 
-        TcpRequest& operator=(const TcpRequest& other) = delete;
+        TcpRequest& operator=(const TcpRequest& p_other) = delete;
 
-        TcpRequest& operator=(TcpRequest&& other) noexcept = delete;
+        TcpRequest& operator=(TcpRequest&& p_other) noexcept = delete;
 
         ~TcpRequest() override = default;
 

@@ -15,13 +15,11 @@ namespace tristan::network::private_ {
 
         virtual ~NetworkRequestHandlerImpl();
     protected:
-        static void debugNetworkRequestInfo(const std::shared_ptr< NetworkRequestBase >& network_request);
+        static void debugNetworkRequestInfo(const std::shared_ptr< NetworkRequestBase >& p_network_request);
         [[nodiscard]] static bool
-            checkSocketOperationErrorAndTimeOut(const tristan::sockets::InetSocket& socket,
-                                                std::chrono::time_point< std::chrono::system_clock, std::chrono::microseconds > time_point,
-                                                const std::shared_ptr< NetworkRequestBase >& network_request);
-
-        const uint16_t m_max_frame_size = std::numeric_limits<uint16_t>::max();
+            checkSocketOperationErrorAndTimeOut(const tristan::sockets::InetSocket& p_socket,
+                                                std::chrono::time_point< std::chrono::system_clock, std::chrono::microseconds > p_time_point,
+                                                const std::shared_ptr< NetworkRequestBase >& p_network_request);
     };
 
 }  // namespace tristan::network::private_

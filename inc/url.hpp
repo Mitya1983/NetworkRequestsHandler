@@ -32,11 +32,11 @@ namespace tristan::network {
          * \param p_url const std::string& which represents and uri
          */
         explicit Url(const std::string& p_url);
-        Url(const Url& other) = default;
-        Url(Url&& other) noexcept = default;
+        Url(const Url& p_other) = default;
+        Url(Url&& p_other) noexcept = default;
 
-        Url& operator=(const Url& other) = default;
-        Url& operator=(Url&& other) noexcept = default;
+        Url& operator=(const Url& p_other) = default;
+        Url& operator=(Url&& p_other) noexcept = default;
 
         ~Url() = default;
         /**

@@ -34,14 +34,14 @@ tristan::network::HttpRequest::HttpRequest(const tristan::network::Url& url) :
     HttpRequest(Url(url)) { }
 
 void tristan::network::HttpRequest::addHeader(tristan::network::Header&& header) {
-    if (header.name.empty()) {
+    if (header.m_name.empty()) {
         return;
     }
     m_headers.addHeader(std::move(header));
 }
 
 void tristan::network::HttpRequest::addParam(tristan::network::Parameter&& parameter) {
-    if (parameter.name.empty()) {
+    if (parameter.m_name.empty()) {
         return;
     }
     m_params.addParameter(std::move(parameter));
@@ -72,10 +72,10 @@ auto tristan::network::GetRequest::requestData() -> const std::vector< uint8_t >
                 if (param_count > 0) {
                     m_request_data.push_back('&');
                 }
-                m_request_data.insert(m_request_data.end(), param.name.begin(), param.name.end());
-                if (!param.value.empty()) {
+                m_request_data.insert(m_request_data.end(), param.m_name.begin(), param.m_name.end());
+                if (!param.m_string.empty()) {
                     m_request_data.push_back('=');
-                    m_request_data.insert(m_request_data.end(), param.value.begin(), param.value.end());
+                    m_request_data.insert(m_request_data.end(), param.m_string.begin(), param.m_string.end());
                 }
                 ++param_count;
             }
@@ -88,9 +88,9 @@ auto tristan::network::GetRequest::requestData() -> const std::vector< uint8_t >
         m_request_data.insert(m_request_data.end(), to_insert.begin(), to_insert.end());
         if (!m_headers.empty()) {
             for (const auto& header: m_headers) {
-                m_request_data.insert(m_request_data.end(), header.name.begin(), header.name.end());
+                m_request_data.insert(m_request_data.end(), header.m_name.begin(), header.m_name.end());
                 m_request_data.push_back(':');
-                m_request_data.insert(m_request_data.end(), header.value.begin(), header.value.end());
+                m_request_data.insert(m_request_data.end(), header.m_string.begin(), header.m_string.end());
                 m_request_data.push_back('\r');
                 m_request_data.push_back('\n');
             }
@@ -109,29 +109,36 @@ tristan::network::PostRequest::PostRequest(Url&& url) :
 tristan::network::PostRequest::PostRequest(const tristan::network::Url& url) :
     HttpRequest(Url(url)) { }
 
+void tristan::network::PostRequest::setBody(std::string&& p_body) {
+    m_body = std::move(p_body);
+}
+
+void tristan::network::PostRequest::setBody(const std::string& p_body) {
+    m_body = p_body;
+}
+
 auto tristan::network::PostRequest::requestData() -> const std::vector< uint8_t >& {
     if (not m_request_composed) {
-        std::string body;
-        if (!m_params.empty()) {
+        if (m_body.empty() and not m_params.empty()) {
             int param_count = 0;
             for (const auto& param: m_params) {
                 if (param_count > 0) {
-                    body += '&';
+                    m_body += '&';
                 }
-                body += param.name;
-                body += '=';
+                m_body += param.m_name;
+                m_body += '=';
                 auto content_type = m_headers.headerValue(tristan::network::http::header_names::content_type);
                 if (content_type && content_type.value() == "application/x-www-form-urlencoded") {
-                    body += tristan::network::utility::encodeUrl(param.value);
+                    m_body += tristan::network::utility::encodeUrl(param.m_string);
                 } else if (content_type && content_type.value() == "multipart/form-data") {
                     //NOTE: To be developed in following versions
                 } else {
-                    body += param.value;
+                    m_body += param.m_string;
                 }
                 ++param_count;
             }
         }
-        m_headers.addHeader(tristan::network::Header(tristan::network::http::header_names::content_length, std::to_string(body.size())));
+        m_headers.addHeader(tristan::network::Header(tristan::network::http::header_names::content_length, std::to_string(m_body.size())));
         std::string to_insert = "POST ";
         m_request_data.insert(m_request_data.end(), to_insert.begin(), to_insert.end());
         if (m_url.path().empty() || m_url.path().at(0) != '/') {
@@ -143,9 +150,9 @@ auto tristan::network::PostRequest::requestData() -> const std::vector< uint8_t 
 
         if (!m_headers.empty()) {
             for (const auto& header: m_headers) {
-                m_request_data.insert(m_request_data.end(), header.name.begin(), header.name.end());
+                m_request_data.insert(m_request_data.end(), header.m_name.begin(), header.m_name.end());
                 m_request_data.push_back(':');
-                m_request_data.insert(m_request_data.end(), header.value.begin(), header.value.end());
+                m_request_data.insert(m_request_data.end(), header.m_string.begin(), header.m_string.end());
                 m_request_data.push_back('\r');
                 m_request_data.push_back('\n');
             }
@@ -154,8 +161,67 @@ auto tristan::network::PostRequest::requestData() -> const std::vector< uint8_t 
         m_request_data.push_back('\r');
         m_request_data.push_back('\n');
 
-        if (!body.empty()) {
-            m_request_data.insert(m_request_data.end(), body.begin(), body.end());
+        if (not m_body.empty()) {
+            m_request_data.insert(m_request_data.end(), m_body.begin(), m_body.end());
+        }
+        m_request_data.shrink_to_fit();
+        m_request_composed = true;
+    }
+    return m_request_data;
+}
+
+tristan::network::PutRequest::PutRequest(tristan::network::Url&& url) :
+    PostRequest(std::move(url)) { }
+
+tristan::network::PutRequest::PutRequest(const tristan::network::Url& url) :
+    PostRequest(url) { }
+
+auto tristan::network::PutRequest::requestData() -> const std::vector< uint8_t >& {
+    if (not m_request_composed) {
+        if (m_body.empty() and not m_params.empty()) {
+            int param_count = 0;
+            for (const auto& param: m_params) {
+                if (param_count > 0) {
+                    m_body += '&';
+                }
+                m_body += param.m_name;
+                m_body += '=';
+                auto content_type = m_headers.headerValue(tristan::network::http::header_names::content_type);
+                if (content_type && content_type.value() == "application/x-www-form-urlencoded") {
+                    m_body += tristan::network::utility::encodeUrl(param.m_string);
+                } else if (content_type && content_type.value() == "multipart/form-data") {
+                    //NOTE: To be developed in following versions
+                } else {
+                    m_body += param.m_string;
+                }
+                ++param_count;
+            }
+        }
+        m_headers.addHeader(tristan::network::Header(tristan::network::http::header_names::content_length, std::to_string(m_body.size())));
+        std::string to_insert = "PUT ";
+        m_request_data.insert(m_request_data.end(), to_insert.begin(), to_insert.end());
+        if (m_url.path().empty() || m_url.path().at(0) != '/') {
+            m_request_data.push_back('/');
+        }
+        m_request_data.insert(m_request_data.end(), m_url.path().begin(), m_url.path().end());
+        to_insert = " HTTP/1.1\r\n";
+        m_request_data.insert(m_request_data.end(), to_insert.begin(), to_insert.end());
+
+        if (!m_headers.empty()) {
+            for (const auto& header: m_headers) {
+                m_request_data.insert(m_request_data.end(), header.m_name.begin(), header.m_name.end());
+                m_request_data.push_back(':');
+                m_request_data.insert(m_request_data.end(), header.m_string.begin(), header.m_string.end());
+                m_request_data.push_back('\r');
+                m_request_data.push_back('\n');
+            }
+        }
+
+        m_request_data.push_back('\r');
+        m_request_data.push_back('\n');
+
+        if (not m_body.empty()) {
+            m_request_data.insert(m_request_data.end(), m_body.begin(), m_body.end());
         }
         m_request_data.shrink_to_fit();
         m_request_composed = true;

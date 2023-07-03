@@ -9,15 +9,15 @@ namespace tristan::network {
 
     class Logger {
     public:
-        Logger(const Logger& other) = delete;
-        Logger(Logger&& other) = delete;
-        Logger& operator=(const Logger& other) = delete;
+        Logger(const Logger& p_other) = delete;
+        Logger(Logger&& p_other) = delete;
+        Logger& operator=(const Logger& p_other) = delete;
 
-        Logger& operator=(Logger&& other) = delete;
+        Logger& operator=(Logger&& p_other) = delete;
         ~Logger() = default;
 
         static void setLogger(std::unique_ptr<tristan::log::Log>&& p_log);
-        static void write(tristan::log::LogEvent&& event);
+        static void write(tristan::log::LogEvent&& p_log_event);
     protected:
     private:
         Logger();

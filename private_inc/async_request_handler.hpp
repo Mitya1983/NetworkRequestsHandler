@@ -21,18 +21,18 @@ namespace tristan::network::private_ {
         AsyncRequestHandler();
 
     public:
-        AsyncRequestHandler(const AsyncRequestHandler& other) = delete;
-        AsyncRequestHandler(AsyncRequestHandler&& other) = delete;
+        AsyncRequestHandler(const AsyncRequestHandler& p_other) = delete;
+        AsyncRequestHandler(AsyncRequestHandler&& p_other) = delete;
 
-        AsyncRequestHandler& operator=(const AsyncRequestHandler& other) = delete;
-        AsyncRequestHandler& operator=(AsyncRequestHandler&& other) = delete;
+        AsyncRequestHandler& operator=(const AsyncRequestHandler& p_other) = delete;
+        AsyncRequestHandler& operator=(AsyncRequestHandler&& p_other) = delete;
 
         virtual ~AsyncRequestHandler();
         static auto create() -> std::unique_ptr< AsyncRequestHandler >;
         void run();
-        void addRequest(std::shared_ptr< NetworkRequestBase >&& network_request);
+        void addRequest(std::shared_ptr< NetworkRequestBase >&& p_network_request);
 
-        void setMaxDownloadsCount(uint8_t count);
+        void setMaxDownloadsCount(uint8_t p_count);
         void stop();
 
     protected:

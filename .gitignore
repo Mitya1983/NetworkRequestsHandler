@@ -41,7 +41,7 @@ build/
 /.idea/NetworkRequestsHandler.iml
 /.idea/vcs.xml
 /.idea/inspectionProfiles/Project_Default.xml
-/.idea/.name
+/.idea/.m_name
 /.idea/libraries/ROS.xml
 /.idea/libraries/ROS2.xml
 /.idea/NetworkRequestHandler2.iml

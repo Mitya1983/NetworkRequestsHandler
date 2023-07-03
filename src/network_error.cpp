@@ -73,14 +73,14 @@ namespace /*anonymous*/
 
 }  // namespace
 
-auto tristan::network::makeError(tristan::network::ErrorCode error_code) -> std::error_code {
-    return {static_cast< int >(error_code), g_network_error_category};
+auto tristan::network::makeError(tristan::network::ErrorCode p_error_code) -> std::error_code {
+    return {static_cast< int >(p_error_code), g_network_error_category};
 }
 
-auto tristan::network::makeError(tristan::network::UrlErrors error_code) -> std::error_code { return {static_cast< int >(error_code), g_url_error_category}; }
+auto tristan::network::makeError(tristan::network::UrlErrors p_error_code) -> std::error_code { return {static_cast< int >(p_error_code), g_url_error_category}; }
 
-auto tristan::network::makeError(tristan::network::NetworkResponseError error_code) -> std::error_code {
-    return {static_cast< int >(error_code), g_network_response_error_category};
+auto tristan::network::makeError(tristan::network::NetworkResponseError p_error_code) -> std::error_code {
+    return {static_cast< int >(p_error_code), g_network_response_error_category};
     ;
 }
 

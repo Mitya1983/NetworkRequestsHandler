@@ -9,12 +9,12 @@
 namespace tristan::network {
 
     struct Header {
-        std::string name;
-        std::string value;
+        std::string m_name;
+        std::string m_string;
 
         Header(std::string name_, std::string value_) :
-            name(std::move(name_)),
-            value(std::move(value_)) { }
+            m_name(std::move(name_)),
+            m_string(std::move(value_)) { }
     };
 
     /**
@@ -29,46 +29,46 @@ namespace tristan::network {
         HttpHeaders() = default;
         /**
          * \brief Constructor
-         * \param headers_data const std::string&
+         * \param p_headers_data const std::string&
          */
-        explicit HttpHeaders(const std::string& headers_data);
+        explicit HttpHeaders(const std::string& p_headers_data);
         /**
          * \brief Constructor
-         * \param headers_data const std::vector< uint8_t >&.
+         * \param p_headers_data const std::vector< uint8_t >&.
          */
-        explicit HttpHeaders(std::vector< uint8_t >&& headers_data);
+        explicit HttpHeaders(std::vector< uint8_t >&& p_headers_data);
         /**
          * \brief Copy constructor
-         * \param other const HttpHeaders& other
+         * \param p_other const HttpHeaders& other
          */
-        HttpHeaders(const HttpHeaders& other) = default;
+        HttpHeaders(const HttpHeaders& p_other) = default;
         /**
          * \brief Move constructor
-         * \param other HttpHeaders&& other
+         * \param p_other HttpHeaders&& other
          */
-        HttpHeaders(HttpHeaders&& other) noexcept = default;
+        HttpHeaders(HttpHeaders&& p_other) noexcept = default;
         /**
          * \brief Copy assignment operator
-         * \param other const HttpHeaders& other
+         * \param p_other const HttpHeaders& other
          * \return HttpHeaders&
          */
-        HttpHeaders& operator=(const HttpHeaders& other) = default;
+        HttpHeaders& operator=(const HttpHeaders& p_other) = default;
         /**
          * \brief Move assignment operator
-         * \param other const HttpHeaders& other
+         * \param p_other const HttpHeaders& other
          * \return HttpHeaders&
          */
-        HttpHeaders& operator=(HttpHeaders&& other) noexcept = default;
+        HttpHeaders& operator=(HttpHeaders&& p_other) noexcept = default;
         ~HttpHeaders() = default;
 
-        void addHeader(Header&& header);
+        void addHeader(Header&& p_header);
 
         /**
          * \brief Return value for specified header.
-         * \param header_name std::optional< std::string >
+         * \param p_header_name std::optional< std::string >
          * \return Header value if header is present, std::nullopt otherwise.
          */
-        [[nodiscard]] auto headerValue(const std::string& header_name) const -> std::optional< std::string >;
+        [[nodiscard]] auto headerValue(const std::string& p_header_name) const -> std::optional< std::string >;
 
         /**
          * \brief Returns if header list is empty

@@ -14,19 +14,19 @@ namespace {
     };
 }  //End of anonymous namespace
 
-auto tristan::network::schemes::getNetworkSchemeDefaultPort(const std::string& scheme_name) noexcept
+auto tristan::network::schemes::getNetworkSchemeDefaultPort(const std::string& p_scheme_name) noexcept
     -> uint16_t {
     for (const auto& scheme: g_network_schemes) {
-        if (scheme.name == scheme_name) {
+        if (scheme.name == p_scheme_name) {
             return scheme.port;
         }
     }
     return 0;
 }
 
-auto tristan::network::schemes::getNetworkSchemeName(uint16_t port) noexcept -> std::string {
+auto tristan::network::schemes::getNetworkSchemeName(uint16_t p_port) noexcept -> std::string {
     for (const auto& scheme: g_network_schemes) {
-        if (scheme.port == port) {
+        if (scheme.port == p_port) {
             return scheme.name;
         }
     }

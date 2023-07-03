@@ -41,24 +41,24 @@ namespace tristan::network {
 
     /**
      * \brief Creates std::error_code object that stores error information.
-     * \param error_code ErrorCode
+     * \param p_error_code ErrorCode
      * \return std::error_code
      */
-    [[nodiscard]] auto makeError(ErrorCode error_code) -> std::error_code;
+    [[nodiscard]] auto makeError(ErrorCode p_error_code) -> std::error_code;
 
     /**
      * \brief Creates std::error_code object that stores error information.
-     * \param error_code UrlErrors
+     * \param p_error_code UrlErrors
      * \return std::error_code
      */
-    [[nodiscard]] auto makeError(UrlErrors error_code) -> std::error_code;
+    [[nodiscard]] auto makeError(UrlErrors p_error_code) -> std::error_code;
 
     /**
      * \brief Creates std::error_code object that stores error information.
-     * \param error_code SocketErrors
+     * \param p_error_code SocketErrors
      * \return std::error_code
      */
-    [[nodiscard]] auto makeError(NetworkResponseError error_code) -> std::error_code;
+    [[nodiscard]] auto makeError(NetworkResponseError p_error_code) -> std::error_code;
 
 }  // namespace tristan::network
 

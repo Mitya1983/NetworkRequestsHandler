@@ -93,6 +93,35 @@ namespace tristan::network{
         explicit PostRequest(const Url& url);
         ~PostRequest() override = default;
 
+        void setBody(std::string&& p_body);
+        void setBody(const std::string& p_body);
+
+        /**
+        * \brief Prepares std::vector<uint8_t> representation of the request.
+        * \implements TcpRequest::requestData()
+        * \return const std::vector<uint8_t>&
+        */
+        auto requestData() -> const std::vector<uint8_t>& override;
+    protected:
+        std::string m_body;
+    };
+
+
+    /**
+    * \class PutRequest
+    * \extends HttpRequest
+    * \brief Handles POST http requests
+    */
+    class PutRequest : public PostRequest{
+    public:
+        /**
+         * \brief Constructor
+         * \param url url
+         */
+        explicit PutRequest(Url&& url);
+        explicit PutRequest(const Url& url);
+        ~PutRequest() override = default;
+
         /**
         * \brief Prepares std::vector<uint8_t> representation of the request.
         * \implements TcpRequest::requestData()
@@ -100,6 +129,7 @@ namespace tristan::network{
         */
         auto requestData() -> const std::vector<uint8_t>& override;
     };
+
 
 } // namespace network
 

@@ -15,14 +15,14 @@ namespace tristan::network {
     public:
         NetworkResponse() = delete;
 
-        NetworkResponse(const NetworkResponse& other) = delete;
-        NetworkResponse(NetworkResponse&& other) noexcept = default;
-        NetworkResponse& operator=(const NetworkResponse& other) = delete;
-        NetworkResponse& operator=(NetworkResponse&& other) noexcept = default;
+        NetworkResponse(const NetworkResponse& p_other) = delete;
+        NetworkResponse(NetworkResponse&& p_other) noexcept = default;
+        NetworkResponse& operator=(const NetworkResponse& p_other) = delete;
+        NetworkResponse& operator=(NetworkResponse&& p_other) noexcept = default;
 
         virtual ~NetworkResponse() = default;
 
-        [[nodiscard]] static auto createResponse(std::string uuid) -> std::shared_ptr<NetworkResponse>;
+        [[nodiscard]] static auto createResponse(std::string p_uuid) -> std::shared_ptr<NetworkResponse>;
 
         /**
          * \brief Returns request uuid.
@@ -36,7 +36,7 @@ namespace tristan::network {
         [[nodiscard]] auto data() const -> std::shared_ptr< std::vector< uint8_t > >;
 
     protected:
-        explicit NetworkResponse(std::string&& uuid);
+        explicit NetworkResponse(std::string&& p_uuid);
 
         std::string m_uuid;
 

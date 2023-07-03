@@ -9,7 +9,7 @@ void tristan::network::Logger::setLogger(std::unique_ptr< tristan::log::Log >&& 
     tristan::network::Logger::instance().m_logger = std::move(p_log);
 }
 
-void tristan::network::Logger::write(tristan::log::LogEvent&& event) { tristan::network::Logger::instance().m_logger->write(std::move(event)); }
+void tristan::network::Logger::write(tristan::log::LogEvent&& p_log_event) { tristan::network::Logger::instance().m_logger->write(std::move(p_log_event)); }
 
 auto tristan::network::Logger::instance() -> tristan::network::Logger& {
     static tristan::network::Logger logger;

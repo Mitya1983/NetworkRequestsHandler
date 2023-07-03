@@ -11,8 +11,8 @@ struct NetworkScheme {
 
 namespace tristan::network::schemes {
 
-    [[nodiscard]] auto getNetworkSchemeDefaultPort(const std::string& scheme_name) noexcept -> uint16_t;
-    [[nodiscard]] auto getNetworkSchemeName(uint16_t port) noexcept -> std::string;
+    [[nodiscard]] auto getNetworkSchemeDefaultPort(const std::string& p_scheme_name) noexcept -> uint16_t;
+    [[nodiscard]] auto getNetworkSchemeName(uint16_t p_port) noexcept -> std::string;
 
 }  // namespace tristan::network::schemes
 

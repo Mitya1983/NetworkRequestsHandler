@@ -9,13 +9,14 @@ namespace tristan::network::private_ {
     public:
         SyncNetworkRequestHandlerImpl();
         ~SyncNetworkRequestHandlerImpl() override;
-        void handleRequest(std::shared_ptr<NetworkRequestBase>&& network_request);
+        void handleRequest(std::shared_ptr<NetworkRequestBase>&& p_network_request);
     protected:
-        void handleTcpRequest(std::shared_ptr<TcpRequest>&& tcp_request);
-        void handleHttpRequest(std::shared_ptr<HttpRequest>&& http_request);
-        void handleUnimplementedRequest(std::shared_ptr< tristan::network::NetworkRequestBase >&& network_request);
+        void handleTcpRequest(std::shared_ptr<TcpRequest>&& p_tcp_request);
+        void handleHttpRequest(std::shared_ptr<HttpRequest>&& p_http_request);
+        void handleUnimplementedRequest(std::shared_ptr< tristan::network::NetworkRequestBase >&& p_network_request);
     private:
         std::chrono::milliseconds m_sleeping_interval = std::chrono::milliseconds(250);
+        const uint16_t m_max_frame_size = std::numeric_limits<uint16_t>::max();
     };
 
 } //End of tristan::network::private_ namespace

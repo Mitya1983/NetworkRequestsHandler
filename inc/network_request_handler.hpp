@@ -3,7 +3,7 @@
 
 #include "tcp_request.hpp"
 
-#include <queue>
+#include <set>
 #include <list>
 #include <memory>
 #include <utility>
@@ -13,18 +13,19 @@
 #include <atomic>
 #include <functional>
 #include <stdexcept>
+#include <ranges>
 
 namespace tristan::log {
     class Log;
-} //End of tristan::log namespace
+}  // namespace tristan::log
 
 namespace tristan::network {
 
     namespace private_ {
         class AsyncRequestHandler;
-    } //End of private_ namespace
+    }  // namespace private_
 
-//    using SuppoertedRequestTypes = std::variant< std::shared_ptr< TcpRequest >, std::shared_ptr< HttpRequest > >;
+       //    using SuppoertedRequestTypes = std::variant< std::shared_ptr< TcpRequest >, std::shared_ptr< HttpRequest > >;
 
     /**
      * \class NetworkRequestsHandler
@@ -38,13 +39,13 @@ namespace tristan::network {
         static auto instance() -> NetworkRequestsHandler&;
 
     public:
-        NetworkRequestsHandler(const NetworkRequestsHandler& other) = delete;
+        NetworkRequestsHandler(const NetworkRequestsHandler& p_other) = delete;
 
-        NetworkRequestsHandler(NetworkRequestsHandler&& other) = delete;
+        NetworkRequestsHandler(NetworkRequestsHandler&& p_other) = delete;
 
-        NetworkRequestsHandler& operator=(const NetworkRequestsHandler& other) = delete;
+        NetworkRequestsHandler& operator=(const NetworkRequestsHandler& p_other) = delete;
 
-        NetworkRequestsHandler& operator=(NetworkRequestsHandler&& other) = delete;
+        NetworkRequestsHandler& operator=(NetworkRequestsHandler&& p_other) = delete;
 
         ~NetworkRequestsHandler();
 
@@ -52,13 +53,13 @@ namespace tristan::network {
          * Sets user provided logger.
          * \param p_log std::unique_ptr<tristan::log::Log>&&
          */
-        static void setLogger(std::unique_ptr<tristan::log::Log>&& p_log);
+        static void setLogger(std::unique_ptr< tristan::log::Log >&& p_log);
 
         /**
          * \brief Sets simultaneous requests limit which by default is 5.
-         * \param limit uint8_t.
+         * \param p_limit uint8_t.
          */
-        static void setActiveDownloadsLimit(uint8_t limit);
+        static void setActiveDownloadsLimit(uint8_t p_limit);
 
         /**
          * \brief Starts the handler loop.
@@ -85,34 +86,34 @@ namespace tristan::network {
 
         /**
          * \brief Registers callback functions which will be invoked when request processing is stopped.
-         * \param functor std::function<void()>&& functor
+         * \param p_function std::function<void()>&& functor
          */
-        static void notifyWhenExit(std::function< void() >&& functor);
+        static void notifyWhenExit(std::function< void() >&& p_function);
 
         /**
          * \brief Registers callback functions which will be invoked when request processing is stopped.
          * \tparam Object Type which holds the function member to invoke.
-         * \param object std::weak_ptr<Object>
-         * \param functor void (Object::*functor)()
+         * \param p_object std::weak_ptr<Object>
+         * \param p_function void (Object::*functor)()
          */
-        template < class Object >
-        static void notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)());
+        template < class Object > static void notifyWhenExit(std::weak_ptr< Object > p_object, void (Object::*p_function)());
 
         /**
          * \overload
          * \brief Registers callback functions which will be invoked when reqeust processing is stopped.
          * \tparam Object Type which holds the function member to invoke.
-         * \param object Object*
-         * \param functor void (Object::*functor)()
+         * \param p_object Object*
+         * \param p_function void (Object::*functor)()
          */
-        template < class Object >
-        static void notifyWhenExit(Object* object, void (Object::*functor)());
+        template < class Object > static void notifyWhenExit(Object* p_object, void (Object::*p_function)());
 
         /**
          * \brief Adds request to the queue
-         * \param request std::shared_ptr<Request>
+         * \param p_request std::shared_ptr<Request>
          */
-        static void addRequest(std::shared_ptr< NetworkRequestBase >&& request);
+        static void addRequest(std::shared_ptr< NetworkRequestBase >&& p_request);
+
+        static auto pendingRequests() -> std::ranges::ref_view< std::multiset< std::shared_ptr< NetworkRequestBase > > >;
 
         /**
          * \brief Returns list of currently active requests.
@@ -128,23 +129,22 @@ namespace tristan::network {
 
     protected:
     private:
-        std::mutex m_nr_queue_lock;
+        std::mutex m_nr_multiset_lock;
         std::mutex m_error_nr_lock;
         std::mutex m_active_nr_lock;
 
-        struct Compare {
-            bool operator()(const std::shared_ptr< NetworkRequestBase >& left, const std::shared_ptr< NetworkRequestBase >& right) const {
-                return left < right;
-            }
-        };
+//        struct Compare {
+//            bool operator()(const std::shared_ptr< NetworkRequestBase >& p_left, const std::shared_ptr< NetworkRequestBase >& p_right) const {
+//                return p_left < p_right;
+//            }
+//        };
 
-        std::priority_queue< std::shared_ptr< NetworkRequestBase >, std::deque< std::shared_ptr< NetworkRequestBase > >, Compare >
-            m_requests;
+        std::multiset< std::shared_ptr< NetworkRequestBase > > m_requests;
 
         std::list< std::shared_ptr< NetworkRequestBase > > m_error_requests;
         std::list< std::shared_ptr< NetworkRequestBase > > m_active_requests;
 
-        std::vector< std::function< void() > > m_notify_when_exit_functors;
+        std::vector< std::function< void() > > m_notify_when_exit_functions;
 
         std::unique_ptr< private_::AsyncRequestHandler > m_async_tcp_requests_handler;
         std::unique_ptr< private_::SyncNetworkRequestHandlerImpl > m_request_handler;
@@ -163,36 +163,32 @@ namespace tristan::network {
 
         void _addRequest(std::shared_ptr< NetworkRequestBase >&& request);
 
-        template < class Object >
-        void _notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)());
+        template < class Object > void _notifyWhenExit(std::weak_ptr< Object > p_object, void (Object::*p_function)());
 
-        template < class Object > void _notifyWhenExit(Object* object, void (Object::*functor)());
+        template < class Object > void _notifyWhenExit(Object* p_object, void (Object::*p_function)());
 
-        void _notifyWhenExit(std::function< void() >&& functor);
+        void _notifyWhenExit(std::function< void() >&& p_function);
     };
 
-    template < class Object >
-    void NetworkRequestsHandler::notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
-        NetworkRequestsHandler::instance()._notifyWhenExit(object, functor);
+    template < class Object > void NetworkRequestsHandler::notifyWhenExit(std::weak_ptr< Object > p_object, void (Object::*p_function)()) {
+        NetworkRequestsHandler::instance()._notifyWhenExit(p_object, p_function);
     }
 
-    template < class Object >
-    void NetworkRequestsHandler::notifyWhenExit(Object* object, void (Object::*functor)()) {
-        NetworkRequestsHandler::instance()._notifyWhenExit(object, functor);
+    template < class Object > void NetworkRequestsHandler::notifyWhenExit(Object* p_object, void (Object::*p_function)()) {
+        NetworkRequestsHandler::instance()._notifyWhenExit(p_object, p_function);
     }
 
-    template < class Object >
-    void NetworkRequestsHandler::_notifyWhenExit(std::weak_ptr< Object > object, void (Object::*functor)()) {
-        m_notify_when_exit_functors.emplace_back([object, functor]() -> void {
-            if (auto l_object = object.lock()) {
-                std::invoke(functor, l_object);
+    template < class Object > void NetworkRequestsHandler::_notifyWhenExit(std::weak_ptr< Object > p_object, void (Object::*p_function)()) {
+        m_notify_when_exit_functions.emplace_back([p_object, p_function]() -> void {
+            if (auto l_object = p_object.lock()) {
+                std::invoke(p_function, l_object);
             }
         });
     }
 
-    template < class Object > void tristan::network::NetworkRequestsHandler::_notifyWhenExit(Object* object, void (Object::*functor)()) {
-        m_notify_when_exit_functors.emplace_back([object, functor]() -> void {
-            std::invoke(functor, object);
+    template < class Object > void tristan::network::NetworkRequestsHandler::_notifyWhenExit(Object* p_object, void (Object::*p_function)()) {
+        m_notify_when_exit_functions.emplace_back([p_object, p_function]() -> void {
+            std::invoke(p_function, p_object);
         });
     }
 }  // namespace tristan::network

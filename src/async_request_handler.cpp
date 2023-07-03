@@ -18,7 +18,7 @@ auto tristan::network::private_::AsyncRequestHandler::create() -> std::unique_pt
     return std::unique_ptr< AsyncRequestHandler >(new AsyncRequestHandler());
 }
 
-void tristan::network::private_::AsyncRequestHandler::setMaxDownloadsCount(uint8_t count) { m_max_processed_requests_count = count; }
+void tristan::network::private_::AsyncRequestHandler::setMaxDownloadsCount(uint8_t p_count) { m_max_processed_requests_count = p_count; }
 
 void tristan::network::private_::AsyncRequestHandler::stop() { m_working.store(false, std::memory_order_relaxed); }
 
@@ -53,12 +53,12 @@ void tristan::network::private_::AsyncRequestHandler::run() {
     netInfo("Async request handler stopped");
 }
 
-void tristan::network::private_::AsyncRequestHandler::addRequest(std::shared_ptr< NetworkRequestBase >&& network_request) {
+void tristan::network::private_::AsyncRequestHandler::addRequest(std::shared_ptr< NetworkRequestBase >&& p_network_request) {
     if (not m_working) {
-        network_request->request_handlers_api.setError(tristan::network::makeError(tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_WAS_NOT_LUNCHED));
+        p_network_request->request_handlers_api.setError(tristan::network::makeError(tristan::network::ErrorCode::ASYNC_NETWORK_REQUEST_HANDLER_WAS_NOT_LUNCHED));
         return;
     }
     std::scoped_lock< std::mutex > lock(m_processed_requests_lock);
 
-    m_processed_requests.emplace_back(m_request_handler->handleRequest(std::move(network_request)));
+    m_processed_requests.emplace_back(m_request_handler->handleRequest(std::move(p_network_request)));
 }

@@ -9,12 +9,12 @@
 namespace tristan::network {
 
     struct Parameter {
-        std::string name;
-        std::string value;
+        std::string m_name;
+        std::string m_string;
 
         Parameter(std::string name_, std::string value_) :
-            name(std::move(name_)),
-            value(std::move(value_)) { }
+            m_name(std::move(name_)),
+            m_string(std::move(value_)) { }
     };
 
     /**
@@ -29,48 +29,48 @@ namespace tristan::network {
         HttpParams() = default;
         /**
          * \brief Constructor
-         * \param params_data const std::string&
+         * \param p_params_data const std::string&
          * \note application/x-www-form-urlencoded format is expected
          */
-        explicit HttpParams(const std::string& params_data);
+        explicit HttpParams(const std::string& p_params_data);
         /**
          * \brief Constructor
-         * \param params_data const std::vector< uint8_t >&.
+         * \param p_params_data const std::vector< uint8_t >&.
          * \note application/x-www-form-urlencoded format is expected
          */
-        explicit HttpParams(const std::vector< uint8_t >& params_data);
+        explicit HttpParams(const std::vector< uint8_t >& p_params_data);
         /**
          * \brief Copy constructor
-         * \param other const HttpParams& other
+         * \param p_other const HttpParams& other
          */
-        HttpParams(const HttpParams& other) = default;
+        HttpParams(const HttpParams& p_other) = default;
         /**
          * \brief Move constructor
-         * \param other HttpParams&& other
+         * \param p_other HttpParams&& other
          */
-        HttpParams(HttpParams&& other) noexcept = default;
+        HttpParams(HttpParams&& p_other) noexcept = default;
         /**
          * \brief Copy assignment operator
-         * \param other const HttpParams& other
+         * \param p_other const HttpParams& other
          * \return HttpParams&
          */
-        HttpParams& operator=(const HttpParams& other) = default;
+        HttpParams& operator=(const HttpParams& p_other) = default;
         /**
          * \brief Move assignment operator
-         * \param other const HttpParams& other
+         * \param p_other const HttpParams& other
          * \return HttpParams&
          */
-        HttpParams& operator=(HttpParams&& other) noexcept = default;
+        HttpParams& operator=(HttpParams&& p_other) noexcept = default;
         ~HttpParams() = default;
 
-        void addParameter(Parameter&& parameter);
+        void addParameter(Parameter&& p_parameter);
 
         /**
          * \brief Return value for specified header.
-         * \param parameter_name std::optional< std::string >
+         * \param p_parameter_name std::optional< std::string >
          * \return Parameter value if parameter is present, std::nullopt otherwise.
          */
-        [[nodiscard]] auto parameterValue(const std::string& parameter_name) const -> std::optional< std::string >;
+        [[nodiscard]] auto parameterValue(const std::string& p_parameter_name) const -> std::optional< std::string >;
 
         /**
          * \brief Returns if header list is empty
